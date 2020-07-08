@@ -1,0 +1,3 @@
+#!/bin/bash
+
+docker -H :2376 run --rm -ti test_remote

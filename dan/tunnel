@@ -2,5 +2,5 @@
 #
 # This command opens a tunnel to the remote dockerd server on datahub.host
 #
-ssh -4v ubuntu@datahub.host -NL 2375:/var/run/docker.sock
+ssh -4v $1@datahub.host -NL 2376:/var/run/docker.sock
 

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+docker run --rm -ti test_local
+

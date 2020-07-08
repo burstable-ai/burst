@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+# build dockerfile locally
+#
+
+docker build . -t test_local
+
