@@ -9,6 +9,5 @@ cmd = "docker build . -t {0}".format(DEfAULT_IMAGE)
 print (cmd)
 
 args = " ".join(sys.argv[1:])
-print ("ARGS:", args)
 cmd = "docker run --rm -it {0} {1}".format(DEfAULT_IMAGE, args)
 print (cmd)
