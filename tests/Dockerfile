@@ -5,4 +5,4 @@ RUN adduser --disabled-password --gecos '' ubuntu
 COPY . /home/ubuntu
 WORKDIR /home/ubuntu
 
-CMD ["python3", "entrypoint.py"]
+CMD ["bash"]
