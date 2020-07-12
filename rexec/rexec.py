@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import os, sys, argparse
+import os, sys, argparse, subprocess, time
 
 DEfAULT_IMAGE = "rexec_image"
-DOCKER_REMOTE = "localhost:2376"
+DOCKER_REMPORT = "2376"
+DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
 print ("rexec -- remote execution using docker containers")
 
@@ -14,6 +15,10 @@ def rexec(url, args):
         user, host = url.split('@')
         locpath = os.path.abspath('.')[len(os.path.expanduser('~')):]
         path = "/home/{0}{1}".format(user, locpath)
+        ssh_args = ["ssh", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), url]
+        print ("SSHARGS:", ssh_args)
+        tunnel = subprocess.Popen(ssh_args)
+        time.sleep(3)
     else:
         remote = ""
         path = os.path.abspath('.')
@@ -28,6 +33,7 @@ def rexec(url, args):
     cmd = "docker {3} run --rm -it -v {2}:/home/rexec {0} {1}".format(DEfAULT_IMAGE, args, path, remote)
     print (cmd)
     os.system(cmd)
+    tunnel.kill()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
