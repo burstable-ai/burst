@@ -2,21 +2,29 @@
 import os, sys, argparse
 
 DEfAULT_IMAGE = "rexec_image"
+DOCKER_REMOTE = "localhost:2376"
 
 print ("rexec -- remote execution using docker containers")
 
 def rexec(url, args):
     print ("REXEC", url)
 
-    remote = ""
     if url:
-        remote = "-H " + url
+        remote = "-H " + DOCKER_REMOTE
+        user, host = url.split('@')
+        locpath = os.path.abspath('.')[len(os.path.expanduser('~')):]
+        path = "/home/{0}{1}".format(user, locpath)
+    else:
+        remote = ""
+        path = os.path.abspath('.')
+    print ("PATH:", path)
+
     cmd = "docker {1} build . -t {0}".format(DEfAULT_IMAGE, remote)
     print (cmd)
     os.system(cmd)
 
     args = " ".join(args)
-    path = os.path.abspath('.')
+    print ("PATH:", path)
     cmd = "docker {3} run --rm -it -v {2}:/home/rexec {0} {1}".format(DEfAULT_IMAGE, args, path, remote)
     print (cmd)
     os.system(cmd)
