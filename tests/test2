@@ -1,0 +1,3 @@
+#!/bin/bash
+rexec --url :2376 python3 test_script.py arg1 arg2 arg3
+
