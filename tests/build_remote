@@ -1,7 +1,0 @@
-#!/bin/bash
-#
-# build dockerfile specifying remote dockerd
-#
-
-docker -H :2376 build . -t test_remote
-
