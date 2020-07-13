@@ -38,6 +38,9 @@ def rexec(url, args):
     cmd = "docker {3} run --rm -it -v {2}:/home/rexec {0} {1}".format(DEfAULT_IMAGE, args, path, remote)
     print (cmd)
     os.system(cmd)
+    cmd = "rsync -vrltzu '{1}:{2}/*' {0}/".format(locpath, url, path)
+    print (cmd)
+    os.system(cmd)
     tunnel.kill()
 
 if __name__ == "__main__":
