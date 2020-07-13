@@ -14,15 +14,16 @@ def rexec(url, args):
         ssh_args = ["ssh", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), url]
         print ("SSHARGS:", ssh_args)
         tunnel = subprocess.Popen(ssh_args)
-        time.sleep(6)                                   #FIXME get smarter -- wait for output confirming tunnel is live
+        time.sleep(5)                                   #FIXME get smarter -- wait for output confirming tunnel is live
 
         remote = "-H " + DOCKER_REMOTE
         relpath = os.path.abspath('.')[len(os.path.expanduser('~')):]
         user, host = url.split('@')
         locpath = os.path.abspath('.')
         path = "/home/{0}{1}".format(user, relpath)
-        cmd = "rsync -vrltzu {0} {1}:{2}/".format(locpath, url, path)
+        cmd = "rsync -vrltzu {0}/* {1}:{2}/".format(locpath, url, path)
         print (cmd)
+        os.system(cmd)
     else:
         remote = ""
         path = os.path.abspath('.')
