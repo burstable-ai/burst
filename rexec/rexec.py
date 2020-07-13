@@ -14,10 +14,11 @@ def rexec(url, args):
         ssh_args = ["ssh", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), url]
         print ("SSHARGS:", ssh_args)
         tunnel = subprocess.Popen(ssh_args)
-        time.sleep(5)                                   #FIXME get smarter -- wait for output confirming tunnel is live
+        time.sleep(5)                                    #FIXME get smarter -- wait for output confirming tunnel is live
 
         remote = "-H " + DOCKER_REMOTE
         relpath = os.path.abspath('.')[len(os.path.expanduser('~')):]
+        relpath = "/_REXEC" +  relpath.replace('/', '_') #I can exlain
         user, host = url.split('@')
         locpath = os.path.abspath('.')
         path = "/home/{0}{1}".format(user, relpath)
