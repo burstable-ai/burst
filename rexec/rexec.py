@@ -5,17 +5,13 @@ DEfAULT_IMAGE = "rexec_image"
 DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
-print ("rexec -- remote execution using docker containers")
 
 def rexec(url, args):
-    print ("REXEC", url)
-
     if url:
+        print ("rexec: running on", url)
         ssh_args = ["ssh", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), url]
-        print ("SSHARGS:", ssh_args)
         tunnel = subprocess.Popen(ssh_args)
         time.sleep(5)                                    #FIXME get smarter -- wait for output confirming tunnel is live
-
         remote = "-H " + DOCKER_REMOTE
         relpath = os.path.abspath('.')[len(os.path.expanduser('~')):]
         relpath = "/_REXEC" +  relpath.replace('/', '_') #I can exlain
@@ -26,16 +22,15 @@ def rexec(url, args):
         print (cmd)
         os.system(cmd)
     else:
+        print ("rexec: running locally")
         remote = ""
         path = os.path.abspath('.')
-    print ("PATH:", path)
 
     cmd = "docker {1} build . -t {0}".format(DEfAULT_IMAGE, remote)
     print (cmd)
     os.system(cmd)
 
     args = " ".join(args)
-    print ("PATH:", path)
     cmd = "docker {3} run --rm -it -v {2}:/home/rexec {0} {1}".format(DEfAULT_IMAGE, args, path, remote)
     print (cmd)
     os.system(cmd)
@@ -47,6 +42,6 @@ def rexec(url, args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--url")
+    parser.add_argument("--remote")
     args, unknown = parser.parse_known_args()
-    rexec(args.url, unknown)
+    rexec(args.remote, unknown)
