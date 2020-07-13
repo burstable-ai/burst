@@ -1,3 +1,5 @@
 #!/bin/bash
-rexec --url jupyter-danx0r@datahub.host python3 test_script.py arg1 arg2 arg3
+echo "test_remote username@server for example:"
+echo "test_remote jupyter-chris@datahub.host"
+rexec --rem $1 python3 test_script.py arg1 arg2 arg3
 
