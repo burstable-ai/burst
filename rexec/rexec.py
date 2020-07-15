@@ -6,7 +6,15 @@ DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
 
-def rexec(url, args):
+def rexec(url, args, gpu = None):
+    if gpu:
+        if gpu == "nvidia":
+            docker = "nvidia-docker"
+        else:
+            print ("Unknown gpu type:", gpu)
+            return 
+    else:
+        docker = "docker"
     if url:
         print ("rexec: running on", url)
         ssh_args = ["ssh", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), url]
@@ -26,12 +34,12 @@ def rexec(url, args):
         remote = ""
         path = os.path.abspath('.')
 
-    cmd = "docker {1} build . -t {0}".format(DEfAULT_IMAGE, remote)
+    cmd = docker + " {1} build . -t {0}".format(DEfAULT_IMAGE, remote)
     print (cmd)
     os.system(cmd)
 
     args = " ".join(args)
-    cmd = "docker {3} run --rm -it -v {2}:/home/rexec {0} {1}".format(DEfAULT_IMAGE, args, path, remote)
+    cmd = docker + " {3} run --rm -it -v {2}:/home/rexec {0} {1}".format(DEfAULT_IMAGE, args, path, remote)
     print (cmd)
     os.system(cmd)
     if url:
@@ -44,9 +52,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("remote", nargs='?')
     parser.add_argument("--local", action="store_true")
+    parser.add_argument("--gpu")
     args, unknown = parser.parse_known_args()
+
     if args.local:
-        rexec(None, ([args.remote] + unknown) if args.remote else [])
+        rexec(None, ([args.remote] + unknown) if args.remote else [], gpu=args.gpu)
     else:
-        rexec(args.remote, unknown)
+        rexec(args.remote, unknown, gpu=args.gpu)
     print ("DONE")
