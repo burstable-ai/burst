@@ -6,15 +6,21 @@ DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
 
-def rexec(url, args, gpu = None):
+def rexec(url, args, gpu = None, ports=None):
     if gpu:
         if gpu == "nvidia":
             docker = "nvidia-docker"
+            gpu_arg = ""
+        elif gpu == "all":
+            docker = "docker"
+            gpu_arg = "--gpus=all"
         else:
             print ("Unknown gpu type:", gpu)
             return 
     else:
         docker = "docker"
+        gpu_arg = ""
+
     if url:
         print ("rexec: running on", url)
         ssh_args = ["ssh", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), url]
@@ -34,12 +40,16 @@ def rexec(url, args, gpu = None):
         remote = ""
         path = os.path.abspath('.')
 
-    cmd = docker + " {1} build . -t {0}".format(DEfAULT_IMAGE, remote)
+    cmd = "docker {1} build . -t {0}".format(DEfAULT_IMAGE, remote)
     print (cmd)
     os.system(cmd)
 
     args = " ".join(args)
-    cmd = docker + " {3} run --rm -it -v {2}:/home/rexec {0} {1}".format(DEfAULT_IMAGE, args, path, remote)
+    port_args = ""
+    for p in ports:
+        port_args += " -p {0}:{0}".format(p)
+
+    cmd = docker + " {3} run {4} {5} --rm -it -v {2}:/home/rexec {0} {1}".format(DEfAULT_IMAGE, args, path, remote, gpu_arg, port_args)
     print (cmd)
     os.system(cmd)
     if url:
@@ -53,10 +63,12 @@ if __name__ == "__main__":
     parser.add_argument("remote", nargs='?')
     parser.add_argument("--local", action="store_true")
     parser.add_argument("--gpu")
+    parser.add_argument("--ports")
     args, unknown = parser.parse_known_args()
 
+    ports = args.ports.split(',')
     if args.local:
-        rexec(None, ([args.remote] + unknown) if args.remote else [], gpu=args.gpu)
+        rexec(None, ([args.remote] + unknown) if args.remote else [], gpu=args.gpu, ports=ports)
     else:
-        rexec(args.remote, unknown, gpu=args.gpu)
+        rexec(args.remote, unknown, gpu=args.gpu, ports=ports)
     print ("DONE")
