@@ -42,6 +42,11 @@ def rexec(url, args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--remote")
+    parser.add_argument("remote", nargs='?')
+    parser.add_argument("--local", action="store_true")
     args, unknown = parser.parse_known_args()
-    rexec(args.remote, unknown)
+    if args.local:
+        rexec(None, ([args.remote] + unknown) if args.remote else [])
+    else:
+        rexec(args.remote, unknown)
+    print ("DONE")
