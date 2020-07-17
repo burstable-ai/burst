@@ -6,7 +6,7 @@ DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
 
-def rexec(url, args, gpus = "", ports=""):
+def rexec(url, args, gpus = "", ports=None):
     if url:
         print ("rexec: running on", url)
         ssh_args = ["ssh", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), url]
@@ -32,7 +32,10 @@ def rexec(url, args, gpus = "", ports=""):
 
     args = " ".join(args)
     gpu_args = "--gpus "+gpus if gpus else ""
-    port_args = "-p "+ports if ports else ""
+    port_args = ""
+    if ports:
+        for pa in ports:
+            port_args += " -p " + pa
     cmd = "docker {3} run {4} {5} --rm -it -v {2}:/home/rexec {0} {1}".format(DEFAULT_IMAGE,
                                                                               args, path, remote, gpu_args, port_args)
     print (cmd)
@@ -48,7 +51,7 @@ if __name__ == "__main__":
     parser.add_argument("remote", nargs='?')
     parser.add_argument("--local", action="store_true")
     parser.add_argument("--gpus")
-    parser.add_argument("-p")
+    parser.add_argument("-p", action="append")
     args, unknown = parser.parse_known_args()
 
     if args.local:
