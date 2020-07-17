@@ -46,8 +46,9 @@ def rexec(url, args, gpu = None, ports=None):
 
     args = " ".join(args)
     port_args = ""
-    for p in ports:
-        port_args += " -p {0}:{0}".format(p)
+    if ports:
+        for p in ports:
+            port_args += " -p {0}:{0}".format(p)
 
     cmd = docker + " {3} run {4} {5} --rm -it -v {2}:/home/rexec {0} {1}".format(DEfAULT_IMAGE, args, path, remote, gpu_arg, port_args)
     print (cmd)
@@ -66,7 +67,10 @@ if __name__ == "__main__":
     parser.add_argument("--ports")
     args, unknown = parser.parse_known_args()
 
-    ports = args.ports.split(',')
+    if args.ports:
+        ports = args.ports.split(',')
+    else:
+        ports = None
     if args.local:
         rexec(None, ([args.remote] + unknown) if args.remote else [], gpu=args.gpu, ports=ports)
     else:
