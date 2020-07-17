@@ -1,26 +1,12 @@
 #!/usr/bin/env python3
 import os, sys, argparse, subprocess, time
 
-DEfAULT_IMAGE = "rexec_image"
+DEFAULT_IMAGE = "rexec_image"
 DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
 
-def rexec(url, args, gpu = None, ports=None):
-    if gpu:
-        if gpu == "nvidia":
-            docker = "nvidia-docker"
-            gpu_arg = ""
-        elif gpu == "all":
-            docker = "docker"
-            gpu_arg = "--gpus=all"
-        else:
-            print ("Unknown gpu type:", gpu)
-            return 
-    else:
-        docker = "docker"
-        gpu_arg = ""
-
+def rexec(url, args, gpus = "", ports=""):
     if url:
         print ("rexec: running on", url)
         ssh_args = ["ssh", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), url]
@@ -40,17 +26,15 @@ def rexec(url, args, gpu = None, ports=None):
         remote = ""
         path = os.path.abspath('.')
 
-    cmd = "docker {1} build . -t {0}".format(DEfAULT_IMAGE, remote)
+    cmd = "docker {1} build . -t {0}".format(DEFAULT_IMAGE, remote)
     print (cmd)
     os.system(cmd)
 
     args = " ".join(args)
-    port_args = ""
-    if ports:
-        for p in ports:
-            port_args += " -p {0}:{0}".format(p)
-
-    cmd = docker + " {3} run {4} {5} --rm -it -v {2}:/home/rexec {0} {1}".format(DEfAULT_IMAGE, args, path, remote, gpu_arg, port_args)
+    gpu_args = "--gpus "+gpus if gpus else ""
+    port_args = "-p "+ports if ports else ""
+    cmd = "docker {3} run {4} {5} --rm -it -v {2}:/home/rexec {0} {1}".format(DEFAULT_IMAGE,
+                                                                              args, path, remote, gpu_args, port_args)
     print (cmd)
     os.system(cmd)
     if url:
@@ -63,16 +47,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("remote", nargs='?')
     parser.add_argument("--local", action="store_true")
-    parser.add_argument("--gpu")
-    parser.add_argument("--ports")
+    parser.add_argument("--gpus")
+    parser.add_argument("-p")
     args, unknown = parser.parse_known_args()
 
-    if args.ports:
-        ports = args.ports.split(',')
-    else:
-        ports = None
     if args.local:
-        rexec(None, ([args.remote] + unknown) if args.remote else [], gpu=args.gpu, ports=ports)
+        rexec(None, ([args.remote] + unknown) if args.remote else [], gpus=args.gpus, ports=args.p)
     else:
-        rexec(args.remote, unknown, gpu=args.gpu, ports=ports)
+        rexec(args.remote, unknown, gpus=args.gpus, ports=args.p)
     print ("DONE")
