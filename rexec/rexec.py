@@ -35,6 +35,8 @@ def rexec(url, args, gpus = "", ports=None):
     port_args = ""
     if ports:
         for pa in ports:
+            if ':' not in pa:
+                pa = "{0}:{0}".format(pa)
             port_args += " -p " + pa
     cmd = "docker {3} run {4} {5} --rm -it -v {2}:/home/rexec {0} {1}".format(DEFAULT_IMAGE,
                                                                               args, path, remote, gpu_args, port_args)
