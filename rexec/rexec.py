@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import os, sys, argparse, subprocess, time
-
+from lcloud import *
 DEFAULT_IMAGE = "rexec_image"
 DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
@@ -9,13 +9,14 @@ DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 def rexec(url, args, gpus = "", ports=None):
     if url:
         print ("rexec: running on", url)
+        user, host = url.split('@')
+        srv =
         ssh_args = ["ssh", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), url]
         tunnel = subprocess.Popen(ssh_args)
         time.sleep(5)                                    #FIXME get smarter -- wait for output confirming tunnel is live
         remote = "-H " + DOCKER_REMOTE
         relpath = os.path.abspath('.')[len(os.path.expanduser('~')):]
         relpath = "/_REXEC" +  relpath.replace('/', '_') #I can exlain
-        user, host = url.split('@')
         locpath = os.path.abspath('.')
         path = "/home/{0}{1}".format(user, relpath)
         cmd = "rsync -vrltzu {0}/* {1}:{2}/".format(locpath, url, path)
