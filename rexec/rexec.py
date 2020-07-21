@@ -6,7 +6,7 @@ DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
 
-def rexec(url, args, gpus = "", ports=None):
+def rexec(url, args, gpus = "", ports=None, uuid=None):
     if url:
         print ("rexec: running on", url)
         user, host = url.split('@')
@@ -51,14 +51,18 @@ def rexec(url, args, gpus = "", ports=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("remote", nargs='?')
-    parser.add_argument("--local", action="store_true")
+    parser.add_argument("--url")
+    parser.add_argument("--uuid")
+    parser.add_argument("--name")
     parser.add_argument("--gpus")
     parser.add_argument("-p", action="append")
     args, unknown = parser.parse_known_args()
 
-    if args.local:
-        rexec(None, ([args.remote] + unknown) if args.remote else [], gpus=args.gpus, ports=args.p)
+    if args.url:
+        url = args.url
+    elif args.name:
+        url = get_node_by_name(args.name)
+    elif args.uuid:
     else:
-        rexec(args.remote, unknown, gpus=args.gpus, ports=args.p)
+        rexec(None, unknown, gpus=args.gpus, ports=args.p)
     print ("DONE")
