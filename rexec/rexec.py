@@ -16,8 +16,8 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
             if node:
                 url = node.public_ips[0]
                 if node.state.lower() != "running":
-                    print ("RUN RUN RUN")
-                    return
+                    print ("Starting", url)
+                    start_server(node)
             else:
                 print ("Error: node not found")
                 return
