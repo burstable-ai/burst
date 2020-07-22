@@ -5,14 +5,11 @@ DEFAULT_IMAGE = "rexec_image"
 DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
-print ("REXEC")
-
 def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None):
-    print (user, name, args)
-    return
     if url:
         if not user:
             user, url = url.split('@')
+            return
     else:
         if uuid or name:
             node = get_server(uuid=uuid, name=name)
@@ -27,6 +24,8 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
     if url:
         print ("rexec: running on", url)
         ssh_args = ["ssh", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(user, url)]
+        print (ssh_args)
+        # return
         tunnel = subprocess.Popen(ssh_args)
         time.sleep(5)                                    #FIXME get smarter -- wait for output confirming tunnel is live
         remote = "-H " + DOCKER_REMOTE
@@ -34,7 +33,7 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
         relpath = "/_REXEC" +  relpath.replace('/', '_') #I can exlain
         locpath = os.path.abspath('.')
         path = "/home/{0}{1}".format(user, relpath)
-        cmd = "rsync -vrltzu {0}/* {1}:{2}/".format(locpath, url, path)
+        cmd = "rsync -vrltzu {0}/* {3}@{1}:{2}/".format(locpath, url, path, user)
         print (cmd)
         os.system(cmd)
     else:
@@ -59,7 +58,7 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
     print (cmd)
     os.system(cmd)
     if url:
-        cmd = "rsync -vrltzu '{1}:{2}/*' {0}/".format(locpath, url, path)
+        cmd = "rsync -vrltzu '{3}@{1}:{2}/*' {0}/".format(locpath, url, path, user)
         print (cmd)
         os.system(cmd)
         tunnel.kill()
