@@ -6,11 +6,18 @@ DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
 
-def rexec(url, args, gpus = "", ports=None, uuid=None):
+def rexec(args, url=None, uuid=None, name=None, gpus = "", ports=None):
+    if not url:
+        if uuid or name:
+            node = get_server(uuid=uuid, name=name)
+            if node:
+                url = node.public_ips[0]
+            else:
+                print ("Error: node not found")
+                return
     if url:
         print ("rexec: running on", url)
         user, host = url.split('@')
-        srv =
         ssh_args = ["ssh", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), url]
         tunnel = subprocess.Popen(ssh_args)
         time.sleep(5)                                    #FIXME get smarter -- wait for output confirming tunnel is live
@@ -58,11 +65,5 @@ if __name__ == "__main__":
     parser.add_argument("-p", action="append")
     args, unknown = parser.parse_known_args()
 
-    if args.url:
-        url = args.url
-    elif args.name:
-        url = get_node_by_name(args.name)
-    elif args.uuid:
-    else:
-        rexec(None, unknown, gpus=args.gpus, ports=args.p)
+    rexec(unknown, url=args.url, uuid=args.uuid, name=args.name, gpus=args.gpus, ports=args.p)
     print ("DONE")
