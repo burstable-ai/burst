@@ -5,11 +5,11 @@ DEFAULT_IMAGE = "rexec_image"
 DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
-def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None):
+def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None, stop=False):
     if url:
         if not user:
             user, url = url.split('@')
-
+    node = None
     if url or uuid or name:
         node = get_server(url=url, uuid=uuid, name=name)
         if node:
@@ -17,6 +17,7 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
             if node.state.lower() != "running":
                 print ("Starting", url)
                 start_server(node)
+                time.sleep(25)
         else:
             print ("Error: node not found")
             return
@@ -61,6 +62,9 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
         cmd = "rsync -vrltzu '{3}@{1}:{2}/*' {0}/".format(locpath, url, path, user)
         print (cmd)
         os.system(cmd)
+        if stop and node:
+            print ("Stopping VM at", url)
+            stop_server(node)
         tunnel.kill()
 
 if __name__ == "__main__":
@@ -70,8 +74,9 @@ if __name__ == "__main__":
     parser.add_argument("--uuid")
     parser.add_argument("--name")
     parser.add_argument("--gpus")
+    parser.add_argument("--shutdown", action="store_true")
     parser.add_argument("-p", action="append")
     args, unknown = parser.parse_known_args()
 
-    rexec(unknown, user=args.user, url=args.url, uuid=args.uuid, name=args.name, gpus=args.gpus, ports=args.p)
+    rexec(unknown, user=args.user, url=args.url, uuid=args.uuid, name=args.name, gpus=args.gpus, ports=args.p, stop=args.shutdown)
     print ("DONE")
