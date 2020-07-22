@@ -1,4 +1,4 @@
-import os, sys, time
+import os, sys, time, argparse
 from pprint import pprint
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
@@ -11,11 +11,18 @@ def init():
     cls = get_driver(Provider.EC2)
     g_driver = cls(config.access, config.secret, region=config.region)
 
-def get_server(url):
+def get_server(url=None, uuid=None, name=None):
     if g_driver == None:
         init()
     nodes = g_driver.list_nodes()
-    node = [x for x in nodes if url in x.public_ips]
+    if url:
+        node = [x for x in nodes if url in x.public_ips]
+    elif uuid:
+        node = [x for x in nodes if x.uuid.find(uuid)==0]
+    elif name:
+        node = [x for x in nodes if x.name==name]
+    else:
+        return "error: specify url, uuid, or name"
     return node[0] if node else None
 
 def get_server_state(srv):
@@ -44,5 +51,11 @@ def stop_server(srv):
     return "success"
 
 if __name__ == "__main__":
-    n = get_server(sys.argv[1])
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--url")
+    parser.add_argument("--uuid")
+    parser.add_argument("--name")
+    args, unknown = parser.parse_known_args()
+
+    n = get_server(args.url, args.uuid, args.name)
     pprint (n)
