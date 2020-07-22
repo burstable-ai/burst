@@ -5,20 +5,28 @@ DEFAULT_IMAGE = "rexec_image"
 DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
+print ("REXEC")
 
-def rexec(args, url=None, uuid=None, name=None, gpus = "", ports=None):
-    if not url:
+def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None):
+    print (user, name, args)
+    return
+    if url:
+        if not user:
+            user, url = url.split('@')
+    else:
         if uuid or name:
             node = get_server(uuid=uuid, name=name)
             if node:
                 url = node.public_ips[0]
+                if node.state.lower() != "running":
+                    print ("RUN RUN RUN")
+                    return
             else:
                 print ("Error: node not found")
                 return
     if url:
         print ("rexec: running on", url)
-        user, host = url.split('@')
-        ssh_args = ["ssh", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), url]
+        ssh_args = ["ssh", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(user, url)]
         tunnel = subprocess.Popen(ssh_args)
         time.sleep(5)                                    #FIXME get smarter -- wait for output confirming tunnel is live
         remote = "-H " + DOCKER_REMOTE
@@ -58,6 +66,7 @@ def rexec(args, url=None, uuid=None, name=None, gpus = "", ports=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--user")
     parser.add_argument("--url")
     parser.add_argument("--uuid")
     parser.add_argument("--name")
@@ -65,5 +74,5 @@ if __name__ == "__main__":
     parser.add_argument("-p", action="append")
     args, unknown = parser.parse_known_args()
 
-    rexec(unknown, url=args.url, uuid=args.uuid, name=args.name, gpus=args.gpus, ports=args.p)
+    rexec(unknown, user=args.user, url=args.url, uuid=args.uuid, name=args.name, gpus=args.gpus, ports=args.p)
     print ("DONE")
