@@ -9,18 +9,18 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
     if url:
         if not user:
             user, url = url.split('@')
+
+    if url or uuid or name:
+        node = get_server(url=url, uuid=uuid, name=name)
+        if node:
+            url = node.public_ips[0]
+            if node.state.lower() != "running":
+                print ("Starting", url)
+                start_server(node)
+        else:
+            print ("Error: node not found")
             return
-    else:
-        if uuid or name:
-            node = get_server(uuid=uuid, name=name)
-            if node:
-                url = node.public_ips[0]
-                if node.state.lower() != "running":
-                    print ("Starting", url)
-                    start_server(node)
-            else:
-                print ("Error: node not found")
-                return
+
     if url:
         print ("rexec: running on", url)
         ssh_args = ["ssh", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(user, url)]
