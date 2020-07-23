@@ -37,6 +37,8 @@ def start_server(srv):
         state = get_server_state(srv)
         time.sleep(2)
         print ("server state:", state)
+    print ("Waiting for IP address to be active")
+    g_driver.wait_until_running([srv])
     return "success"
 
 def stop_server(srv):

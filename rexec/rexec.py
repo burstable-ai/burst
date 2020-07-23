@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os, sys, argparse, subprocess, time
 from lcloud import *
+from runrun import run
 DEFAULT_IMAGE = "rexec_image"
 DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
@@ -17,7 +18,14 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
             if node.state.lower() != "running":
                 print ("Starting", url)
                 start_server(node)
-                time.sleep(25)
+                print ("Waiting for sshd")
+                cmd = ["ssh", "{0}@{1}".format(user, url), "echo", "'sshd responding'"]
+                print(cmd)
+                ret = run(cmd)
+                if ret[0].strip()!='sshd responding':
+                    print ("error in ssh call:", ret[0].strip())
+                    return
+                print ("SSH returns -->%s|%s<--" % ret)
         else:
             print ("Error: node not found")
             return
