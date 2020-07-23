@@ -2,7 +2,7 @@
 import os, sys, argparse, subprocess, time, traceback
 from lcloud import *
 from runrun import run
-DEFAULT_IMAGE = "rexec_image"
+DEFAULT_IMAGE = "rexec_image" #FIXME: should be unique to folder structure
 DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
@@ -85,8 +85,15 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
         if stop and node:
             print ("Stopping VM at", url)
             stop_server(node)
-        if tunnel:
-            tunnel.kill()
+    if tunnel:
+        tunnel.kill()
+
+def stop_instance_by_url(url, delay=10):
+    t0 = time.time()
+    while time.time()-t0 < delay:
+        print ("%d seconds till shutdown" % (delay+.5+t0-time.time()))
+        time.sleep(5)
+    print ("Time's up, shutting down", url)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
@@ -96,8 +103,12 @@ if __name__ == "__main__":
     parser.add_argument("--name")
     parser.add_argument("--gpus")
     parser.add_argument("--shutdown", action="store_true")
+    parser.add_argument("--stop_instance_by_url")
     parser.add_argument("-p", action="append")
     args, unknown = parser.parse_known_args()
 
-    rexec(unknown, user=args.user, url=args.url, uuid=args.uuid, name=args.name, gpus=args.gpus, ports=args.p, stop=args.shutdown)
-    print ("DONE")
+    if args.stop_instance_by_url:
+        stop_instance_by_url(args.stop_instance_by_url)
+    else:
+        rexec(unknown, user=args.user, url=args.url, uuid=args.uuid, name=args.name, gpus=args.gpus, ports=args.p, stop=args.shutdown)
+        print ("DONE")
