@@ -98,10 +98,12 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
         traceback.print_exc()
         print ("--------------------------------")
 
-    if url:
-        if stop and node:
-            print ("Stopping VM at", url)
+    if url and node:
+        if stop == 0:
+            print ("Stopping VM at %s immediately as instructed" % url)
             stop_server(node)
+        else:
+            print ("Scheduling shutdown of VM at %s for %d seconds from now" % (url, stop))
     if tunnel:
         tunnel.kill()
 
@@ -126,7 +128,7 @@ if __name__ == "__main__":
     parser.add_argument("--secret")
     parser.add_argument("--region")
     parser.add_argument("--delay", type=int, default=0)
-    parser.add_argument("--shutdown", action="store_true")
+    parser.add_argument("--shutdown", type=int, default=0)
     parser.add_argument("--stop_instance_by_url")
     parser.add_argument("-p", action="append")
     args, unknown = parser.parse_known_args()
