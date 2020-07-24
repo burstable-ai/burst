@@ -108,7 +108,11 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
             cmd = "docker {5} run --rm -d {6} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4}".format(url,
                                                                                                     stop, acc, sec, reg, remote, DEFAULT_IMAGE)
             print (cmd)
+            print ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+            sys.stdout.flush()
             os.system(cmd)
+            print ("~~~-----------------------------------~~")
+            sys.stdout.flush()
 
     if tunnel:
         tunnel.kill()
