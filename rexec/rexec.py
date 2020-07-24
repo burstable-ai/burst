@@ -1,7 +1,22 @@
 #!/usr/bin/env python3
 import os, sys, argparse, subprocess, time, traceback
+
+#
+# the BDFL does not admire scripts which are also importable modules
+# well, frack him -- this is how we roll
+#
+#so absolute imports work in script mode, we need to import from the parent folder
+opath = os.path.abspath(".")
+abspath = os.path.abspath(__file__)
+abspath = abspath[:abspath.rfind('/') + 1]
+os.chdir(abspath)
+abspath = os.path.abspath("..")
+sys.path.insert(0, abspath)
+
 from lcloud import *
 from runrun import run
+os.chdir(opath)
+
 DEFAULT_IMAGE = "rexec_image" #FIXME: should be unique to folder structure
 DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
