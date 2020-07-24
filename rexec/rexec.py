@@ -105,12 +105,15 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
     if tunnel:
         tunnel.kill()
 
-def stop_instance_by_url(url, delay=10):
-    t0 = time.time()
-    while time.time()-t0 < delay:
-        print ("%d seconds till shutdown" % (delay+.5+t0-time.time()))
-        time.sleep(5)
-    print ("Time's up, shutting down", url)
+def stop_instance_by_url(url, access=None, secret=None, region=None):
+    print ("STOP", url, access, region)
+    node = get_server(url=url, access=access, secret=secret, region=region)
+    if not node:
+        print ("No active instance found for URL", url)
+    else:
+        print ("shutting down node %s" % node)
+        stop_server(node)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
@@ -122,13 +125,20 @@ if __name__ == "__main__":
     parser.add_argument("--access")
     parser.add_argument("--secret")
     parser.add_argument("--region")
+    parser.add_argument("--delay", type=int, default=0)
     parser.add_argument("--shutdown", action="store_true")
     parser.add_argument("--stop_instance_by_url")
     parser.add_argument("-p", action="append")
     args, unknown = parser.parse_known_args()
 
+    t0 = time.time()
+    while time.time()-t0 < args.delay:
+        print ("%d seconds till action" % (args.delay+.5+t0-time.time()))
+        time.sleep(5)
+
     if args.stop_instance_by_url:
-        stop_instance_by_url(args.stop_instance_by_url)
+        stop_instance_by_url(args.stop_instance_by_url, access=args.access, secret=args.secret, region=args.region)
+
     else:
         rexec(unknown, user=args.user, url=args.url, uuid=args.uuid,
               name=args.name, gpus=args.gpus, ports=args.p, stop=args.shutdown,
