@@ -2,6 +2,7 @@ import os, sys, time, argparse
 from pprint import pprint
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
+sys.path.insert(0, os.environ['HOME']+"/.rexec")
 import config
 
 g_driver = None
