@@ -13,7 +13,9 @@ os.chdir(abspath)
 abspath = os.path.abspath("..")
 sys.path.insert(0, abspath)
 
-from rexec import *
+from rexec.lcloud import *
+
+os.chdir(opath)
 
 DEFAULT_IMAGE = "rexec_image" #FIXME: should be unique to folder structure
 DOCKER_REMPORT = "2376"
