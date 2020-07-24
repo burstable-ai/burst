@@ -14,6 +14,7 @@ abspath = os.path.abspath("..")
 sys.path.insert(0, abspath)
 
 from rexec.lcloud import *
+from rexec.runrun import run
 
 os.chdir(opath)
 
