@@ -3,18 +3,26 @@ from pprint import pprint
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 sys.path.insert(0, os.environ['HOME']+"/.rexec")
-import config
+try:
+    import config
+except:
+    config = None
 
 g_driver = None
 
-def init():
+def init(access=None, secret=None, region=None):
     global g_driver
     cls = get_driver(Provider.EC2)
-    g_driver = cls(config.access, config.secret, region=config.region)
+    if access==None:
+        if config==None:
+            raise Exception("no config file or parameters")
+        g_driver = cls(config.access, config.secret, region=config.region)
+    else:
+        g_driver = cls(access, secret, region=region)
 
-def get_server(url=None, uuid=None, name=None):
+def get_server(url=None, uuid=None, name=None, access=None, secret=None, region=None):
     if g_driver == None:
-        init()
+        init(access, secret, region)
     nodes = g_driver.list_nodes()
     if url:
         node = [x for x in nodes if url in x.public_ips]

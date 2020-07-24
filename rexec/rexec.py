@@ -22,7 +22,8 @@ DEFAULT_IMAGE = "rexec_image" #FIXME: should be unique to folder structure
 DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
-def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None, stop=False):
+def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None, stop=False,
+          access=None, secret=None, region=None):
     tunnel = None
     try:
         if url:
@@ -30,7 +31,7 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
                 user, url = url.split('@')
         node = None
         if url or uuid or name:
-            node = get_server(url=url, uuid=uuid, name=name)
+            node = get_server(url=url, uuid=uuid, name=name, access=access, secret=secret, region=region)
             if node:
                 url = node.public_ips[0]
                 if node.state.lower() != "running":
@@ -118,6 +119,9 @@ if __name__ == "__main__":
     parser.add_argument("--uuid")
     parser.add_argument("--name")
     parser.add_argument("--gpus")
+    parser.add_argument("--access")
+    parser.add_argument("--secret")
+    parser.add_argument("--region")
     parser.add_argument("--shutdown", action="store_true")
     parser.add_argument("--stop_instance_by_url")
     parser.add_argument("-p", action="append")
@@ -126,5 +130,7 @@ if __name__ == "__main__":
     if args.stop_instance_by_url:
         stop_instance_by_url(args.stop_instance_by_url)
     else:
-        rexec(unknown, user=args.user, url=args.url, uuid=args.uuid, name=args.name, gpus=args.gpus, ports=args.p, stop=args.shutdown)
+        rexec(unknown, user=args.user, url=args.url, uuid=args.uuid,
+              name=args.name, gpus=args.gpus, ports=args.p, stop=args.shutdown,
+              access=args.access, secret=args.secret, region=args.region)
         print ("DONE")
