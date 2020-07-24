@@ -104,6 +104,9 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
             stop_server(node)
         else:
             print ("Scheduling shutdown of VM at %s for %d seconds from now" % (url, stop))
+            acc, sec, reg = get_credentials()       # may be  in config or as parameters
+            cmd = "rexec --stop_instance_by_url --delay={0} --access={1} --secret={2} --region={3}".format(url, acc, sec, reg)
+            print (cmd)
     if tunnel:
         tunnel.kill()
 

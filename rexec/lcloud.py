@@ -11,14 +11,23 @@ except:
 g_driver = None
 
 def init(access=None, secret=None, region=None):
-    global g_driver
+    global g_driver, g_access, g_secret, g_region
     cls = get_driver(Provider.EC2)
     if access==None:
         if config==None:
             raise Exception("no config file or parameters")
         g_driver = cls(config.access, config.secret, region=config.region)
+        g_access = config.access
+        g_secret = config.secret
+        g_region = config.region
     else:
         g_driver = cls(access, secret, region=region)
+        g_access = access
+        g_secret = secret
+        g_region = region
+
+def get_credentials():
+    return g_access, g_secret, g_region
 
 def get_server(url=None, uuid=None, name=None, access=None, secret=None, region=None):
     if g_driver == None:
