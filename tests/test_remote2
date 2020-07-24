@@ -1,3 +1,3 @@
 #!/bin/bash
-rexec --user ubuntu --name dhubtests --shutdown=0 python3 test_script.py arg1 arg2 arg3
+rexec --user ubuntu --name dhubtests python3 test_script.py arg1 arg2 arg3
 

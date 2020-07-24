@@ -138,7 +138,7 @@ if __name__ == "__main__":
     parser.add_argument("--secret")
     parser.add_argument("--region")
     parser.add_argument("--delay", type=int, default=0)
-    parser.add_argument("--shutdown", type=int, default=0)
+    parser.add_argument("--shutdown", type=int, default=900)
     parser.add_argument("--stop_instance_by_url")
     parser.add_argument("-p", action="append")
     args, unknown = parser.parse_known_args()
