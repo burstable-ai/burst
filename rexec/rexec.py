@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, argparse, subprocess, time, traceback
+import os, sys, argparse, subprocess, time, traceback, json
 
 #
 # the BDFL does not admire scripts which are also importable modules
@@ -42,7 +42,7 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
                     print(cmd)
                     good = False
                     for z in range(6, -1, -1):
-                        ret = run(cmd)
+                        ret = run(cmd, timeout=15)
                         if ret[0].strip()=='sshd responding':
                             good = True
                             break
@@ -66,6 +66,23 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
             relpath = "/_REXEC" +  relpath.replace('/', '_') #I can exlain
             locpath = os.path.abspath('.')
             path = "/home/{0}{1}".format(user, relpath)
+
+            cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
+            print (cmd)
+            out = run(cmd)
+            kills = []
+            for x in out[0].split("\n"):
+                if x:
+                    j = json.loads(x)
+                    Command = j['Command']
+                    if Command.find("rexec --stop") <2:
+                        kills.append(j['ID'])
+            if kills:
+                print ("Killing shutdown processes:", kills)
+                cmd = "docker {0} stop {1}".format(remote, " ".join(kills))
+                print (cmd)
+                os.system(cmd)
+
             cmd = "rsync -vrltzu {0}/* {3}@{1}:{2}/".format(locpath, url, path, user)
             print (cmd)
             os.system(cmd)
@@ -108,11 +125,8 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
             cmd = "docker {5} run --rm -d {6} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4}".format(url,
                                                                                                     stop, acc, sec, reg, remote, DEFAULT_IMAGE)
             print (cmd)
-            print ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-            sys.stdout.flush()
+            print ("Shutdown process container ID:")
             os.system(cmd)
-            print ("~~~-----------------------------------~~")
-            sys.stdout.flush()
 
     if tunnel:
         tunnel.kill()
