@@ -13,8 +13,8 @@ os.chdir(abspath)
 abspath = os.path.abspath("..")
 sys.path.insert(0, abspath)
 
-from lcloud import *
-from runrun import run
+from rexec.lcloud import *
+from rexec.runrun import run
 os.chdir(opath)
 
 DEFAULT_IMAGE = "rexec_image" #FIXME: should be unique to folder structure
