@@ -41,14 +41,14 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
                     cmd = ["ssh", "{0}@{1}".format(user, url), "echo", "'sshd responding'"]
                     print(cmd)
                     good = False
-                    for z in range(3, -1, -1):
+                    for z in range(6, -1, -1):
                         ret = run(cmd)
                         if ret[0].strip()=='sshd responding':
                             good = True
                             break
                         print ("sshd not responding; %d attempts left" % z)
                         if z:
-                            time.sleep(10)
+                            time.sleep(5)
                     if not good:
                         raise Exception("error in ssh call: %s" % ret[0].strip())
                     print ("SSH returns -->%s|%s<--" % ret)
@@ -60,7 +60,7 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
             ssh_args = ["ssh", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(user, url)]
             print (ssh_args)
             tunnel = subprocess.Popen(ssh_args)
-            time.sleep(5)                                    #FIXME get smarter -- wait for output confirming tunnel is live
+            time.sleep(5)
             remote = "-H " + DOCKER_REMOTE
             relpath = os.path.abspath('.')[len(os.path.expanduser('~')):]
             relpath = "/_REXEC" +  relpath.replace('/', '_') #I can exlain
