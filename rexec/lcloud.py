@@ -2,6 +2,8 @@ import os, sys, time, argparse
 from pprint import pprint
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
+from libcloud.compute.base import NodeAuthSSHKey
+
 sys.path.insert(0, os.environ['HOME']+"/.rexec")
 try:
     import config
@@ -60,7 +62,7 @@ def start_server(srv):
     return "success"
 
 #FIXME: AWS specific
-def launch_server(name, size=None, image=None, access=None, secret=None, region=None):
+def launch_server(name, size=None, image=None, pubkey=None, access=None, secret=None, region=None):
     if g_driver == None:
         init(access, secret, region)
     if image==None:
@@ -78,7 +80,11 @@ def launch_server(name, size=None, image=None, access=None, secret=None, region=
     size = sizes[0]
 
     print ("Launching instance node, image=%s, size=%s" % (image.id, size.id))
-    node = g_driver.create_node(name, size, image)
+    if pubkey:
+        auth = NodeAuthSSHKey(pubkey)
+        node = g_driver.create_node(name, size, image, auth=auth)
+    else:
+        node = g_driver.create_node(name, size, image)
     return node
 
 def stop_server(srv):
