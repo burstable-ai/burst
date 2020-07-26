@@ -59,6 +59,28 @@ def start_server(srv):
     g_driver.wait_until_running([srv])
     return "success"
 
+#FIXME: AWS specific
+def launch_server(name, size=None, image=None, access=None, secret=None, region=None):
+    if g_driver == None:
+        init(access, secret, region)
+    if image==None:
+        image = "ami-003634241a8fcdec0"
+    images = g_driver.list_images(ex_image_ids=[image])
+    if not images:
+        raise Exception("Image %s not found" % image)
+    image = images[0]
+
+    if size==None:
+        size = "t2.nano"
+    sizes = [x for x in g_driver.list_sizes() if x.name == size]
+    if not sizes:
+        raise Exception("Instance size %s not found" % size)
+    size = sizes[0]
+
+    print ("Launching instance node, image=%s, size=%s" % (image.id, size.id))
+    node = g_driver.create_node(name, size, image)
+    return node
+
 def stop_server(srv):
     result = srv.stop_node()
     if not result:
