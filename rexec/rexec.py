@@ -23,7 +23,7 @@ DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
 def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None, stop=False,
-          access=None, secret=None, region=None):
+          access=None, secret=None, region=None, image=None, size=None):
     tunnel = None
     try:
         if url:
@@ -32,13 +32,15 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
         node = None
         if url or uuid or name:
             node = get_server(url=url, uuid=uuid, name=name, access=access, secret=secret, region=region)
+            if name and not node:
+                node = launch_server(name, access=access, secret=secret, region=region)
             if node:
                 url = node.public_ips[0]
                 if node.state.lower() != "running":
                     print ("Starting", url)
                     start_server(node)
                     print ("Waiting for sshd")
-                    cmd = ["ssh", "{0}@{1}".format(user, url), "echo", "'sshd responding'"]
+                    cmd = ["ssh", "-o StrictHostKeyChecking=no", "{0}@{1}".format(user, url), "echo", "'sshd responding'"]
                     print(cmd)
                     good = False
                     for z in range(6, -1, -1):
@@ -53,11 +55,11 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
                         raise Exception("error in ssh call: %s" % ret[0].strip())
                     print ("SSH returns -->%s|%s<--" % ret)
             else:
-                raise Exception("Error: node not found")
+                raise Exception("Error: node not found; to launch a new server, please specify --name")
 
         if url:
             print ("rexec: running on", url)
-            ssh_args = ["ssh", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(user, url)]
+            ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(user, url)]
             print (ssh_args)
             tunnel = subprocess.Popen(ssh_args)
             time.sleep(5)
@@ -143,7 +145,7 @@ def stop_instance_by_url(url, access=None, secret=None, region=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--user")
+    parser.add_argument("--user", default="ubuntu")
     parser.add_argument("--url")
     parser.add_argument("--uuid")
     parser.add_argument("--name")
@@ -151,6 +153,8 @@ if __name__ == "__main__":
     parser.add_argument("--access")
     parser.add_argument("--secret")
     parser.add_argument("--region")
+    parser.add_argument("--image")
+    parser.add_argument("--size")
     parser.add_argument("--delay", type=int, default=0)
     parser.add_argument("--shutdown", type=int, default=900)
     parser.add_argument("--stop_instance_by_url")
@@ -168,5 +172,6 @@ if __name__ == "__main__":
     else:
         rexec(unknown, user=args.user, url=args.url, uuid=args.uuid,
               name=args.name, gpus=args.gpus, ports=args.p, stop=args.shutdown,
-              access=args.access, secret=args.secret, region=args.region)
+              access=args.access, secret=args.secret, region=args.region,
+              image=args.image, size=args.size)
         print ("DONE")
