@@ -36,7 +36,6 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
                 node = launch_server(name, access=access, secret=secret, region=region, pubkey=pubkey, size=size, image=image)
             if node:
                 if node.state.lower() != "running":
-                    print ("State is %s; starting %s" % (node.state, node.name))
                     node = start_server(node)
                 url = node.public_ips[0]
                 print ("Waiting for sshd")
@@ -58,12 +57,11 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
                 raise Exception("Error: node not found; to launch a new server, please specify --name")
 
         if url:
-            print ("rexec: running on", url)
+            remote = "-H " + DOCKER_REMOTE
             ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(user, url)]
             print (ssh_args)
             tunnel = subprocess.Popen(ssh_args)
             time.sleep(5)
-            remote = "-H " + DOCKER_REMOTE
             relpath = os.path.abspath('.')[len(os.path.expanduser('~')):]
             relpath = "/_REXEC" +  relpath.replace('/', '_') #I can exlain
             locpath = os.path.abspath('.')
@@ -87,6 +85,11 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
                     print (cmd)
                     os.system(cmd)
 
+            if size and size != node.extra['instance_type']:
+                raise Exception("FIXME: cannot change size (EC2 instance type) -- need to re-launch")
+            if image and image != node.extra['image_id']:
+                raise Exception("FIXME: cannot change image (EC2 ami) -- need to terminate & re-launch server")
+            print ("rexec: name %s size %s image %s url %s" % (node.name, node.extra['instance_type'], node.extra['image_id'], url))
             cmd = "rsync -vrltzu {0}/* {3}@{1}:{2}/".format(locpath, url, path, user)
             print (cmd)
             os.system(cmd)
@@ -180,14 +183,25 @@ if __name__ == "__main__":
                 f.close()
             except:
                 print ("Public key not found in usual place; please specify --pubkey")
-        if args.size == None and args.gpus != None:
-            size = 'g4dn.xlarge'
+        if args.gpus:
+            if args.size == None:
+                size = 'g4dn.xlarge'
+            else:
+                size = args.size
+            if args.image == None:
+                image = 'ami-008d8ed4bd7dc2485'
+            else:
+                image = args.image
         else:
-            size = args.size
-        if args.image == None and args.gpus != None:
-            image = 'ami-008d8ed4bd7dc2485'
-        else:
-            image = args.image
+            if args.size == None:
+                size = 't2.small'
+            else:
+                size = args.size
+            if args.image == None:
+                image = 'ami-0ba3ac9cd67195659'
+            else:
+                image = args.image
+
         rexec(unknown, user=args.user, url=args.url, uuid=args.uuid,
               name=args.name, gpus=args.gpus, ports=args.p, stop=args.shutdown,
               access=args.access, secret=args.secret, region=args.region,

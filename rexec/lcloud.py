@@ -69,16 +69,16 @@ def start_server(srv):
 def launch_server(name, size=None, image=None, pubkey=None, access=None, secret=None, region=None):
     if g_driver == None:
         init(access, secret, region)
-    if image==None:
-        # image = "ami-003634241a8fcdec0"
-        image = "ami-0ba3ac9cd67195659"
+    # if image==None:
+    #     # image = "ami-003634241a8fcdec0"
+    #     image = "ami-0ba3ac9cd67195659"
     images = g_driver.list_images(ex_image_ids=[image])
     if not images:
         raise Exception("Image %s not found" % image)
     image = images[0]
 
-    if size==None:
-        size = "t2.small"
+    # if size==None:
+    #     size = "t2.small"
     sizes = [x for x in g_driver.list_sizes() if x.name == size]
     if not sizes:
         raise Exception("Instance size %s not found" % size)
