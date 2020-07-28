@@ -35,27 +35,25 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
             if name and not node:
                 node = launch_server(name, access=access, secret=secret, region=region, pubkey=pubkey)
             if node:
-                if node.state.lower() == "running":
-                    url = node.public_ips[0]
-                else:
+                if node.state.lower() != "running":
                     print ("Starting", node.name)
                     node = start_server(node)
-                    url = node.public_ips[0]
-                    print ("Waiting for sshd")
-                    cmd = ["ssh", "-o StrictHostKeyChecking=no", "{0}@{1}".format(user, url), "echo", "'sshd responding'"]
-                    print(cmd)
-                    good = False
-                    for z in range(6, -1, -1):
-                        ret = run(cmd, timeout=15)
-                        if ret[0].strip()=='sshd responding':
-                            good = True
-                            break
-                        print ("sshd not responding; %d attempts left" % z)
-                        if z:
-                            time.sleep(5)
-                    if not good:
-                        raise Exception("error in ssh call: %s" % ret[0].strip())
-                    print ("SSH returns -->%s|%s<--" % ret)
+                url = node.public_ips[0]
+                print ("Waiting for sshd")
+                cmd = ["ssh", "-o StrictHostKeyChecking=no", "{0}@{1}".format(user, url), "echo", "'sshd responding'"]
+                print(cmd)
+                good = False
+                for z in range(6, -1, -1):
+                    ret = run(cmd, timeout=15)
+                    if ret[0].strip()=='sshd responding':
+                        good = True
+                        break
+                    print ("sshd not responding; %d attempts left" % z)
+                    if z:
+                        time.sleep(5)
+                if not good:
+                    raise Exception("error in ssh call: %s" % ret[0].strip())
+                print ("SSH returns -->%s|%s<--" % ret)
             else:
                 raise Exception("Error: node not found; to launch a new server, please specify --name")
 
@@ -74,9 +72,8 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
             cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
             print (cmd)
             out = run(cmd)
-            print("PS returns -->%s|%s<--" % out)
+            # print("PS returns -->%s|%s<--" % out)
             if out[0].strip():
-                print ("KILLER")
                 kills = []
                 for x in out[0].split("\n"):
                     if x:

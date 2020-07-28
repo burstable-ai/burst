@@ -78,7 +78,7 @@ def launch_server(name, size=None, image=None, pubkey=None, access=None, secret=
     image = images[0]
 
     if size==None:
-        size = "t2.nano"
+        size = "t2.small"
     sizes = [x for x in g_driver.list_sizes() if x.name == size]
     if not sizes:
         raise Exception("Instance size %s not found" % size)
