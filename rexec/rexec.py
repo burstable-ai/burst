@@ -23,7 +23,7 @@ DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
 def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None, stop=False,
-          access=None, secret=None, region=None, image=None, size=None):
+          access=None, secret=None, region=None, image=None, size=None, pubkey=None):
     tunnel = None
     try:
         if url:
@@ -33,12 +33,14 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
         if url or uuid or name:
             node = get_server(url=url, uuid=uuid, name=name, access=access, secret=secret, region=region)
             if name and not node:
-                node = launch_server(name, access=access, secret=secret, region=region)
+                node = launch_server(name, access=access, secret=secret, region=region, pubkey=pubkey)
             if node:
-                url = node.public_ips[0]
-                if node.state.lower() != "running":
-                    print ("Starting", url)
-                    start_server(node)
+                if node.state.lower() == "running":
+                    url = node.public_ips[0]
+                else:
+                    print ("Starting", node.name)
+                    node = start_server(node)
+                    url = node.public_ips[0]
                     print ("Waiting for sshd")
                     cmd = ["ssh", "-o StrictHostKeyChecking=no", "{0}@{1}".format(user, url), "echo", "'sshd responding'"]
                     print(cmd)
@@ -72,18 +74,21 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
             cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
             print (cmd)
             out = run(cmd)
-            kills = []
-            for x in out[0].split("\n"):
-                if x:
-                    j = json.loads(x)
-                    Command = j['Command']
-                    if Command.find("rexec --stop") <2:
-                        kills.append(j['ID'])
-            if kills:
-                print ("Killing shutdown processes:", kills)
-                cmd = "docker {0} stop {1}".format(remote, " ".join(kills))
-                print (cmd)
-                os.system(cmd)
+            print("PS returns -->%s|%s<--" % out)
+            if out[0].strip():
+                print ("KILLER")
+                kills = []
+                for x in out[0].split("\n"):
+                    if x:
+                        j = json.loads(x)
+                        Command = j['Command']
+                        if Command.find("rexec --stop") <2:
+                            kills.append(j['ID'])
+                if kills:
+                    print ("Killing shutdown processes:", kills)
+                    cmd = "docker {0} stop {1}".format(remote, " ".join(kills))
+                    print (cmd)
+                    os.system(cmd)
 
             cmd = "rsync -vrltzu {0}/* {3}@{1}:{2}/".format(locpath, url, path, user)
             print (cmd)
@@ -155,6 +160,7 @@ if __name__ == "__main__":
     parser.add_argument("--region")
     parser.add_argument("--image")
     parser.add_argument("--size")
+    parser.add_argument("--pubkey")
     parser.add_argument("--delay", type=int, default=0)
     parser.add_argument("--shutdown", type=int, default=900)
     parser.add_argument("--stop_instance_by_url")
@@ -170,8 +176,15 @@ if __name__ == "__main__":
         stop_instance_by_url(args.stop_instance_by_url, access=args.access, secret=args.secret, region=args.region)
 
     else:
+        if args.pubkey==None:
+            try:
+                f=open(os.path.expanduser("~") + "/.ssh/id_rsa.pub")             #FIXME: a bit cheeky
+                pubkey=f.read()
+                f.close()
+            except:
+                print ("Public key not found in usual place; please specify --pubkey")
         rexec(unknown, user=args.user, url=args.url, uuid=args.uuid,
               name=args.name, gpus=args.gpus, ports=args.p, stop=args.shutdown,
               access=args.access, secret=args.secret, region=args.region,
-              image=args.image, size=args.size)
+              image=args.image, size=args.size, pubkey=pubkey)
         print ("DONE")

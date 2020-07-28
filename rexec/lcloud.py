@@ -57,16 +57,21 @@ def start_server(srv):
         state = get_server_state(srv)
         time.sleep(2)
         print ("server state:", state)
-    print ("Waiting for IP address to be active")
+    print ("Waiting for public IP address to be assigned")
     g_driver.wait_until_running([srv])
-    return "success"
+    while len(srv.public_ips)==0:
+        srv = g_driver.list_nodes(ex_node_ids=[srv.id])[0]
+        print("Public IP's:", srv.public_ips)
+        time.sleep(5)
+    return srv
 
 #FIXME: AWS specific
 def launch_server(name, size=None, image=None, pubkey=None, access=None, secret=None, region=None):
     if g_driver == None:
         init(access, secret, region)
     if image==None:
-        image = "ami-003634241a8fcdec0"
+        # image = "ami-003634241a8fcdec0"
+        image = "ami-0ba3ac9cd67195659"
     images = g_driver.list_images(ex_image_ids=[image])
     if not images:
         raise Exception("Image %s not found" % image)
@@ -85,6 +90,12 @@ def launch_server(name, size=None, image=None, pubkey=None, access=None, secret=
         node = g_driver.create_node(name, size, image, auth=auth)
     else:
         node = g_driver.create_node(name, size, image)
+    print ("Waiting for public IP address to be active")
+    g_driver.wait_until_running([node])
+    while len(node.public_ips)==0:
+        node = g_driver.list_nodes(ex_node_ids=[node.id])[0] #refresh node -- is this really necessary
+        print("Public IP's:", node.public_ips)
+        time.sleep(5)
     return node
 
 def stop_server(srv):
