@@ -175,9 +175,6 @@ if __name__ == "__main__":
     parser.add_argument("--shutdown", type=int, default=900,    help="seconds before server is stopped (default 15 minutes)")
     parser.add_argument("--stop_instance_by_url",               help="internal use")
     args, unknown = parser.parse_known_args()
-    if not (args.name or args.uuid or args.url or args.local):
-        parser.error("Must specify --name, --url, --uuid, or --local")
-        exit()
     if args.local and (args.name or args.uuid or args.url):
         parser.error("when specifying --local, do not set --name, --uuid, or --url")
         exit()
@@ -190,6 +187,10 @@ if __name__ == "__main__":
         stop_instance_by_url(args.stop_instance_by_url, access=args.access, secret=args.secret, region=args.region)
 
     else:
+        if not (args.name or args.uuid or args.url or args.local):
+            parser.error("Must specify --name, --url, --uuid, or --local")
+            exit()
+
         if args.pubkey==None:
             try:
                 f=open(os.path.expanduser("~") + "/.ssh/id_rsa.pub")             #FIXME: a bit cheeky
