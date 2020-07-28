@@ -33,10 +33,10 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
         if url or uuid or name:
             node = get_server(url=url, uuid=uuid, name=name, access=access, secret=secret, region=region)
             if name and not node:
-                node = launch_server(name, access=access, secret=secret, region=region, pubkey=pubkey)
+                node = launch_server(name, access=access, secret=secret, region=region, pubkey=pubkey, size=size, image=image)
             if node:
                 if node.state.lower() != "running":
-                    print ("Starting", node.name)
+                    print ("State is %s; starting %s" % (node.state, node.name))
                     node = start_server(node)
                 url = node.public_ips[0]
                 print ("Waiting for sshd")
@@ -180,8 +180,16 @@ if __name__ == "__main__":
                 f.close()
             except:
                 print ("Public key not found in usual place; please specify --pubkey")
+        if args.size == None and args.gpus != None:
+            size = 'g4dn.xlarge'
+        else:
+            size = args.size
+        if args.image == None and args.gpus != None:
+            image = 'ami-008d8ed4bd7dc2485'
+        else:
+            image = args.image
         rexec(unknown, user=args.user, url=args.url, uuid=args.uuid,
               name=args.name, gpus=args.gpus, ports=args.p, stop=args.shutdown,
               access=args.access, secret=args.secret, region=args.region,
-              image=args.image, size=args.size, pubkey=pubkey)
+              image=image, size=size, pubkey=pubkey)
         print ("DONE")
