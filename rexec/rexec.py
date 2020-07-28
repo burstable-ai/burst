@@ -36,6 +36,7 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
                 node = launch_server(name, access=access, secret=secret, region=region, pubkey=pubkey, size=size, image=image)
             if node:
                 if node.state.lower() != "running":
+                    print ("Starting server")
                     node = start_server(node)
                 url = node.public_ips[0]
                 print ("Waiting for sshd")
@@ -150,23 +151,29 @@ def stop_instance_by_url(url, access=None, secret=None, region=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--user", default="ubuntu")
-    parser.add_argument("--url")
-    parser.add_argument("--uuid")
-    parser.add_argument("--name")
-    parser.add_argument("--gpus")
-    parser.add_argument("--access")
-    parser.add_argument("--secret")
-    parser.add_argument("--region")
-    parser.add_argument("--image")
-    parser.add_argument("--size")
-    parser.add_argument("--pubkey")
-    parser.add_argument("--delay", type=int, default=0)
-    parser.add_argument("--shutdown", type=int, default=900)
-    parser.add_argument("--stop_instance_by_url")
-    parser.add_argument("-p", action="append")
+    parser.add_argument("--user", default="ubuntu",             help="remote server username")
+    parser.add_argument("--local", action="store_true",         help="run on local device")
+    parser.add_argument("--url",                                help="run on remote server specified by url")
+    parser.add_argument("--uuid",                               help="run on remote server specified by libcloud uuid")
+    parser.add_argument("--name",                               help="run on remote server specified by name")
+    parser.add_argument("--gpus",                               help="docker run gpu option (usually 'all')")
+    parser.add_argument("-p", action="append",                  help="docker port mapping")
+    parser.add_argument("--access",                             help="libcloud username (aws: ACCESS_KEY)")
+    parser.add_argument("--secret",                             help="libcloud password (aws: SECRET)")
+    parser.add_argument("--region",                             help="libcloud location (aws: region)")
+    parser.add_argument("--image",                              help="libcloud image (aws: ami image_id")
+    parser.add_argument("--size",                               help="libcloud size (aws: instance_type")
+    parser.add_argument("--pubkey",                             help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
+    parser.add_argument("--delay", type=int, default=0,         help="delay command by N seconds")
+    parser.add_argument("--shutdown", type=int, default=900,    help="seconds before server is stopped (default 15 minutes)")
+    parser.add_argument("--stop_instance_by_url",               help="internal use")
     args, unknown = parser.parse_known_args()
-
+    if not (args.name or args.uuid or args.url or args.local):
+        parser.error("Must specify --name, --url, --uuid, or --local")
+        exit()
+    if args.local and (args.name or args.uuid or args.url):
+        parser.error("when specifying --local, do not set --name, --uuid, or --url")
+        exit()
     t0 = time.time()
     while time.time()-t0 < args.delay:
         print ("%d seconds till action" % (args.delay+.5+t0-time.time()))
