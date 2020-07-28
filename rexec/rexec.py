@@ -114,7 +114,9 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
         cmd = "docker {3} run {4} {5} --rm -it -v {2}:/home/rexec {0} {1}".format(DEFAULT_IMAGE,
                                                                                   args, path, remote, gpu_args, port_args)
         print (cmd)
+        print ("\n\n---------------------OUTPUT-----------------------")
         os.system(cmd)
+        print ("----------------------END-------------------------\n\n")
         if url:
             cmd = "rsync -vrltzu '{3}@{1}:{2}/*' {0}/".format(locpath, url, path, user)
             print (cmd)
