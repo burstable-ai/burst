@@ -85,6 +85,11 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
                     cmd = "docker {0} stop {1}".format(remote, " ".join(kills))
                     print (cmd)
                     os.system(cmd)
+            print ("Removing topmost layer")        #to avoid running stale image
+            cmd = ["docker", "{0}".format(remote), "rmi", "--no-prune", DEFAULT_IMAGE]
+            print (cmd)
+            out, err = run(cmd)
+            print (out)
 
             if size and size != node.extra['instance_type']:
                 raise Exception("FIXME: cannot change size (EC2 instance type) -- need to re-launch")
