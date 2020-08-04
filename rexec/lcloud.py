@@ -40,10 +40,10 @@ def get_server(url=None, uuid=None, name=None, access=None, secret=None, region=
     elif uuid:
         node = [x for x in nodes if x.uuid.find(uuid)==0]
     elif name:
-        node = [x for x in nodes if x.name==name]
+        node = [x for x in nodes if x.name==name and x.state != 'terminated']
     else:
         return "error: specify url, uuid, or name"
-    return node[0] if node and node[0].state != "terminated" else None
+    return node[0] if node else None
 
 def get_server_state(srv):
     return g_driver.list_nodes(ex_node_ids=[srv.id])[0].state
