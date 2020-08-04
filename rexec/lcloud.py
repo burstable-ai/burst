@@ -84,7 +84,7 @@ def launch_server(name, size=None, image=None, pubkey=None, access=None, secret=
         raise Exception("Instance size %s not found" % size)
     size = sizes[0]
 
-    print ("Launching instance node, image=%s, size=%s" % (image.id, size.id))
+    print ("Launching instance node, image=%s, name=%s, size=%s" % (image.id, name, size.id))
     if pubkey:
         auth = NodeAuthSSHKey(pubkey)
         node = g_driver.create_node(name, size, image, auth=auth)
