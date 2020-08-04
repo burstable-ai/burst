@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, argparse, subprocess, time, traceback, json
+import os, sys, argparse, subprocess, time, traceback, json, getpass
 
 #
 # the BDFL does not admire scripts which are also importable modules
@@ -22,25 +22,25 @@ DEFAULT_IMAGE = "rexec_image" #FIXME: should be unique to folder structure
 DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
-def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None, stop=False,
+def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports=None, stop=False,
           access=None, secret=None, region=None, image=None, size=None, pubkey=None):
     tunnel = None
     try:
         if url:
-            if not user:
-                user, url = url.split('@')
+            if not sshuser:
+                sshuser, url = url.split('@')
         node = None
-        if url or uuid or name:
-            node = get_server(url=url, uuid=uuid, name=name, access=access, secret=secret, region=region)
-            if name and not node:
-                node = launch_server(name, access=access, secret=secret, region=region, pubkey=pubkey, size=size, image=image)
+        if url or uuid or rxuser:
+            node = get_server(url=url, uuid=uuid, name=rxuser, access=access, secret=secret, region=region)
+            if rxuser and not node:
+                node = launch_server(rxuser, access=access, secret=secret, region=region, pubkey=pubkey, size=size, image=image)
             if node:
                 if node.state.lower() != "running":
                     print ("Starting server")
                     node = start_server(node)
                 url = node.public_ips[0]
                 print ("Waiting for sshd")
-                cmd = ["ssh", "-o StrictHostKeyChecking=no", "{0}@{1}".format(user, url), "echo", "'sshd responding'"]
+                cmd = ["ssh", "-o StrictHostKeyChecking=no", "{0}@{1}".format(sshuser, url), "echo", "'sshd responding'"]
                 print(cmd)
                 good = False
                 for z in range(6, -1, -1):
@@ -55,18 +55,18 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
                     raise Exception("error in ssh call: %s" % ret[0].strip())
                 print ("SSH returns -->%s|%s<--" % ret)
             else:
-                raise Exception("Error: node not found; to launch a new server, please specify --name")
+                raise Exception("Error: node not found")
 
         if url:
             remote = "-H " + DOCKER_REMOTE
-            ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(user, url)]
+            ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(sshuser, url)]
             print (ssh_args)
             tunnel = subprocess.Popen(ssh_args)
             time.sleep(5)
             relpath = os.path.abspath('.')[len(os.path.expanduser('~')):]
             relpath = "/_REXEC" +  relpath.replace('/', '_') #I can exlain
             locpath = os.path.abspath('.')
-            path = "/home/{0}{1}".format(user, relpath)
+            path = "/home/{0}{1}".format(sshuser, relpath)
 
             cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
             print (cmd)
@@ -96,7 +96,7 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
             if image and image != node.extra['image_id']:
                 raise Exception("FIXME: cannot change image (EC2 ami) -- need to terminate & re-launch server")
             print ("rexec: name %s size %s image %s url %s" % (node.name, node.extra['instance_type'], node.extra['image_id'], url))
-            cmd = "rsync -vrltzu {0}/* {3}@{1}:{2}/".format(locpath, url, path, user)
+            cmd = "rsync -vrltzu {0}/* {3}@{1}:{2}/".format(locpath, url, path, sshuser)
             print (cmd)
             os.system(cmd)
         else:
@@ -123,7 +123,7 @@ def rexec(args, user=None, url=None, uuid=None, name=None, gpus = "", ports=None
         os.system(cmd)
         print ("----------------------END-------------------------\n\n")
         if url:
-            cmd = "rsync -vrltzu '{3}@{1}:{2}/*' {0}/".format(locpath, url, path, user)
+            cmd = "rsync -vrltzu '{3}@{1}:{2}/*' {0}/".format(locpath, url, path, sshuser)
             print (cmd)
             os.system(cmd)
     except:
@@ -158,11 +158,11 @@ def stop_instance_by_url(url, access=None, secret=None, region=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--user", default="ubuntu",             help="remote server username")
+    parser.add_argument("--sshuser", default="ubuntu",             help="remote server username")
     parser.add_argument("--local", action="store_true",         help="run on local device")
     parser.add_argument("--url",                                help="run on remote server specified by url")
     parser.add_argument("--uuid",                               help="run on remote server specified by libcloud uuid")
-    parser.add_argument("--name",                               help="run on remote server specified by name")
+    parser.add_argument("--rexecuser",                          help="Rexec user name; defaults to local username")
     parser.add_argument("--gpus",                               help="docker run gpu option (usually 'all')")
     parser.add_argument("-p", action="append",                  help="docker port mapping")
     parser.add_argument("--access",                             help="libcloud username (aws: ACCESS_KEY)")
@@ -175,8 +175,8 @@ if __name__ == "__main__":
     parser.add_argument("--shutdown", type=int, default=900,    help="seconds before server is stopped (default 15 minutes)")
     parser.add_argument("--stop_instance_by_url",               help="internal use")
     args, unknown = parser.parse_known_args()
-    if args.local and (args.name or args.uuid or args.url):
-        parser.error("when specifying --local, do not set --name, --uuid, or --url")
+    if args.local and (args.sshuser or args.uuid or args.url or args.rexecuser):
+        parser.error("when specifying --local, do not set --sshuser, --rexecuser, --uuid, or --url")
         exit()
     t0 = time.time()
     while time.time()-t0 < args.delay:
@@ -187,9 +187,12 @@ if __name__ == "__main__":
         stop_instance_by_url(args.stop_instance_by_url, access=args.access, secret=args.secret, region=args.region)
 
     else:
-        if not (args.name or args.uuid or args.url or args.local):
-            parser.error("Must specify --name, --url, --uuid, or --local")
-            exit()
+        if not (args.rexecuser or args.uuid or args.url or args.local or args.rexecuser):
+            # parser.error("Must specify --name, --url, --uuid, or --local")
+            # exit()
+            rxuser = getpass.getuser()
+            print ("Rexec username:", rxuser)
+            args.rexecuser = "rexec_" + rxuser
 
         if args.pubkey==None:
             try:
@@ -217,8 +220,8 @@ if __name__ == "__main__":
             else:
                 image = args.image
 
-        rexec(unknown, user=args.user, url=args.url, uuid=args.uuid,
-              name=args.name, gpus=args.gpus, ports=args.p, stop=args.shutdown,
+        rexec(unknown, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
+              rxuser=args.rexecuser, gpus=args.gpus, ports=args.p, stop=args.shutdown,
               access=args.access, secret=args.secret, region=args.region,
               image=image, size=size, pubkey=pubkey)
         print ("DONE")
