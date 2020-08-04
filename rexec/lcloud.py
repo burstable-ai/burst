@@ -36,9 +36,9 @@ def get_server(url=None, uuid=None, name=None, access=None, secret=None, region=
         init(access, secret, region)
     nodes = g_driver.list_nodes()
     if url:
-        node = [x for x in nodes if url in x.public_ips]
+        node = [x for x in nodes if url in x.public_ips and x.state != 'terminated']
     elif uuid:
-        node = [x for x in nodes if x.uuid.find(uuid)==0]
+        node = [x for x in nodes if x.uuid.find(uuid)==0 and x.state != 'terminated']
     elif name:
         node = [x for x in nodes if x.name==name and x.state != 'terminated']
     else:
