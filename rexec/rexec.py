@@ -175,7 +175,8 @@ if __name__ == "__main__":
     parser.add_argument("--shutdown", type=int, default=900,    help="seconds before server is stopped (default 15 minutes)")
     parser.add_argument("--stop_instance_by_url",               help="internal use")
     args, unknown = parser.parse_known_args()
-    if args.local and (args.sshuser or args.uuid or args.url or args.rexecuser):
+    if args.local and (args.uuid or args.url):
+        print (args)
         parser.error("when specifying --local, do not set --sshuser, --rexecuser, --uuid, or --url")
         exit()
     t0 = time.time()
