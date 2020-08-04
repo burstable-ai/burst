@@ -139,7 +139,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             acc, sec, reg = get_credentials()       # may be  in config or as parameters
             cmd = "docker {5} run --rm -d {6} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4}".format(url,
                                                                                                     stop, acc, sec, reg, remote, DEFAULT_IMAGE)
-            print (cmd)
+            print (cmd[:80] + "...")
             print ("Shutdown process container ID:")
             os.system(cmd)
 
