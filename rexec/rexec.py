@@ -23,7 +23,7 @@ DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
 def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports=None, stop=False,
-          access=None, secret=None, region=None, image=None, size=None, pubkey=None):
+          access=None, secret=None, region=None, image=None, size=None, pubkey=None, dockerfile="Dockerfile"):
     tunnel = None
     try:
         if url:
@@ -104,7 +104,8 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             remote = ""
             path = os.path.abspath('.')
 
-        cmd = "docker {1} build . -t {0}".format(DEFAULT_IMAGE, remote)
+
+        cmd = "docker {1} build . --file {2} -t {0}".format(DEFAULT_IMAGE, remote, dockerfile)
         print (cmd)
         os.system(cmd)
 
@@ -174,6 +175,7 @@ if __name__ == "__main__":
     parser.add_argument("--delay", type=int, default=0,         help="delay command by N seconds")
     parser.add_argument("--shutdown", type=int, default=900,    help="seconds before server is stopped (default 15 minutes)")
     parser.add_argument("--stop_instance_by_url",               help="internal use")
+    parser.add_argument("--dockerfile", type=str, default="Dockerfile",    help="Docker file to build the container with if not ./Dockerfile")
     args, unknown = parser.parse_known_args()
     if args.local and (args.uuid or args.url):
         print (args)
@@ -224,5 +226,5 @@ if __name__ == "__main__":
         rexec(unknown, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
               rxuser=args.rexecuser, gpus=args.gpus, ports=args.p, stop=args.shutdown,
               access=args.access, secret=args.secret, region=args.region,
-              image=image, size=size, pubkey=pubkey)
+              image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile)
         print ("DONE")
