@@ -159,8 +159,10 @@ def stop_instance_by_url(url, access=None, secret=None, region=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--sshuser", default="ubuntu",             help="remote server username")
+    parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
     parser.add_argument("--local", action="store_true",         help="run on local device")
+    parser.add_argument("--list_servers", action="store_true",  help="List all associated remote servers")
+    parser.add_argument("--terminate", action="store_true",     help="Terminate associated remote servers")
     parser.add_argument("--url",                                help="run on remote server specified by url")
     parser.add_argument("--uuid",                               help="run on remote server specified by libcloud uuid")
     parser.add_argument("--rexecuser",                          help="Rexec user name; defaults to local username")
@@ -186,16 +188,19 @@ if __name__ == "__main__":
         print ("%d seconds till action" % (args.delay+.5+t0-time.time()))
         time.sleep(5)
 
+    if not (args.rexecuser or args.uuid or args.url or args.local):
+        rxuser = getpass.getuser()
+        print ("Rexec username:", rxuser)
+        args.rexecuser = "rexec_" + rxuser
+
     if args.stop_instance_by_url:
         stop_instance_by_url(args.stop_instance_by_url, access=args.access, secret=args.secret, region=args.region)
 
+    elif args.list_servers:
+        for s in list_servers(args.rexecuser, access=args.access, secret=args.secret, region=args.region):
+            print (s)
+
     else:
-        if not (args.rexecuser or args.uuid or args.url or args.local or args.rexecuser):
-            # parser.error("Must specify --name, --url, --uuid, or --local")
-            # exit()
-            rxuser = getpass.getuser()
-            print ("Rexec username:", rxuser)
-            args.rexecuser = "rexec_" + rxuser
 
         if args.pubkey==None:
             try:

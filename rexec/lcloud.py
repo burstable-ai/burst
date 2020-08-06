@@ -109,6 +109,25 @@ def stop_server(srv):
         print ("server state:", state)
     return "success"
 
+def terminate_server(srv):
+    result = srv.destroy_node()
+    if not result:
+        return "error terminating server"
+    state = None
+    while state != 'terminated':
+        state = get_server_state(srv)
+        time.sleep(2)
+        print ("server state:", state)
+    return "success"
+
+def list_servers(name, access=None, secret=None, region=None):
+    if g_driver == None:
+        init(access, secret, region)
+    nodes = g_driver.list_nodes()
+    nodes = [x for x in nodes if x.name==name]
+    return nodes
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--url")
