@@ -110,7 +110,7 @@ def stop_server(srv):
     return "success"
 
 def terminate_server(srv):
-    result = srv.destroy_node()
+    result = g_driver.destroy_node(srv)
     if not result:
         return "error terminating server"
     state = None

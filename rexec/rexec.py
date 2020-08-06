@@ -162,7 +162,7 @@ if __name__ == "__main__":
     parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
     parser.add_argument("--local", action="store_true",         help="run on local device")
     parser.add_argument("--list-servers", action="store_true",  help="List all associated remote servers")
-    parser.add_argument("--terminate", action="store_true",     help="Terminate associated remote servers")
+    parser.add_argument("--terminate-servers", action="store_true",     help="Terminate associated remote servers")
     parser.add_argument("--url",                                help="run on remote server specified by url")
     parser.add_argument("--uuid",                               help="run on remote server specified by libcloud uuid")
     parser.add_argument("--rexecuser",                          help="Rexec user name; defaults to local username")
@@ -199,6 +199,14 @@ if __name__ == "__main__":
     elif args.list_servers:
         for s in list_servers(args.rexecuser, access=args.access, secret=args.secret, region=args.region):
             print (s)
+
+    elif args.terminate_servers:
+        for s in list_servers(args.rexecuser, access=args.access, secret=args.secret, region=args.region):
+            yes = input("Terminating %s %s are you sure?" % (s.name, s.public_ips))
+            if yes=='y':
+                terminate_server(s)
+            else:
+                print ("Aborted")
 
     else:
 
