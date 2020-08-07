@@ -159,6 +159,7 @@ def stop_instance_by_url(url, access=None, secret=None, region=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("command", nargs='?',                   help="Command to run on remote server")
     parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
     parser.add_argument("--local", action="store_true",         help="run on local device")
     parser.add_argument("--list-servers", action="store_true",  help="List all associated remote servers")
@@ -178,7 +179,26 @@ if __name__ == "__main__":
     parser.add_argument("--shutdown", type=int, default=900,    help="seconds before server is stopped (default 15 minutes)")
     parser.add_argument("--stop_instance_by_url",               help="internal use")
     parser.add_argument("--dockerfile", type=str, default="Dockerfile",    help="Docker file to build the container with if not ./Dockerfile")
-    args, unknown = parser.parse_known_args()
+
+    #
+    # this got a bit tricky.
+    # we want to parse args BEFORE the main command as rexec options
+    # and pass all args AFTER the main command to the command when it runs remotely
+    #
+    argv = sys.argv[1:]
+    print ("ARGV:", argv)
+    args, unknown = parser.parse_known_args(argv)
+    if args.command != None:
+        i = argv.index(args.command)
+    else:
+        i = len(argv)
+    rexargs = argv[:i]
+    print ("REXARGS:", rexargs)
+    cmdargs = argv[i:]
+    print ("CMDARGS:", cmdargs)
+    args = parser.parse_args(rexargs)
+    print ("ARGS:", args)
+
     if args.local and (args.uuid or args.url):
         print (args)
         parser.error("when specifying --local, do not set --sshuser, --rexecuser, --uuid, or --url")
@@ -236,7 +256,7 @@ if __name__ == "__main__":
             else:
                 image = args.image
 
-        rexec(unknown, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
+        rexec(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
               rxuser=args.rexecuser, gpus=args.gpus, ports=args.p, stop=args.shutdown,
               access=args.access, secret=args.secret, region=args.region,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile)
