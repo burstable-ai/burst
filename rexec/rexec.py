@@ -180,6 +180,9 @@ if __name__ == "__main__":
     parser.add_argument("--stop_instance_by_url",               help="internal use")
     parser.add_argument("--dockerfile", type=str, default="Dockerfile",    help="Docker file to build the container with if not ./Dockerfile")
 
+    if len(sys.argv) < 2:
+        parser.print_usage()
+        sys.exit(1)
     #
     # this got a bit tricky.
     # we want to parse args BEFORE the main command as rexec options
