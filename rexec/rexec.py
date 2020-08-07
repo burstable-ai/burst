@@ -176,7 +176,7 @@ if __name__ == "__main__":
     parser.add_argument("--size",                               help="libcloud size (aws: instance_type")
     parser.add_argument("--pubkey",                             help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
     parser.add_argument("--delay", type=int, default=0,         help="delay command by N seconds")
-    parser.add_argument("--shutdown", type=int, default=900,    help="seconds before server is stopped (default 15 minutes)")
+    parser.add_argument("--shutdown", type=int, default=900, nargs='?',   help="seconds before server is stopped (default 15 minutes)")
     parser.add_argument("--stop_instance_by_url",               help="internal use")
     parser.add_argument("--dockerfile", type=str, default="Dockerfile",    help="Docker file to build the container with if not ./Dockerfile")
 
@@ -216,17 +216,31 @@ if __name__ == "__main__":
     if args.stop_instance_by_url:
         stop_instance_by_url(args.stop_instance_by_url, access=args.access, secret=args.secret, region=args.region)
 
-    elif args.list_servers:
+    elif args.list_servers:     #note this is different than --shutdown 0 -- we just shut down without running
+        print ("-------------------------------------------------------------\nSERVERS associated with %s:" % args.rexecuser)
         for s in list_servers(args.rexecuser, access=args.access, secret=args.secret, region=args.region):
             print (s)
+        print ("-------------------------------------------------------------")
+
+    elif args.shutdown == None:
+        print ("-------------------------------------------------------------")
+        for s in list_servers(args.rexecuser, access=args.access, secret=args.secret, region=args.region):
+            yes = input("Stopping (warm shutdown) %s %s are you sure?" % (s.name, s.public_ips))
+            if yes=='y':
+                stop_server(s)
+            else:
+                print ("Aborted")
+        print ("-------------------------------------------------------------")
 
     elif args.terminate_servers:
+        print ("-------------------------------------------------------------")
         for s in list_servers(args.rexecuser, access=args.access, secret=args.secret, region=args.region):
             yes = input("Terminating %s %s are you sure?" % (s.name, s.public_ips))
             if yes=='y':
                 terminate_server(s)
             else:
                 print ("Aborted")
+        print ("-------------------------------------------------------------")
 
     else:
 
