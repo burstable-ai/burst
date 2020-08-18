@@ -179,6 +179,7 @@ if __name__ == "__main__":
     parser.add_argument("--shutdown", type=int, default=900, nargs='?',   help="seconds before server is stopped (default 15 minutes)")
     parser.add_argument("--stop_instance_by_url",               help="internal use")
     parser.add_argument("--dockerfile", type=str, default="Dockerfile",    help="Docker file to build the container with if not ./Dockerfile")
+    parser.add_argument("--cloudmap", type=str,                 help="map cloud storage to local mount point")
 
     if len(sys.argv) < 2:
         parser.print_usage()
