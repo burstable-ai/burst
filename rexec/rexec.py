@@ -121,7 +121,8 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
 
         cloud_args = ""
         if cloudmap:
-            cloud_args = "-v /home/{0}/.config/rclone:/root/.config/rclone --privileged".format(sshuser)
+            # FIXME add options to log in on remote or manually override config for rclone
+            cloud_args = "-v /home/{0}/.config/rclone:/root/.config/rclone --privileged".format(getpass.getuser())
 
         cmd = "docker {3} run {4} {5} --rm -it -v {2}:/home/rexec {6} {0} {1}".format(DEFAULT_IMAGE,
                                                                                   args, path, remote, gpu_args, port_args, cloud_args)
