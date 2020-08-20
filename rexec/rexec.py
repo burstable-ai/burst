@@ -132,7 +132,8 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             else:
                 rcred = "/home/{0}/.config/rclone".format(getpass.getuser())
             cloud_args = "-v {0}:/root/.config/rclone --privileged".format(rcred)
-            args = "bash -c 'rclone mount drive: {0} & sleep 3; {1}'".format(cloudmap, args)
+            cloud, host = cloudmap.split(":")
+            args = "bash -c 'rclone mount {0}: {1} & sleep 3; {2}'".format(cloud, host, args)
 
         cmd = "docker {3} run {4} {5} --rm -it -v {2}:/home/rexec {6} {0} {1}".format(DEFAULT_IMAGE,
                                                                                   args, path, remote, gpu_args, port_args, cloud_args)
