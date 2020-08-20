@@ -124,7 +124,11 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             # FIXME add options to log in on remote or manually override config for rclone
             # for now we assume local machine has rclone.conf in the usual place
             if remote:
-                pass
+                rcred_rsync = "/home/{0}/./.config/rclone".format(getpass.getuser())        #the /./ anchors for rsync
+                cmd = "rsync -vrltzuR {0}/* {3}@{1}:{2}/".format(rcred_rsync, url, path, sshuser)
+                print(cmd)
+                os.system(cmd)
+                rcred = "{0}/.config/rclone".format(path)
             else:
                 rcred = "/home/{0}/.config/rclone".format(getpass.getuser())
             cloud_args = "-v {0}:/root/.config/rclone --privileged".format(rcred)
