@@ -1,7 +1,9 @@
 from setuptools import setup, find_packages
+from rexec.version import version
+
 setup(
     name="rexec",
-    version="0.1.3",
+    version=version,
     packages=find_packages(),
     python_requires='>=3',
     scripts=['bin/rexec'],
