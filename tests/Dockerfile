@@ -1,5 +1,5 @@
 FROM ubuntu:20.04
-RUN apt-get update && apt-get install -y python3 python3-pip nano fish git curl
+RUN apt-get update && apt-get install -y python3 python3-pip nano fish git curl rclone fuse
 RUN pip3 install git+https://github.com/datahub-projects/rexec#egg=rexec
 
 RUN adduser --disabled-password --gecos '' ubuntu
