@@ -123,7 +123,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         if cloudmap:
             if remote:
                 local_rcred = f"{os.environ['HOME']}/.rexec"
-                rcred = "~/.rexec/"
+                rcred = " /home/ubuntu/.rexec/"
                 cmd = f"rsync -vrltzu {local_rcred}/rclone.conf {sshuser}@{url}:{rcred}"
                 print(cmd)
                 os.system(cmd)
