@@ -24,7 +24,7 @@ Our configuration is currently manual. You will need to do the following:
 
 `mkdir -p ~/.rexec` # create config folder if it the folder does not exist
 
-Edit `config.py` with:
+Edit `~/.rexec/config.py` with:
 
 ```
 access="<your-aws-access-key>"
@@ -35,10 +35,8 @@ region="us-west-2"
 # Run `rexec` tests
 
 ```
-cd rexec/tests
-
-
- % ../bin/rexec python3 test_script.py 
+% cd tests
+% ../bin/rexec python3 test_script.py 
 ARGV: ['python3', 'test_script.py']
 REXARGS: []
 CMDARGS: ['python3', 'test_script.py']
