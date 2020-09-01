@@ -4,9 +4,11 @@ import multiprocessing, GPUtil
 print ("Welcome rexec-utioners! You're running a virtual machine with %i cpus" % (multiprocessing.cpu_count()))
 
 try:
-    avail = GPUtil.getAvailable()
-    if len(avail):
-        print ("The following GPU's are available: %s" % avail)
+    gpus = GPUtil.getGPUs()
+    if len(gpus):
+        print ("The following GPU's are available:")
+        for gpu in gpus:
+            print (gpu.name)
     else:
         print ("GPU drivers are installed but no GPU's are available")
 except:
