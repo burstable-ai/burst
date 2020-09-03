@@ -1,0 +1,17 @@
+---
+preferred: EC2
+EC2:
+  access: EC2ACCESSID
+  secret: Numb3rsAndL3tt3rs
+  region: us-west-2
+  default_image: ami-0ba3ac9cd67195659
+  default_size: t2.small
+  default_gpu_image: ami-008d8ed4bd7dc2485
+  default_gpu_size: g4dn.xlarge
+GCE:
+  access: 111-stuffandthings.apps.googleusercontent.com
+  secret: JustLettersMostly
+  region: us-west1-b
+  project: cohesive-point-200601
+  default_image: ubuntu-2004-focal-v20200902
+  default_size: e2-micro

@@ -34,7 +34,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         if url or uuid or rxuser:
             node = get_server(url=url, uuid=uuid, name=rxuser, conf=conf)
             if rxuser and not node:
-                node = launch_server(rxuser, pubkey=pubkey, size=size, image=image, conf=conf)
+                node = launch_server(rxuser, pubkey=pubkey, size=size, image=image, conf=conf, user=sshuser)
             if node:
                 if node.state.lower() != "running":
                     print ("Starting server")
@@ -44,7 +44,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                 cmd = ["ssh", "-o StrictHostKeyChecking=no", "{0}@{1}".format(sshuser, url), "echo", "'sshd responding'"]
                 print(cmd)
                 good = False
-                for z in range(6, -1, -1):
+                for z in range(10, -1, -1):
                     ret = run(cmd, timeout=15)
                     if ret[0].strip()=='sshd responding':
                         good = True
@@ -72,7 +72,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
             print (cmd)
             out = run(cmd)
-            # print("PS returns -->%s|%s<--" % out)
+            print("PS returns -->%s|%s<--" % out)
             if out[0].strip():
                 kills = []
                 for x in out[0].split("\n"):
@@ -248,8 +248,8 @@ if __name__ == "__main__":
 
     if not (args.rexecuser or args.uuid or args.url or args.local):
         rxuser = getpass.getuser()
-        print ("Rexec username:", rxuser)
-        args.rexecuser = "rexec_" + rxuser
+        args.rexecuser = "rexec-" + rxuser
+        print ("Rexec username:", args.rexecuser)
 
     if args.stop_instance_by_url:
         stop_instance_by_url(args.stop_instance_by_url, args_conf)

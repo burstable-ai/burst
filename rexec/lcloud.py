@@ -1,4 +1,5 @@
 import os, sys, time, argparse, json
+import yaml
 from pprint import pprint
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
@@ -18,20 +19,20 @@ def init(conf = None):
     if conf == None:
         conf = {}
 
-    f = open(os.environ['HOME'] + "/.rexec/config.json")
-    jconf = json.load(f)
+    f = open(os.environ['HOME'] + "/.rexec/config.yaml")
+    yconf = yaml.load(f, Loader=yaml.FullLoader)
     f.close()
 
     if 'provider' in conf:
         config.provider = conf['provider']
     else:
-        config.provider = jconf['preferred']
+        config.provider = yconf['preferred']
 
     for param in ['access', 'secret', 'region', 'project', 'default_image', 'default_size', 'default_gpu_image', 'default_gpu_size']:
         if param in conf:
             config[param] = conf[param]
         else:
-            config[param] = jconf[config.provider].get(param, None)
+            config[param] = yconf[config.provider].get(param, None)
 
     cls = get_driver(Provider[config.provider])
 
@@ -83,7 +84,7 @@ def start_server(srv):
         time.sleep(5)
     return srv
 
-def launch_server(name, size=None, image=None, pubkey=None, conf = None):
+def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=None):
     init(conf)
 
     if image=="DEFAULT_IMAGE":
@@ -110,8 +111,21 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None):
 
     print ("Launching instance node, image=%s, name=%s, size=%s" % (image.id, name, size.id))
     if pubkey:
-        auth = NodeAuthSSHKey(pubkey)
-        node = config.driver.create_node(name, size, image, auth=auth)
+        if config.provider == 'EC2':                #Everybody makes it up
+            auth = NodeAuthSSHKey(pubkey)
+            node = config.driver.create_node(name, size, image, auth=auth)
+        elif config.provider == 'GCE':
+            meta = {
+                'items': [
+                    {
+                        'key': 'sshKeys',
+                        'value': '%s: %s' % (user, pubkey)
+                    }
+                ]
+            }
+            node = config.driver.create_node(name, size, image, ex_metadata=meta)
+        else:
+            raise Exception("Unsupported clown provider: %s" % config.provider)
     else:
         node = config.driver.create_node(name, size, image)
     print ("Waiting for public IP address to be active")
