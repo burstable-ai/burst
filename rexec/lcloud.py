@@ -61,7 +61,9 @@ def get_server(url=None, uuid=None, name=None, conf = None):
     return node[0] if node else None
 
 def get_server_state(srv):
-    return config.driver.list_nodes(ex_node_ids=[srv.id])[0].state
+    srv = get_server(uuid = srv.uuid)
+    if srv:
+        return srv.state
 
 def start_server(srv):
     result = srv.start()
@@ -75,19 +77,18 @@ def start_server(srv):
     print ("Waiting for public IP address to be assigned")
     config.driver.wait_until_running([srv])
     while len(srv.public_ips)==0:
-        srv = config.driver.list_nodes(ex_node_ids=[srv.id])[0]
+        # srv = config.driver.list_nodes(ex_node_ids=[srv.id])[0]
+        srv = get_server(uuid=srv.uuid)       #seems necessary to refresh to update state
         print("Public IP's:", srv.public_ips)
         time.sleep(5)
     return srv
 
-#FIXME: AWS specific
 def launch_server(name, size=None, image=None, pubkey=None, conf = None):
     init(conf)
 
-    images = config.driver.list_images(ex_image_ids=[image])
+    images = [x for x in config.driver.list_images() if x.name == size]
     if not images:
         raise Exception("Image %s not found" % image)
-    image = images[0]
 
     sizes = [x for x in config.driver.list_sizes() if x.name == size]
     if not sizes:
@@ -103,7 +104,8 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None):
     print ("Waiting for public IP address to be active")
     config.driver.wait_until_running([node])
     while len(node.public_ips)==0:
-        node = config.driver.list_nodes(ex_node_ids=[node.id])[0] #refresh node -- is this really necessary
+        # node = config.driver.list_nodes(ex_node_ids=[node.id])[0] #refresh node -- is this really necessary
+        node = get_server(uuid=node.uuid)       #seems necessary to refresh to update state
         print("Public IP's:", node.public_ips)
         time.sleep(5)
     return node
