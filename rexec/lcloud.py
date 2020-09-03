@@ -12,21 +12,30 @@ except:
 
 g_driver = None
 
-def init(access=None, secret=None, region=None):
+#
+# for now providers are EC2 or GCE
+#
+def init(access=None, secret=None, region=None, project=None, provider="EC2"):
     global g_driver, g_access, g_secret, g_region
-    cls = get_driver(Provider.EC2)
+    cls = get_driver(Provider[provider])
     if access==None:
         if config==None:
             raise Exception("no config file or parameters")
-        g_driver = cls(config.access, config.secret, region=config.region)
         g_access = config.access
         g_secret = config.secret
         g_region = config.region
     else:
-        g_driver = cls(access, secret, region=region)
         g_access = access
         g_secret = secret
         g_region = region
+    if provider == 'EC2':
+        g_driver = cls(g_access, g_secret, region=g_region)
+    elif provider == 'GCE':
+        if project == None and provider == "GCE":
+            project = config.project
+        g_driver = cls(g_access, g_secret, datacenter=g_region, project=project)
+    else:
+        print ("ERROR: unknown cloud provider", provider)
 
 def get_credentials():
     return g_access, g_secret, g_region
