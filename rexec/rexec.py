@@ -23,8 +23,8 @@ DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
 def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports=None, stop=False,
-          access=None, secret=None, region=None, image=None, size=None, pubkey=None, dockerfile="Dockerfile",
-          cloudmap=""):
+          image=None, size=None, pubkey=None, dockerfile="Dockerfile",
+          cloudmap="", conf=None):
     tunnel = None
     try:
         if url:
@@ -32,9 +32,9 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                 sshuser, url = url.split('@')
         node = None
         if url or uuid or rxuser:
-            node = get_server(url=url, uuid=uuid, name=rxuser, access=access, secret=secret, region=region)
+            node = get_server(url=url, uuid=uuid, name=rxuser, conf=conf)
             if rxuser and not node:
-                node = launch_server(rxuser, access=access, secret=secret, region=region, pubkey=pubkey, size=size, image=image)
+                node = launch_server(rxuser, pubkey=pubkey, size=size, image=image, conf=conf)
             if node:
                 if node.state.lower() != "running":
                     print ("Starting server")
@@ -154,9 +154,11 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             stop_server(node)
         else:
             print ("Scheduling shutdown of VM at %s for %d seconds from now" % (url, stop))
-            acc, sec, reg = get_credentials()       # may be  in config or as parameters
-            cmd = "docker {5} run --rm -d {6} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4}".format(url,
-                                                                                                    stop, acc, sec, reg, remote, DEFAULT_IMAGE)
+            conf = get_config()
+            cmd = "docker {6} run --rm -d {7} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5}".format(url,
+                                                                    stop, conf.access, conf.secret, conf.region,
+                                                                    ("--project=" + conf.project) if conf.project else "",
+                                                                    remote, DEFAULT_IMAGE)
             print (cmd[:80] + "...")
             print ("Shutdown process container ID:")
             os.system(cmd)
@@ -164,11 +166,15 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
     if tunnel:
         tunnel.kill()
 
-def stop_instance_by_url(url, access=None, secret=None, region=None):
-    print ("STOP", url, access, region)
-    node = get_server(url=url, access=access, secret=secret, region=region)
+#
+# Note this function is typically called by the shutdown process so it does
+# not share scope with most of what rexec does
+#
+def stop_instance_by_url(url, conf):
+    print ("STOP instance with public IP", url)
+    node = get_server(url=url, conf=conf)
     if not node:
-        print ("No active instance found for URL", url)
+        print ("No active instance found for IP", url)
     else:
         print ("shutting down node %s" % node)
         stop_server(node)
@@ -190,6 +196,7 @@ if __name__ == "__main__":
     parser.add_argument("--access",                             help="libcloud username (aws: ACCESS_KEY)")
     parser.add_argument("--secret",                             help="libcloud password (aws: SECRET)")
     parser.add_argument("--region",                             help="libcloud location (aws: region)")
+    parser.add_argument("--project",                            help="GCE project ID")
     parser.add_argument("--image",                              help="libcloud image (aws: ami image_id")
     parser.add_argument("--size",                               help="libcloud size (aws: instance_type")
     parser.add_argument("--pubkey",                             help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
@@ -221,6 +228,15 @@ if __name__ == "__main__":
     args = parser.parse_args(rexargs)
     print ("ARGS:", args)
 
+    if args.access:
+        args_conf = dictobj()
+        args_conf.access = args.access
+        args_conf.secret = args.secret
+        args_conf.region = args.region
+        args_conf.project = args.project
+    else:
+        args_conf = None
+
     if args.local and (args.uuid or args.url):
         print (args)
         parser.error("when specifying --local, do not set --sshuser, --rexecuser, --uuid, or --url")
@@ -236,17 +252,17 @@ if __name__ == "__main__":
         args.rexecuser = "rexec_" + rxuser
 
     if args.stop_instance_by_url:
-        stop_instance_by_url(args.stop_instance_by_url, access=args.access, secret=args.secret, region=args.region)
+        stop_instance_by_url(args.stop_instance_by_url, args_conf)
 
     elif args.list_servers:     #note this is different than --shutdown 0 -- we just shut down without running
         print ("-------------------------------------------------------------\nSERVERS associated with %s:" % args.rexecuser)
-        for s in list_servers(args.rexecuser, access=args.access, secret=args.secret, region=args.region):
+        for s in list_servers(args.rexecuser, args_conf):
             print (s)
         print ("-------------------------------------------------------------")
 
     elif args.shutdown == None:
         print ("-------------------------------------------------------------")
-        for s in list_servers(args.rexecuser, access=args.access, secret=args.secret, region=args.region):
+        for s in list_servers(args.rexecuser, args_conf):
             yes = input("Stopping (warm shutdown) %s %s are you sure?" % (s.name, s.public_ips))
             if yes=='y':
                 stop_server(s)
@@ -256,7 +272,7 @@ if __name__ == "__main__":
 
     elif args.terminate_servers:
         print ("-------------------------------------------------------------")
-        for s in list_servers(args.rexecuser, access=args.access, secret=args.secret, region=args.region):
+        for s in list_servers(args.rexecuser, args_conf):
             yes = input("Terminating %s %s are you sure?" % (s.name, s.public_ips))
             if yes=='y':
                 terminate_server(s)
@@ -297,6 +313,6 @@ if __name__ == "__main__":
 
         rexec(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
               rxuser=args.rexecuser, gpus=args.gpus, ports=args.p, stop=args.shutdown,
-              access=args.access, secret=args.secret, region=args.region,
-              image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap)
+              image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
+              conf = args_conf)
         print ("DONE")

@@ -1,49 +1,55 @@
-import os, sys, time, argparse
+import os, sys, time, argparse, json
 from pprint import pprint
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.base import NodeAuthSSHKey
+from easydict import EasyDict as dictobj
 
-sys.path.insert(0, os.environ['HOME']+"/.rexec")
-try:
-    import config
-except:
-    config = None
-
-g_driver = None
+config = dictobj()
 
 #
 # for now providers are EC2 or GCE
 #
-def init(access=None, secret=None, region=None, project=None, provider="EC2"):
-    global g_driver, g_access, g_secret, g_region
-    cls = get_driver(Provider[provider])
-    if access==None:
-        if config==None:
-            raise Exception("no config file or parameters")
-        g_access = config.access
-        g_secret = config.secret
-        g_region = config.region
-    else:
-        g_access = access
-        g_secret = secret
-        g_region = region
-    if provider == 'EC2':
-        g_driver = cls(g_access, g_secret, region=g_region)
-    elif provider == 'GCE':
-        if project == None and provider == "GCE":
-            project = config.project
-        g_driver = cls(g_access, g_secret, datacenter=g_region, project=project)
-    else:
-        print ("ERROR: unknown cloud provider", provider)
+def init(conf = None):
+    #init is a one-time thang
+    if 'driver' in config:
+        return
 
-def get_credentials():
-    return g_access, g_secret, g_region
+    if conf == None:
+        conf = {}
 
-def get_server(url=None, uuid=None, name=None, access=None, secret=None, region=None):
-    if g_driver == None:
-        init(access, secret, region)
-    nodes = g_driver.list_nodes()
+    f = open(os.environ['HOME'] + "/.rexec/config.json")
+    jconf = json.load(f)
+    f.close()
+
+    if 'provider' in conf:
+        config.provider = conf['provider']
+    else:
+        config.provider = jconf['preferred']
+
+    for param in ['access', 'secret', 'region', 'project']:
+        if param in conf:
+            config[param] = conf[param]
+        else:
+            config[param] = jconf[config.provider].get(param, None)
+
+    cls = get_driver(Provider[config.provider])
+
+    if config.provider == 'EC2':
+        config.driver = cls(config.access, config.secret, region=config.region)
+
+    elif config.provider == 'GCE':
+        config.driver = cls(config.access, config.secret, datacenter=config.region, project=config.project)
+
+    else:
+        print ("ERROR: unknown cloud provider", config.provider)
+
+def get_config():
+    return config
+
+def get_server(url=None, uuid=None, name=None, conf = None):
+    init(conf)
+    nodes = config.driver.list_nodes()
     if url:
         node = [x for x in nodes if url in x.public_ips and x.state != 'terminated']
     elif uuid:
@@ -55,7 +61,7 @@ def get_server(url=None, uuid=None, name=None, access=None, secret=None, region=
     return node[0] if node else None
 
 def get_server_state(srv):
-    return g_driver.list_nodes(ex_node_ids=[srv.id])[0].state
+    return config.driver.list_nodes(ex_node_ids=[srv.id])[0].state
 
 def start_server(srv):
     result = srv.start()
@@ -67,28 +73,23 @@ def start_server(srv):
         time.sleep(2)
         print ("server state:", state)
     print ("Waiting for public IP address to be assigned")
-    g_driver.wait_until_running([srv])
+    config.driver.wait_until_running([srv])
     while len(srv.public_ips)==0:
-        srv = g_driver.list_nodes(ex_node_ids=[srv.id])[0]
+        srv = config.driver.list_nodes(ex_node_ids=[srv.id])[0]
         print("Public IP's:", srv.public_ips)
         time.sleep(5)
     return srv
 
 #FIXME: AWS specific
-def launch_server(name, size=None, image=None, pubkey=None, access=None, secret=None, region=None):
-    if g_driver == None:
-        init(access, secret, region)
-    # if image==None:
-    #     # image = "ami-003634241a8fcdec0"
-    #     image = "ami-0ba3ac9cd67195659"
-    images = g_driver.list_images(ex_image_ids=[image])
+def launch_server(name, size=None, image=None, pubkey=None, conf = None):
+    init(conf)
+
+    images = config.driver.list_images(ex_image_ids=[image])
     if not images:
         raise Exception("Image %s not found" % image)
     image = images[0]
 
-    # if size==None:
-    #     size = "t2.small"
-    sizes = [x for x in g_driver.list_sizes() if x.name == size]
+    sizes = [x for x in config.driver.list_sizes() if x.name == size]
     if not sizes:
         raise Exception("Instance size %s not found" % size)
     size = sizes[0]
@@ -96,13 +97,13 @@ def launch_server(name, size=None, image=None, pubkey=None, access=None, secret=
     print ("Launching instance node, image=%s, name=%s, size=%s" % (image.id, name, size.id))
     if pubkey:
         auth = NodeAuthSSHKey(pubkey)
-        node = g_driver.create_node(name, size, image, auth=auth)
+        node = config.driver.create_node(name, size, image, auth=auth)
     else:
-        node = g_driver.create_node(name, size, image)
+        node = config.driver.create_node(name, size, image)
     print ("Waiting for public IP address to be active")
-    g_driver.wait_until_running([node])
+    config.driver.wait_until_running([node])
     while len(node.public_ips)==0:
-        node = g_driver.list_nodes(ex_node_ids=[node.id])[0] #refresh node -- is this really necessary
+        node = config.driver.list_nodes(ex_node_ids=[node.id])[0] #refresh node -- is this really necessary
         print("Public IP's:", node.public_ips)
         time.sleep(5)
     return node
@@ -119,7 +120,7 @@ def stop_server(srv):
     return "success"
 
 def terminate_server(srv):
-    result = g_driver.destroy_node(srv)
+    result = config.driver.destroy_node(srv)
     if not result:
         return "error terminating server"
     state = None
@@ -129,10 +130,9 @@ def terminate_server(srv):
         print ("server state:", state)
     return "success"
 
-def list_servers(name, access=None, secret=None, region=None):
-    if g_driver == None:
-        init(access, secret, region)
-    nodes = g_driver.list_nodes()
+def list_servers(name, conf = None):
+    init(conf)
+    nodes = config.driver.list_nodes()
     nodes = [x for x in nodes if x.name==name]
     return nodes
 
