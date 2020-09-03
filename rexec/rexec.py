@@ -294,20 +294,20 @@ if __name__ == "__main__":
                 print ("Public key not found in usual place; please specify --pubkey")
         if args.gpus:
             if args.size == None:
-                size = 'g4dn.xlarge'
+                size = 'DEFAULT_GPU_SIZE'
             else:
                 size = args.size
             if args.image == None:
-                image = 'ami-008d8ed4bd7dc2485'
+                image = 'DEFAULT_GPU_IMAGE'
             else:
                 image = args.image
         else:
             if args.size == None:
-                size = 't2.small'
+                size = 'DEFAULT_SIZE'
             else:
                 size = args.size
             if args.image == None:
-                image = 'ami-0ba3ac9cd67195659'
+                image = 'DEFAULT_IMAGE'
             else:
                 image = args.image
 

@@ -27,7 +27,7 @@ def init(conf = None):
     else:
         config.provider = jconf['preferred']
 
-    for param in ['access', 'secret', 'region', 'project']:
+    for param in ['access', 'secret', 'region', 'project', 'default_image', 'default_size', 'default_gpu_image', 'default_gpu_size']:
         if param in conf:
             config[param] = conf[param]
         else:
@@ -86,9 +86,22 @@ def start_server(srv):
 def launch_server(name, size=None, image=None, pubkey=None, conf = None):
     init(conf)
 
-    images = [x for x in config.driver.list_images() if x.name == size]
+    if image=="DEFAULT_IMAGE":
+        image = config.default_image
+
+    if size=="DEFAULT_SIZE":
+        size = config.default_size
+
+    if image=="DEFAULT_GPU_IMAGE":
+        image = config.default_gpu_image
+
+    if size=="DEFAULT_GPU_SIZE":
+        size = config.default_gpu_size
+
+    images = [x for x in config.driver.list_images() if x.name == image]
     if not images:
         raise Exception("Image %s not found" % image)
+    image = images[0]
 
     sizes = [x for x in config.driver.list_sizes() if x.name == size]
     if not sizes:
