@@ -19,7 +19,7 @@ def init(conf = None):
     if conf == None:
         conf = {}
 
-    f = open(os.environ['HOME'] + "/.rexec/config.yaml")
+    f = open(os.environ['HOME'] + "/.rexec/config.yml")
     yconf = yaml.load(f, Loader=yaml.FullLoader)
     f.close()
 
