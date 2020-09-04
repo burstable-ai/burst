@@ -46,7 +46,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                 good = False
                 for z in range(10, -1, -1):
                     ret = run(cmd, timeout=15)
-                    if ret[0].strip()=='sshd responding':
+                    if ret[0].strip()[-15:]=='sshd responding':
                         good = True
                         break
                     print ("sshd not responding; %d attempts left" % z)
@@ -60,7 +60,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
 
         if url:
             remote = "-H " + DOCKER_REMOTE
-            ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(sshuser, url)]
+            ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(sshuser, url)]
             print (ssh_args)
             tunnel = subprocess.Popen(ssh_args)
             time.sleep(5)
@@ -160,6 +160,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                                                                     stop, conf.access, conf.secret, conf.region,
                                                                     ("--project=" + conf.project) if conf.project else "",
                                                                     remote, DEFAULT_IMAGE)
+            # cmd = "docker {0} run --rm -ti {1} rexec --version".format(remote, DEFAULT_IMAGE)
             print (cmd[:100] + "...")
             print ("Shutdown process container ID:")
             os.system(cmd)
