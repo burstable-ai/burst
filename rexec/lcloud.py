@@ -67,6 +67,20 @@ def get_server_state(srv):
     if node:
         return node[0].state
 
+def get_server_size(srv):
+    if config.provider=='EC2':
+        return srv.extra['instance_type']
+    elif config.provider=='GCE':
+        typ = srv.extra['machineType']
+        i = typ.rfind('/')
+        return typ[i+1:]
+
+def get_server_image(srv):
+    if config.provider=='EC2':
+        return srv.extra['image_id']
+    elif config.provider=='GCE':
+        return srv.extra['image']
+
 def start_server(srv):
     result = srv.start()
     if not result:
@@ -85,9 +99,10 @@ def start_server(srv):
         time.sleep(5)
     return srv
 
-def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=None):
-    init(conf)
-
+#
+# fill in default values for size & image
+#
+def fix_size_and_image(size, image):
     if image=="DEFAULT_IMAGE":
         image = config.default_image
 
@@ -99,7 +114,11 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
 
     if size=="DEFAULT_GPU_SIZE":
         size = config.default_gpu_size
+    return size, image
 
+def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=None):
+    init(conf)
+    size, image = fix_size_and_image(size, image)
     if config.provider=='EC2':
         images = config.driver.list_images(ex_image_ids=[image])
     else:

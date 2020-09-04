@@ -91,12 +91,13 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             print (cmd)
             out, err = run(cmd)
             print (out)
-
-            if size and size != node.extra['instance_type']:
+            # print ("DEEBG ex:", node.extra)
+            size, image = fix_size_and_image(size, image)
+            if size and size != get_server_size(node):
                 raise Exception("FIXME: cannot change size (EC2 instance type) -- need to re-launch")
-            if image and image != node.extra['image_id']:
+            if image and image != get_server_image(node):
                 raise Exception("FIXME: cannot change image (EC2 ami) -- need to terminate & re-launch server")
-            print ("rexec: name %s size %s image %s url %s" % (node.name, node.extra['instance_type'], node.extra['image_id'], url))
+            print ("rexec: name %s size %s image %s url %s" % (node.name, size, image, url))
             cmd = "rsync -vrltzu {0}/* {3}@{1}:{2}/".format(locpath, url, path, sshuser)
             print (cmd)
             os.system(cmd)
@@ -159,7 +160,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                                                                     stop, conf.access, conf.secret, conf.region,
                                                                     ("--project=" + conf.project) if conf.project else "",
                                                                     remote, DEFAULT_IMAGE)
-            print (cmd[:80] + "...")
+            print (cmd[:100] + "...")
             print ("Shutdown process container ID:")
             os.system(cmd)
 
@@ -249,7 +250,7 @@ if __name__ == "__main__":
     if not (args.rexecuser or args.uuid or args.url or args.local):
         rxuser = getpass.getuser()
         args.rexecuser = "rexec-" + rxuser
-        print ("Rexec username:", args.rexecuser)
+        print ("Rexec virtual machine name:", args.rexecuser)
 
     if args.stop_instance_by_url:
         stop_instance_by_url(args.stop_instance_by_url, args_conf)
