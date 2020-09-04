@@ -135,7 +135,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             cloud, host = cloudmap.split(":")
             args = f"bash -c 'mkdir -p {host}; rclone mount {cloud}: {host} & sleep 3; {args}; umount {host}'"
 
-        cmd = "docker {3} run {4} {5} --rm -it -v {2}:/home/rexec {6} {0} {1}".format(DEFAULT_IMAGE,
+        cmd = "docker {3} run {4} {5} --rm -d -v {2}:/home/rexec {6} {0} {1}".format(DEFAULT_IMAGE,
                                                                                   args, path, remote, gpu_args, port_args, cloud_args)
         print (cmd)
         print ("\n\n---------------------OUTPUT-----------------------")
@@ -200,6 +200,7 @@ if __name__ == "__main__":
     parser.add_argument("--secret",                             help="libcloud password (aws: SECRET)")
     parser.add_argument("--region",                             help="libcloud location (aws: region)")
     parser.add_argument("--project",                            help="GCE project ID")
+    parser.add_argument("--provider", default='EC2',            help="GCE, EC2 etc.")
     parser.add_argument("--image",                              help="libcloud image (aws: ami image_id")
     parser.add_argument("--size",                               help="libcloud size (aws: instance_type")
     parser.add_argument("--pubkey",                             help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
@@ -237,6 +238,7 @@ if __name__ == "__main__":
         args_conf.secret = args.secret
         args_conf.region = args.region
         args_conf.project = args.project
+        args_conf.provider = args.provider
     else:
         args_conf = None
 

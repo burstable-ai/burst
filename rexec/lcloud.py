@@ -70,7 +70,7 @@ def get_server_state(srv):
     node = [x for x in nodes if x.uuid.find(srv.uuid)==0]
     if node:
         return node[0].state
-    print ("Cannot find server %s to determine state; assuming terminated")
+    print ("Cannot find server to determine state; assuming terminated")
     return 'terminated'
 
 def get_server_size(srv):
