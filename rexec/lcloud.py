@@ -25,7 +25,7 @@ def init(conf = None):
         f.close()
     except:
         print ("config.yml not found")
-        yconf = {}
+        yconf = {'EC2': {}, 'GCE': {}}          #dummy yconf
 
     if 'provider' in conf:
         config.provider = conf['provider']
