@@ -62,9 +62,10 @@ def get_server(url=None, uuid=None, name=None, conf = None):
     return node[0] if node else None
 
 def get_server_state(srv):
-    srv = get_server(uuid = srv.uuid)
-    if srv:
-        return srv.state
+    nodes = config.driver.list_nodes()                      #need to refresh node to get state
+    node = [x for x in nodes if x.uuid.find(srv.uuid)==0]
+    if node:
+        return node[0].state
 
 def start_server(srv):
     result = srv.start()
@@ -99,7 +100,10 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
     if size=="DEFAULT_GPU_SIZE":
         size = config.default_gpu_size
 
-    images = [x for x in config.driver.list_images() if x.name == image]
+    if config.provider=='EC2':
+        images = config.driver.list_images(ex_image_ids=[image])
+    else:
+        images = [x for x in config.driver.list_images() if x.name == image]
     if not images:
         raise Exception("Image %s not found" % image)
     image = images[0]
