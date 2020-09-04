@@ -41,7 +41,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                     node = start_server(node)
                 url = node.public_ips[0]
                 print ("Waiting for sshd")
-                cmd = ["ssh", "-o StrictHostKeyChecking=no", "{0}@{1}".format(sshuser, url), "echo", "'sshd responding'"]
+                cmd = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null", "{0}@{1}".format(sshuser, url), "echo", "'sshd responding'"]
                 print(cmd)
                 good = False
                 for z in range(10, -1, -1):
@@ -156,12 +156,13 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         else:
             print ("Scheduling shutdown of VM at %s for %d seconds from now" % (url, stop))
             conf = get_config()
-            cmd = "docker {6} run --rm -d {7} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5}".format(url,
+            cmd = "docker {7} run --rm -it {8} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6}".format(url,
                                                                     stop, conf.access, conf.secret, conf.region,
                                                                     ("--project=" + conf.project) if conf.project else "",
+                                                                    conf.provider,
                                                                     remote, DEFAULT_IMAGE)
             # cmd = "docker {0} run --rm -ti {1} rexec --version".format(remote, DEFAULT_IMAGE)
-            print (cmd[:100] + "...")
+            print (cmd[:1000] + "...")
             print ("Shutdown process container ID:")
             os.system(cmd)
 

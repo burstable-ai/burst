@@ -19,9 +19,13 @@ def init(conf = None):
     if conf == None:
         conf = {}
 
-    f = open(os.environ['HOME'] + "/.rexec/config.yml")
-    yconf = yaml.load(f, Loader=yaml.FullLoader)
-    f.close()
+    try:
+        f = open(os.environ['HOME'] + "/.rexec/config.yml")
+        yconf = yaml.load(f, Loader=yaml.FullLoader)
+        f.close()
+    except:
+        print ("config.yml not found")
+        yconf = {}
 
     if 'provider' in conf:
         config.provider = conf['provider']
