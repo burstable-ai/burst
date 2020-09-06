@@ -135,7 +135,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             cloud, host = cloudmap.split(":")
             args = f"bash -c 'mkdir -p {host}; rclone mount {cloud}: {host} & sleep 3; {args}; umount {host}'"
 
-        cmd = "docker {3} run {4} {5} --rm -d -v {2}:/home/rexec {6} {0} {1}".format(DEFAULT_IMAGE,
+        cmd = "docker {3} run {4} {5} --rm -ti -v {2}:/home/rexec {6} {0} {1}".format(DEFAULT_IMAGE,
                                                                                   args, path, remote, gpu_args, port_args, cloud_args)
         print (cmd)
         print ("\n\n---------------------OUTPUT-----------------------")
@@ -156,7 +156,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         else:
             print ("Scheduling shutdown of VM at %s for %d seconds from now" % (url, stop))
             conf = get_config()
-            cmd = "docker {7} run --rm -it {8} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6}".format(url,
+            cmd = "docker {7} run --rm -ti {8} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6}".format(url,
                                                                     stop, conf.access, conf.secret, conf.region,
                                                                     ("--project=" + conf.project) if conf.project else "",
                                                                     conf.provider,
