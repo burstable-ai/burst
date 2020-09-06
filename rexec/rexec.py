@@ -98,9 +98,16 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             if image and image != get_server_image(node):
                 raise Exception("FIXME: cannot change image (EC2 ami) -- need to terminate & re-launch server")
             print ("rexec: name %s size %s image %s url %s" % (node.name, size, image, url))
+
+            #sync project directory
             cmd = "rsync -vrltzu {0}/* {3}@{1}:{2}/".format(locpath, url, path, sshuser)
             print (cmd)
-            os.system(cmd)
+
+            if get_config().provider == 'GCE':
+                # sync service acct creds (for shutdown)
+                cmd = "rsync -vrltzu --relative {0}/./.rexec/gce_srv_privkey.json {3}@{1}:{2}/".format(os.path.expanduser('~'), url, path, sshuser)
+                print (cmd)
+                os.system(cmd)
         else:
             print ("rexec: running locally")
             remote = ""
@@ -156,8 +163,12 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         else:
             print ("Scheduling shutdown of VM at %s for %d seconds from now" % (url, stop))
             conf = get_config()
+            secret = conf.secret
+            # hack to look for GCE service acct key in local dir on container
+            if  conf.provider == 'GCE' and secret[-5:]==".json" and secret[0:2] == '~/': #the things we do
+                secret = "./" + secret[2:]
             cmd = "docker {7} run --rm -ti {8} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6}".format(url,
-                                                                    stop, conf.access, conf.secret, conf.region,
+                                                                    stop, conf.access, secret, conf.region,
                                                                     ("--project=" + conf.project) if conf.project else "",
                                                                     conf.provider,
                                                                     remote, DEFAULT_IMAGE)
@@ -175,6 +186,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
 #
 def stop_instance_by_url(url, conf):
     print ("STOP instance with public IP", url)
+    print ("DEBUG", os.path.abspath('.'), conf.secret)
     node = get_server(url=url, conf=conf)
     if not node:
         print ("No active instance found for IP", url)
