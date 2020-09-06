@@ -99,7 +99,7 @@ def start_server(srv):
     print ("Waiting for public IP address to be assigned")
     config.driver.wait_until_running([srv])
     print("Public IP's:", srv.public_ips)
-    while len(srv.public_ips)==0:
+    while len(srv.public_ips)==0 or srv.public_ips.count(None) == len(srv.public_ips): #Really? Google? [None]????
         # srv = config.driver.list_nodes(ex_node_ids=[srv.id])[0]
         srv = get_server(uuid=srv.uuid)       #seems necessary to refresh to update state
         print("Public IP's:", srv.public_ips)
