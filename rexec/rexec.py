@@ -100,12 +100,12 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             print ("rexec: name %s size %s image %s url %s" % (node.name, size, image, url))
 
             #sync project directory
-            cmd = "rsync -vrltzu {0}/* {3}@{1}:{2}/".format(locpath, url, path, sshuser)
+            cmd = 'rsync -vrltzu -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" {0}/* {3}@{1}:{2}/'.format(locpath, url, path, sshuser)
             print (cmd)
 
             if get_config().provider == 'GCE':
                 # sync service acct creds (for shutdown)
-                cmd = "rsync -vrltzu --relative {0}/./.rexec/gce_srv_privkey.json {3}@{1}:{2}/".format(os.path.expanduser('~'), url, path, sshuser)
+                cmd = 'rsync -vrltzu --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" {0}/./.rexec/gce_srv_privkey.json {3}@{1}:{2}/'.format(os.path.expanduser('~'), url, path, sshuser)
                 print (cmd)
                 os.system(cmd)
         else:
@@ -132,7 +132,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             if remote:
                 local_rcred = f"{os.environ['HOME']}/.rexec"
                 rcred = " /home/ubuntu/.rexec/"
-                cmd = f"rsync -vrltzu {local_rcred}/rclone.conf {sshuser}@{url}:{rcred}"
+                cmd = f'rsync -vrltzu  -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" {local_rcred}/rclone.conf {sshuser}@{url}:{rcred}'
                 print(cmd)
                 os.system(cmd)
             else:
@@ -149,7 +149,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         os.system(cmd)
         print ("----------------------END-------------------------\n\n")
         if url:
-            cmd = "rsync -vrltzu '{3}@{1}:{2}/*' {0}/".format(locpath, url, path, sshuser)
+            cmd = "rsync -vrltzu  -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' '{3}@{1}:{2}/*' {0}/".format(locpath, url, path, sshuser)
             print (cmd)
             os.system(cmd)
     except:
