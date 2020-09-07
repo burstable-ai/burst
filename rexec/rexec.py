@@ -167,7 +167,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             # hack to look for GCE service acct key in local dir on container
             if  conf.provider == 'GCE' and secret[-5:]==".json" and secret[0:2] == '~/': #the things we do
                 secret = "./" + secret[2:]
-            cmd = "docker {7} run --rm -ti -v {9}:/home/rexec {8} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6}".format(url,
+            cmd = "docker {7} run --rm -d -v {9}:/home/rexec {8} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6}".format(url,
                                                                     stop, conf.access, secret, conf.region,
                                                                     ("--project=" + conf.project) if conf.project else "",
                                                                     conf.provider,
