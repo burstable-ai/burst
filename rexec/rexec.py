@@ -102,7 +102,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             #sync project directory
             cmd = 'rsync -vrltzu -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" {0}/* {3}@{1}:{2}/'.format(locpath, url, path, sshuser)
             print (cmd)
-
+            os.system(cmd)
             if get_config().provider == 'GCE':
                 # sync service acct creds (for shutdown)
                 cmd = 'rsync -vrltzu --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" {0}/./.rexec/gce_srv_privkey.json {3}@{1}:{2}/'.format(os.path.expanduser('~'), url, path, sshuser)
