@@ -5,6 +5,6 @@ RUN pip3 install gputil ipython
 
 RUN adduser --disabled-password --gecos '' ubuntu
 
-WORKDIR /home/rexec
+WORKDIR /home/rexec/work
 
 CMD ["/bin/bash"]
