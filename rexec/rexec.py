@@ -34,7 +34,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         if url or uuid or rxuser:
             node = get_server(url=url, uuid=uuid, name=rxuser, conf=conf)
             if rxuser and not node:
-                node = launch_server(rxuser, pubkey=pubkey, size=size, image=image, conf=conf, user=sshuser)
+                node = launch_server(rxuser, pubkey=pubkey, size=size, image=image, conf=conf, user=sshuser, gpus=gpus)
             if node:
                 if node.state.lower() != "running":
                     print ("Starting server")
@@ -251,7 +251,6 @@ if __name__ == "__main__":
         args_conf.region = args.region
         args_conf.project = args.project
         args_conf.provider = args.provider
-        args_conf.gpus = args.gpus
     else:
         args_conf = None
 

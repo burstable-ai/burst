@@ -33,7 +33,7 @@ def init(conf = None):
         config.provider = yconf['preferred']
 
     for param in ['access', 'secret', 'region', 'project', 'default_image', 'default_size', 'default_gpu_image',
-                  'default_gpu_size', 'gpus', 'default_gpu']:
+                  'default_gpu_size', 'default_gpu']:
         if param in conf:
             config[param] = conf[param]
         else:
@@ -124,7 +124,7 @@ def fix_size_and_image(size, image):
         size = config.default_gpu_size
     return size, image
 
-def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=None):
+def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=None, gpus=None):
     init(conf)
     size, image = fix_size_and_image(size, image)
     if config.provider=='EC2':
@@ -154,10 +154,12 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
                     }
                 ]
             }
-            if config.gpus:
-                node = config.driver.create_node(name, size, image, ex_metadata=meta, ex_accelerator_type=conf.default_gpu,
+            if gpus:
+                print ("Launching with GPU")
+                node = config.driver.create_node(name, size, image, ex_metadata=meta, ex_accelerator_type=config.default_gpu,
                                              ex_accelerator_count=1, ex_on_host_maintenance="TERMINATE")
             else:
+                print ("Launching without GPU")
                 node = config.driver.create_node(name, size, image, ex_metadata=meta)
         else:
             raise Exception("Unsupported clown provider: %s" % config.provider)
