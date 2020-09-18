@@ -32,7 +32,8 @@ def init(conf = None):
     else:
         config.provider = yconf['preferred']
 
-    for param in ['access', 'secret', 'region', 'project', 'default_image', 'default_size', 'default_gpu_image', 'default_gpu_size']:
+    for param in ['access', 'secret', 'region', 'project', 'default_image', 'default_size', 'default_gpu_image',
+                  'default_gpu_size', 'default_gpu']:
         if param in conf:
             config[param] = conf[param]
         else:
@@ -153,7 +154,11 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
                     }
                 ]
             }
-            node = config.driver.create_node(name, size, image, ex_metadata=meta)
+            if conf.gpus:
+                node = config.driver.create_node(name, size, image, ex_metadata=meta, ex_accelerator_type=conf.default_gpu,
+                                             ex_accelerator_count=1, ex_on_host_maintenance="TERMINATE")
+            else:
+                node = config.driver.create_node(name, size, image, ex_metadata=meta)
         else:
             raise Exception("Unsupported clown provider: %s" % config.provider)
     else:

@@ -251,6 +251,7 @@ if __name__ == "__main__":
         args_conf.region = args.region
         args_conf.project = args.project
         args_conf.provider = args.provider
+        args_conf.gpus = args.gpus
     else:
         args_conf = None
 
