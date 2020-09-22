@@ -19,6 +19,7 @@ from rexec.version import version
 os.chdir(opath)
 
 DEFAULT_IMAGE = "rexec_image" #FIXME: should be unique to folder structure
+SHUTDOWN_IMAGE = "datahubdock/rexec:rexec_shutdown"
 DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
@@ -171,7 +172,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                                                                     stop, conf.access, secret, conf.region,
                                                                     ("--project=" + conf.project) if conf.project else "",
                                                                     conf.provider,
-                                                                    remote, DEFAULT_IMAGE, path)
+                                                                    remote, SHUTDOWN_IMAGE, path)
             # cmd = "docker {0} run --rm -ti {1} rexec --version".format(remote, DEFAULT_IMAGE)
             print (cmd[:1000] + "...")
             print ("Shutdown process container ID:")
