@@ -84,7 +84,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                             kills.append(j['ID'])
                 if kills:
                     print ("Killing shutdown processes:", kills)
-                    cmd = "docker {0} stop {1}".format(remote, " ".join(kills))
+                    cmd = "docker {0} stop {1} &".format(remote, " ".join(kills))
                     print (cmd)
                     os.system(cmd)
             print ("Removing topmost layer")        #to avoid running stale image
