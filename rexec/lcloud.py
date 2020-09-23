@@ -196,11 +196,23 @@ def terminate_server(srv):
         print ("server state:", state)
     return "success"
 
-def list_servers(name, conf = None):
+def list_servers(name, conf = None, pretty=False):
     init(conf)
+    ret = []
     nodes = config.driver.list_nodes()
-    nodes = [x for x in nodes if x.name==name]
-    return nodes
+    for x in nodes:
+        if x.name==name:
+            if pretty:
+                img = x.extra['image_id'] if config.provider == 'EC2' else x.image
+                if img == config.default_image:
+                    img += " (default_image, no gpu)"
+                elif img == config.default_gpu_image:
+                    img += " (default_gpu_image)"
+                s = "IMAGE: %s STATE: %s IP's: %s ID: %s/%s" %(img, x.state, x.public_ips, config.provider, x.id)
+                ret.append(s)
+            else:
+                ret.append(x)
+    return ret
 
 
 if __name__ == "__main__":

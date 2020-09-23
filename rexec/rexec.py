@@ -28,6 +28,8 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
           cloudmap="", conf=None):
     tunnel = None
     try:
+        if not os.path.exists(dockerfile):
+            raise Exception("Dockerfile not found")
         if url:
             if not sshuser:
                 sshuser, url = url.split('@')
@@ -113,7 +115,6 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             print ("rexec: running locally")
             remote = ""
             path = os.path.abspath('.')
-
 
         cmd = "docker {1} build . --file {2} -t {0}".format(DEFAULT_IMAGE, remote, dockerfile)
         print (cmd)
@@ -274,7 +275,7 @@ if __name__ == "__main__":
 
     elif args.list_servers:     #note this is different than --shutdown 0 -- we just shut down without running
         print ("-------------------------------------------------------------\nSERVERS associated with %s:" % args.rexecuser)
-        for s in list_servers(args.rexecuser, args_conf):
+        for s in list_servers(args.rexecuser, args_conf, pretty=True):
             print (s)
         print ("-------------------------------------------------------------")
 
