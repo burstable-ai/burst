@@ -1,10 +1,2 @@
-FROM ubuntu:20.04
-RUN apt-get update && apt-get install -y python3 python3-pip nano fish git curl rclone fuse
-RUN pip3 install git+https://github.com/datahub-projects/rexec#egg=rexec
-RUN pip3 install gputil ipython
-
-RUN adduser --disabled-password --gecos '' ubuntu
-
-WORKDIR /home/rexec/work
-
+FROM datahubdock/rexec:rexec_base
 CMD ["/bin/bash"]
