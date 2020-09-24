@@ -45,7 +45,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                     node = start_server(node)
                 url = node.public_ips[0]
                 vprint ("Waiting for sshd")
-                cmd = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null", "{0}@{1}".format(sshuser, url), "echo", "'sshd responding'"]
+                cmd = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null", "-o LogLevel=error", "{0}@{1}".format(sshuser, url), "echo", "'sshd responding'"]
                 vprint(cmd)
                 good = False
                 for z in range(10, -1, -1):
@@ -64,7 +64,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
 
         if url:
             remote = "-H " + DOCKER_REMOTE
-            ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(sshuser, url)]
+            ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null", "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(sshuser, url)]
             vprint (ssh_args)
             tunnel = subprocess.Popen(ssh_args)
             time.sleep(5)
@@ -104,12 +104,12 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             vprint ("rexec: name %s size %s image %s url %s" % (node.name, size, image, url))
 
             #sync project directory
-            cmd = 'rsync -vrltzu -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" {0}/* {3}@{1}:{2}/'.format(locpath, url, path, sshuser)
+            cmd = 'rsync -rltzu -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/* {3}@{1}:{2}/'.format(locpath, url, path, sshuser)
             vprint (cmd)
             os.system(cmd)
             if get_config().provider == 'GCE':
                 # sync service acct creds (for shutdown)
-                cmd = 'rsync -vrltzu --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" {0}/./.rexec/gce_srv_privkey.json {3}@{1}:{2}/'.format(os.path.expanduser('~'), url, path, sshuser)
+                cmd = 'rsync -rltzu --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.rexec/gce_srv_privkey.json {3}@{1}:{2}/'.format(os.path.expanduser('~'), url, path, sshuser)
                 vprint (cmd)
                 os.system(cmd)
         else:
@@ -135,7 +135,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             if remote:
                 local_rcred = f"{os.environ['HOME']}/.rexec"
                 rcred = " /home/ubuntu/.rexec/"
-                cmd = f'rsync -vrltzu  -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" {local_rcred}/rclone.conf {sshuser}@{url}:{rcred}'
+                cmd = f'rsync -rltzu  -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {local_rcred}/rclone.conf {sshuser}@{url}:{rcred}'
                 vprint(cmd)
                 os.system(cmd)
             else:
@@ -152,7 +152,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         os.system(cmd)
         print ("----------------------END-------------------------\n\n")
         if url:
-            cmd = "rsync -vrltzu  -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' '{3}@{1}:{2}/*' {0}/".format(locpath, url, path, sshuser)
+            cmd = "rsync -rltzu  -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error' '{3}@{1}:{2}/*' {0}/".format(locpath, url, path, sshuser)
             vprint (cmd)
             os.system(cmd)
     except:
