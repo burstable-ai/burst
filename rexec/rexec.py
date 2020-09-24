@@ -150,7 +150,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         vprint (cmd)
         print ("\n\n---------------------OUTPUT-----------------------")
         os.system(cmd)
-        print ("----------------------END-------------------------\n\n")
+        print ("----------------------END-------------------------\n")
         if url:
             cmd = "rsync -rltzu  -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error' '{3}@{1}:{2}/*' {0}/".format(locpath, url, path, sshuser)
             vprint (cmd)
@@ -335,4 +335,4 @@ if __name__ == "__main__":
               rxuser=args.rexecuser, gpus=args.gpus, ports=args.p, stop=args.shutdown,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               conf = args_conf)
-        print ("DONE")
+        print ("\nDONE")
