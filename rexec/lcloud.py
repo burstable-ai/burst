@@ -6,6 +6,8 @@ from libcloud.compute.providers import get_driver
 from libcloud.compute.base import NodeAuthSSHKey
 from easydict import EasyDict as dictobj
 
+from verbos import vprint
+
 config = dictobj()
 
 #
@@ -24,7 +26,7 @@ def init(conf = None):
         yconf = yaml.load(f, Loader=yaml.FullLoader)
         f.close()
     except:
-        print ("config.yml not found")
+        vprint ("config.yml not found")
         yconf = {'EC2': {}, 'GCE': {}}          #dummy yconf
 
     if 'provider' in conf:
@@ -48,7 +50,7 @@ def init(conf = None):
         config.driver = cls(config.access, config.secret, datacenter=config.region, project=config.project)
 
     else:
-        print ("ERROR: unknown cloud provider", config.provider)
+        vprint ("ERROR: unknown cloud provider", config.provider)
 
 def get_config():
     return config
@@ -71,7 +73,7 @@ def get_server_state(srv):
     node = [x for x in nodes if x.uuid.find(srv.uuid)==0]
     if node:
         return node[0].state
-    print ("Cannot find server to determine state; assuming terminated")
+    vprint ("Cannot find server to determine state; assuming terminated")
     return 'terminated'
 
 def get_server_size(srv):
@@ -96,14 +98,14 @@ def start_server(srv):
     while state != 'running':
         state = get_server_state(srv)
         time.sleep(2)
-        print ("server state:", state)
-    print ("Waiting for public IP address to be assigned")
+        vprint ("server state:", state)
+    vprint ("Waiting for public IP address to be assigned")
     config.driver.wait_until_running([srv])
-    print("Public IP's:", srv.public_ips)
+    vprint("Public IP's:", srv.public_ips)
     while len(srv.public_ips)==0 or srv.public_ips.count(None) == len(srv.public_ips): #Really? Google? [None]????
         # srv = config.driver.list_nodes(ex_node_ids=[srv.id])[0]
         srv = get_server(uuid=srv.uuid)       #seems necessary to refresh to update state
-        print("Public IP's:", srv.public_ips)
+        vprint("Public IP's:", srv.public_ips)
         time.sleep(5)
     return srv
 
@@ -140,7 +142,7 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
         raise Exception("Instance size %s not found" % size)
     size = sizes[0]
 
-    print ("Launching instance node, image=%s, name=%s, size=%s" % (image.id, name, size.id))
+    vprint ("Launching instance node, image=%s, name=%s, size=%s" % (image.id, name, size.id))
     if pubkey:
         if config.provider == 'EC2':                #Everybody makes it up
             auth = NodeAuthSSHKey(pubkey)
@@ -155,22 +157,22 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
                 ]
             }
             if gpus:
-                print ("Launching with GPU")
+                vprint ("Launching with GPU")
                 node = config.driver.create_node(name, size, image, ex_metadata=meta, ex_accelerator_type=config.default_gpu,
                                              ex_accelerator_count=1, ex_on_host_maintenance="TERMINATE")
             else:
-                print ("Launching without GPU")
+                vprint ("Launching without GPU")
                 node = config.driver.create_node(name, size, image, ex_metadata=meta)
         else:
             raise Exception("Unsupported clown provider: %s" % config.provider)
     else:
         node = config.driver.create_node(name, size, image)
-    print ("Waiting for public IP address to be active")
+    vprint ("Waiting for public IP address to be active")
     config.driver.wait_until_running([node])
     while len(node.public_ips)==0:
         # node = config.driver.list_nodes(ex_node_ids=[node.id])[0] #refresh node -- is this really necessary
         node = get_server(uuid=node.uuid)       #seems necessary to refresh to update state
-        print("Public IP's:", node.public_ips)
+        vprint("Public IP's:", node.public_ips)
         time.sleep(5)
     return node
 
@@ -182,7 +184,7 @@ def stop_server(srv):
     while state != 'stopped':
         state = get_server_state(srv)
         time.sleep(2)
-        print ("server state:", state)
+        vprint ("server state:", state)
     return "success"
 
 def terminate_server(srv):
@@ -193,7 +195,7 @@ def terminate_server(srv):
     while state != 'terminated':
         state = get_server_state(srv)
         time.sleep(2)
-        print ("server state:", state)
+        vprint ("server state:", state)
     return "success"
 
 def list_servers(name, conf = None, pretty=False):
