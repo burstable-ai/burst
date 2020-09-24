@@ -335,4 +335,5 @@ if __name__ == "__main__":
               rxuser=args.rexecuser, gpus=args.gpus, ports=args.p, stop=args.shutdown,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               conf = args_conf)
-        print ("\nDONE")
+        vprint ("DONE")
+        print()
