@@ -15,7 +15,7 @@ sys.path.insert(0, abspath)
 from rexec.lcloud import *
 from rexec.runrun import run
 from rexec.version import version
-from verbos import vprint, vvprint, v0print, get_piper
+from verbos import set_verbosity, vprint, vvprint, v0print, get_piper
 
 os.chdir(opath)
 
@@ -226,6 +226,7 @@ if __name__ == "__main__":
     parser.add_argument("--size",                               help="libcloud size (aws: instance_type")
     parser.add_argument("--pubkey",                             help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
     parser.add_argument("--delay", type=int, default=0,         help="delay command by N seconds")
+    parser.add_argument("--verbosity", type=int, default=0,     help="-1: just task output 0: status 1-4: more verbose")
     parser.add_argument("--shutdown", type=int, default=900, nargs='?',   help="seconds before server is stopped (default 15 minutes)")
     parser.add_argument("--stop_instance_by_url",               help="internal use")
     parser.add_argument("--dockerfile", type=str, default="Dockerfile",    help="Docker file to build the container with if not ./Dockerfile")
@@ -252,6 +253,8 @@ if __name__ == "__main__":
     vvprint ("CMDARGS:", cmdargs)
     args = parser.parse_args(rexargs)
     vvprint ("ARGS:", args)
+
+    set_verbosity(args.verbosity)
 
     if args.access:
         args_conf = dictobj()

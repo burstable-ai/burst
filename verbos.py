@@ -3,6 +3,10 @@ import sys
 VERBOSITY = 0
 LIMIT = 100
 
+def set_verbosity(v):
+    global VERBOSITY
+    VERBOSITY = v
+
 def _vprint_nocr(*args, **kw):
     # return
     if 'file' not in kw:
