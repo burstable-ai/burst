@@ -15,7 +15,7 @@ sys.path.insert(0, abspath)
 from rexec.lcloud import *
 from rexec.runrun import run
 from rexec.version import version
-from verbos import vprint, vvprint
+from verbos import vprint, vvprint, v0print, get_piper
 
 os.chdir(opath)
 
@@ -88,7 +88,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                             kills.append(j['ID'])
                 if kills:
                     vprint ("Killing shutdown processes:", kills)
-                    cmd = "docker {0} stop {1} 1> /dev/null 2> /dev/null &".format(remote, " ".join(kills))
+                    cmd = "docker {0} stop {1} {2} &".format(remote, " ".join(kills), get_piper())
                     vvprint (cmd)
                     os.system(cmd)
             vprint ("Removing topmost layer")        #to avoid running stale image
@@ -120,7 +120,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             path = os.path.abspath('.')
 
         vprint ("Building docker container")
-        cmd = "docker {1} build . --file {2} -t {0} >/dev/null".format(DEFAULT_IMAGE, remote, dockerfile)
+        cmd = "docker {1} build . --file {2} -t {0} {3}".format(DEFAULT_IMAGE, remote, dockerfile, get_piper())
         vvprint (cmd)
         os.system(cmd)
 
@@ -152,9 +152,10 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         cmd = "docker {3} run {4} {5} --rm -ti -v {2}:/home/rexec/work {6} {0} {1}".format(DEFAULT_IMAGE,
                                                                                   args, path, remote, gpu_args, port_args, cloud_args)
         vvprint (cmd)
-        print ("\n\n---------------------OUTPUT-----------------------")
+        vprint ("")
+        v0print ("---------------------OUTPUT-----------------------")
         os.system(cmd)
-        print ("----------------------END-------------------------\n")
+        v0print ("----------------------END-------------------------")
         if url:
             vprint ("Synchronizing folders")
             cmd = "rsync -rltzu  -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error' '{3}@{1}:{2}/*' {0}/".format(locpath, url, path, sshuser)
@@ -162,7 +163,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             os.system(cmd)
     except:
         traceback.print_exc()
-        print ("--------------------------------")
+        v0print ("--------------------------------")
 
     if url and node:
         if stop == 0:
@@ -175,13 +176,13 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             # hack to look for GCE service acct key in local dir on container
             if  conf.provider == 'GCE' and secret[-5:]==".json" and secret[0:2] == '~/': #the things we do
                 secret = "./" + secret[2:]
-            cmd = "docker {7} run --rm -d -v {9}:/home/rexec/work {8} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6} >/dev/null".format(url,
+            cmd = "docker {7} run --rm -d -v {9}:/home/rexec/work {8} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6} {10}".format(url,
                                                                     stop, conf.access, secret, conf.region,
                                                                     ("--project=" + conf.project) if conf.project else "",
                                                                     conf.provider,
-                                                                    remote, SHUTDOWN_IMAGE, path)
+                                                                    remote, SHUTDOWN_IMAGE, path, get_piper())
             # cmd = "docker {0} run --rm -ti {1} rexec --version".format(remote, DEFAULT_IMAGE)
-            vvprint (cmd[:100] + "...")
+            vvprint (cmd)
             vprint ("Shutdown process container ID:")
             os.system(cmd)
 
@@ -280,33 +281,33 @@ if __name__ == "__main__":
         stop_instance_by_url(args.stop_instance_by_url, args_conf)
 
     elif args.list_servers:     #note this is different than --shutdown 0 -- we just shut down without running
-        print ("-------------------------------------------------------------\nSERVERS associated with %s:" % args.rexecuser)
+        v0print ("-------------------------------------------------------------\nSERVERS associated with %s:" % args.rexecuser)
         for s in list_servers(args.rexecuser, args_conf, pretty=True):
             print (s)
-        print ("-------------------------------------------------------------")
+        v0print ("-------------------------------------------------------------")
 
     elif args.shutdown == None:
-        print ("-------------------------------------------------------------")
+        v0print ("-------------------------------------------------------------")
         for s in list_servers(args.rexecuser, args_conf):
             yes = input("Stopping (warm shutdown) %s %s are you sure?" % (s.name, s.public_ips))
             if yes=='y':
                 stop_server(s)
             else:
                 print ("Aborted")
-        print ("-------------------------------------------------------------")
+        v0print ("-------------------------------------------------------------")
 
     elif args.terminate_servers:
-        print ("-------------------------------------------------------------")
+        v0print ("-------------------------------------------------------------")
         for s in list_servers(args.rexecuser, args_conf):
             yes = input("Terminating %s %s are you sure?" % (s.name, s.public_ips))
             if yes=='y':
                 terminate_server(s)
             else:
                 print ("Aborted")
-        print ("-------------------------------------------------------------")
+        v0print ("-------------------------------------------------------------")
 
     elif args.version:
-        print ("\nVERSION:", version)
+        print ("VERSION:", version)
 
     else:
 
@@ -341,4 +342,4 @@ if __name__ == "__main__":
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               conf = args_conf)
         vprint ("DONE")
-        print()
+        v0print()

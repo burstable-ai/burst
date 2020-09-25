@@ -1,9 +1,9 @@
 import sys
 
-VERBOSITY = 1
+VERBOSITY = 0
 LIMIT = 100
 
-def vprint0(*args, **kw):
+def _vprint_nocr(*args, **kw):
     # return
     if 'file' not in kw:
         file = sys.stdout
@@ -16,12 +16,24 @@ def vprint0(*args, **kw):
     s += "\r"
     file.write("rexec: %s" % s)
 
+def v0print(*args, **kw):
+    if VERBOSITY >=0:
+        print(*args, **kw)
+
 def vprint(*args, **kw):
     if VERBOSITY == 0:
-        vprint0(*args, **kw)
+        _vprint_nocr(*args, **kw)
     elif VERBOSITY >= 1:
         print (*args, **kw)
 
 def vvprint(*args, **kw):
     if VERBOSITY >= 2:
         print (*args, **kw)
+
+def get_piper():
+    if VERBOSITY < 3:
+        return ">/dev/null 2>/dev/null"
+    elif VERBOSITY == 3:
+        return ">/dev/null"
+    elif VERBOSITY >= 4:
+        return ""
