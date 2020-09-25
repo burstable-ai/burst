@@ -84,7 +84,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                     if x:
                         j = json.loads(x)
                         Command = j['Command']
-                        if Command.find("rexec --stop") <2:
+                        if Command.find("rexec --stop") < 2:
                             kills.append(j['ID'])
                 if kills:
                     vprint ("Killing shutdown processes:", kills)
