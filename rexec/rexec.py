@@ -15,7 +15,7 @@ sys.path.insert(0, abspath)
 from rexec.lcloud import *
 from rexec.runrun import run
 from rexec.version import version
-from verbos import vprint
+from verbos import vprint, vvprint
 
 os.chdir(opath)
 
@@ -46,7 +46,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                 url = node.public_ips[0]
                 vprint ("Waiting for sshd")
                 cmd = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null", "-o LogLevel=error", "{0}@{1}".format(sshuser, url), "echo", "'sshd responding'"]
-                vprint(cmd)
+                vvprint(cmd)
                 good = False
                 for z in range(10, -1, -1):
                     ret = run(cmd, timeout=15)
@@ -58,14 +58,15 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                         time.sleep(5)
                 if not good:
                     raise Exception("error in ssh call: %s" % ret[0].strip())
-                vprint ("SSH returns -->%s|%s<--" % ret)
+                vvprint ("SSH returns -->%s|%s<--" % ret)
             else:
                 raise Exception("Error: node not found")
 
         if url:
+            vprint ("Connecting through ssh")
             remote = "-H " + DOCKER_REMOTE
             ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null", "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(sshuser, url)]
-            vprint (ssh_args)
+            vvprint (ssh_args)
             tunnel = subprocess.Popen(ssh_args)
             time.sleep(5)
             relpath = os.path.abspath('.')[len(os.path.expanduser('~')):]
@@ -74,9 +75,9 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             path = "/home/{0}{1}".format(sshuser, relpath)
 
             cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
-            vprint (cmd)
+            vvprint (cmd)
             out = run(cmd)
-            vprint("PS returns -->%s|%s<--" % out)
+            vvprint("PS returns -->%s|%s<--" % out)
             if out[0].strip():
                 kills = []
                 for x in out[0].split("\n"):
@@ -88,13 +89,13 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                 if kills:
                     vprint ("Killing shutdown processes:", kills)
                     cmd = "docker {0} stop {1} 1> /dev/null 2> /dev/null &".format(remote, " ".join(kills))
-                    vprint (cmd)
+                    vvprint (cmd)
                     os.system(cmd)
             vprint ("Removing topmost layer")        #to avoid running stale image
             cmd = ["docker", "{0}".format(remote), "rmi", "--no-prune", DEFAULT_IMAGE]
-            vprint (cmd)
+            vvprint (cmd)
             out, err = run(cmd)
-            vprint (out)
+            vvprint (out)
             # print ("DEEBG ex:", node.extra)
             size, image = fix_size_and_image(size, image)
             if size and size != get_server_size(node):
@@ -104,21 +105,23 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             vprint ("rexec: name %s size %s image %s url %s" % (node.name, size, image, url))
 
             #sync project directory
+            vprint ("Synchronizing folders")
             cmd = 'rsync -rltzu -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/* {3}@{1}:{2}/'.format(locpath, url, path, sshuser)
-            vprint (cmd)
+            vvprint (cmd)
             os.system(cmd)
             if get_config().provider == 'GCE':
                 # sync service acct creds (for shutdown)
                 cmd = 'rsync -rltzu --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.rexec/gce_srv_privkey.json {3}@{1}:{2}/'.format(os.path.expanduser('~'), url, path, sshuser)
-                vprint (cmd)
+                vvprint (cmd)
                 os.system(cmd)
         else:
             vprint ("rexec: running locally")
             remote = ""
             path = os.path.abspath('.')
 
+        vprint ("Building docker container")
         cmd = "docker {1} build . --file {2} -t {0} >/dev/null".format(DEFAULT_IMAGE, remote, dockerfile)
-        vprint (cmd)
+        vvprint (cmd)
         os.system(cmd)
 
         args = " ".join(args)
@@ -136,7 +139,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                 local_rcred = f"{os.environ['HOME']}/.rexec"
                 rcred = " /home/ubuntu/.rexec/"
                 cmd = f'rsync -rltzu  -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {local_rcred}/rclone.conf {sshuser}@{url}:{rcred}'
-                vprint(cmd)
+                vvprint(cmd)
                 os.system(cmd)
             else:
                 rcred = f"{os.environ['HOME']}/.rexec"
@@ -145,15 +148,17 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             cloud, host = cloudmap.split(":")
             args = f"bash -c 'mkdir -p {host}; rclone mount {cloud}: {host} & sleep 3; {args}; umount {host}'"
 
+        vprint ("Running docker container")
         cmd = "docker {3} run {4} {5} --rm -ti -v {2}:/home/rexec/work {6} {0} {1}".format(DEFAULT_IMAGE,
                                                                                   args, path, remote, gpu_args, port_args, cloud_args)
-        vprint (cmd)
+        vvprint (cmd)
         print ("\n\n---------------------OUTPUT-----------------------")
         os.system(cmd)
         print ("----------------------END-------------------------\n")
         if url:
+            vprint ("Synchronizing folders")
             cmd = "rsync -rltzu  -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error' '{3}@{1}:{2}/*' {0}/".format(locpath, url, path, sshuser)
-            vprint (cmd)
+            vvprint (cmd)
             os.system(cmd)
     except:
         traceback.print_exc()
@@ -176,7 +181,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                                                                     conf.provider,
                                                                     remote, SHUTDOWN_IMAGE, path)
             # cmd = "docker {0} run --rm -ti {1} rexec --version".format(remote, DEFAULT_IMAGE)
-            vprint (cmd[:100] + "...")
+            vvprint (cmd[:100] + "...")
             vprint ("Shutdown process container ID:")
             os.system(cmd)
 
@@ -234,18 +239,18 @@ if __name__ == "__main__":
     # and pass all args AFTER the main command to the command when it runs remotely
     #
     argv = sys.argv[1:]
-    vprint ("ARGV:", argv)
+    vvprint ("ARGV:", argv)
     args, unknown = parser.parse_known_args(argv)
     if args.command != None:
         i = argv.index(args.command)
     else:
         i = len(argv)
     rexargs = argv[:i]
-    vprint ("REXARGS:", rexargs)
+    vvprint ("REXARGS:", rexargs)
     cmdargs = argv[i:]
-    vprint ("CMDARGS:", cmdargs)
+    vvprint ("CMDARGS:", cmdargs)
     args = parser.parse_args(rexargs)
-    vprint ("ARGS:", args)
+    vvprint ("ARGS:", args)
 
     if args.access:
         args_conf = dictobj()
