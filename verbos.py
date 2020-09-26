@@ -7,7 +7,7 @@ def set_verbosity(v):
     global VERBOSITY
     VERBOSITY = v
 
-def _vprint_nocr(*args, **kw):
+def _vprint_nolf(*args, **kw):
     # return
     if 'file' not in kw:
         file = sys.stdout
@@ -26,7 +26,7 @@ def v0print(*args, **kw):
 
 def vprint(*args, **kw):
     if VERBOSITY == 0:
-        _vprint_nocr(*args, **kw)
+        _vprint_nolf(*args, **kw)
     elif VERBOSITY >= 1:
         print (*args, **kw)
 
