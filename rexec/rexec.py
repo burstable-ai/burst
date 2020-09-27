@@ -15,7 +15,7 @@ sys.path.insert(0, abspath)
 from rexec.lcloud import *
 from rexec.runrun import run
 from rexec.version import version
-from verbos import set_verbosity, vprint, vvprint, v0print, get_piper
+from verbos import set_verbosity, get_verbosity, vprint, vvprint, v0print, get_piper, get_rsync_v
 
 os.chdir(opath)
 
@@ -106,12 +106,14 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
 
             #sync project directory
             vprint ("Synchronizing folders")
-            cmd = 'rsync -rltzu -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/* {3}@{1}:{2}/'.format(locpath, url, path, sshuser)
+            cmd = 'rsync -rltzu{4} -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/* {3}@{1}:{2}/'.format(locpath,
+                                        url, path, sshuser, get_rsync_v())
             vvprint (cmd)
             os.system(cmd)
             if get_config().provider == 'GCE':
                 # sync service acct creds (for shutdown)
-                cmd = 'rsync -rltzu --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.rexec/gce_srv_privkey.json {3}@{1}:{2}/'.format(os.path.expanduser('~'), url, path, sshuser)
+                cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.rexec/gce_srv_privkey.json {3}@{1}:{2}/'.format(os.path.expanduser('~'),
+                                        url, path, sshuser, get_rsync_v())
                 vvprint (cmd)
                 os.system(cmd)
         else:
@@ -138,7 +140,8 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             if remote:
                 local_rcred = f"{os.environ['HOME']}/.rexec"
                 rcred = " /home/ubuntu/.rexec/"
-                cmd = f'rsync -rltzu  -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {local_rcred}/rclone.conf {sshuser}@{url}:{rcred}'
+                cmd = f'rsync -rltzu{0}  -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {local_rcred}/rclone.conf {sshuser}@{url}:{rcred}'. \
+                            format(get_rsync_v())
                 vvprint(cmd)
                 os.system(cmd)
             else:
@@ -158,7 +161,8 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         v0print ("----------------------END-------------------------")
         if url:
             vprint ("Synchronizing folders")
-            cmd = "rsync -rltzu  -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error' '{3}@{1}:{2}/*' {0}/".format(locpath, url, path, sshuser)
+            cmd = "rsync -rltzu{4}  -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error' '{3}@{1}:{2}/*' {0}/".format(locpath,
+                                            url, path, sshuser, get_rsync_v())
             vvprint (cmd)
             os.system(cmd)
     except:

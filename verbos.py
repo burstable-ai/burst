@@ -7,6 +7,9 @@ def set_verbosity(v):
     global VERBOSITY
     VERBOSITY = v
 
+def get_verbosity():
+    return VERBOSITY
+
 def _vprint_nolf(*args, **kw):
     # return
     if 'file' not in kw:
@@ -41,3 +44,15 @@ def get_piper():
         return ">/dev/null"
     elif VERBOSITY >= 4:
         return ""
+
+def get_rsync_v():
+    if VERBOSITY <= 0:
+        return ""
+    if VERBOSITY == 1:
+        return " --progress"
+    if VERBOSITY == 2:
+        return "v --progress"
+    if VERBOSITY == 3:
+        return "v   v --progress"
+    if VERBOSITY == 4:
+        return "vvv --progress"
