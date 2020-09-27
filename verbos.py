@@ -53,6 +53,6 @@ def get_rsync_v():
     if VERBOSITY == 2:
         return "v --progress"
     if VERBOSITY == 3:
-        return "v   v --progress"
+        return "vv --progress"
     if VERBOSITY == 4:
         return "vvv --progress"
