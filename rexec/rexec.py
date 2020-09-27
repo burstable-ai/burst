@@ -68,7 +68,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null", "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(sshuser, url)]
             vvprint (ssh_args)
             tunnel = subprocess.Popen(ssh_args)
-            time.sleep(5)
+            time.sleep(2)
             relpath = os.path.abspath('.')[len(os.path.expanduser('~')):]
             relpath = "/_REXEC" +  relpath.replace('/', '_') #I can exlain
             locpath = os.path.abspath('.')
