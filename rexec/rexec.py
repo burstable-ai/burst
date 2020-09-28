@@ -130,9 +130,8 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         cloud_args = ""
         if cloudmap:
             if remote:
-                local_rcred = f"{os.environ['HOME']}/.rexec"
-                rcred = " /home/ubuntu/.rexec/"
-                cmd = f'rsync -vrltzu  -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" {local_rcred}/rclone.conf {sshuser}@{url}:{rcred}'
+                rcred = f'{path}/.rexec'
+                cmd = 'rsync -vrltzu --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" {0}/./.rexec/rclone.conf {3}@{1}:{2}/'.format(os.path.expanduser('~'), url, path, sshuser)
                 print(cmd)
                 os.system(cmd)
             else:
