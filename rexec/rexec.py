@@ -279,7 +279,7 @@ if __name__ == "__main__":
         vprint ("%d seconds till action" % (args.delay+.5+t0-time.time()))
         time.sleep(5)
 
-    if not (args.rexecuser or args.uuid or args.url or args.local):
+    if not (args.rexecuser or args.uuid or args.url or args.local or args.version):
         rxuser = getpass.getuser()
         args.rexecuser = "rexec-" + rxuser
         vprint ("Rexec virtual machine name:", args.rexecuser)
