@@ -6,7 +6,7 @@ from libcloud.compute.providers import get_driver
 from libcloud.compute.base import NodeAuthSSHKey
 from easydict import EasyDict as dictobj
 
-from verbos import vprint
+from rexec.verbos import vprint
 
 config = dictobj()
 

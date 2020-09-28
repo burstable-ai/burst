@@ -15,7 +15,7 @@ sys.path.insert(0, abspath)
 from rexec.lcloud import *
 from rexec.runrun import run
 from rexec.version import version
-from verbos import set_verbosity, get_verbosity, vprint, vvprint, v0print, get_piper, get_rsync_v
+from rexec.verbos import set_verbosity, get_verbosity, vprint, vvprint, v0print, get_piper, get_rsync_v
 
 os.chdir(opath)
 
