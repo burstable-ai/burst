@@ -146,7 +146,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
 #                 vvprint(cmd)
 # =======
                 rcred = f'{path}/.rexec'
-                cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.rexec/rclone.conf {3}@{1}:{2}/' \
+                cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.rexec/ {3}@{1}:{2}/' \
                     .format(os.path.expanduser('~'), url, path, sshuser, get_rsync_v())
                 vvprint(cmd)
 # >>>>>>> cloudmap_fix
