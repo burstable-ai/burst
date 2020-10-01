@@ -37,22 +37,25 @@ def vvprint(*args, **kw):
     if VERBOSITY >= 2:
         print (*args, **kw)
 
+#docker verbosity
 def get_piper():
     if VERBOSITY < 3:
         return ">/dev/null 2>/dev/null"
-    elif VERBOSITY == 3:
+    elif VERBOSITY & 4:
         return ">/dev/null"
-    elif VERBOSITY >= 4:
+    elif VERBOSITY & 8:
         return ""
 
+#rsync verbosity
 def get_rsync_v():
     if VERBOSITY <= 0:
         return ""
     if VERBOSITY == 1:
         return " --progress"
-    if VERBOSITY == 2:
+    if VERBOSITY & 16:
         return "v --progress"
-    if VERBOSITY == 3:
+    if VERBOSITY & 32:
         return "vv --progress"
-    if VERBOSITY == 4:
+    if VERBOSITY & 64:
         return "vvv --progress"
+    return ""
