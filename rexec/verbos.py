@@ -48,14 +48,12 @@ def get_piper():
 
 #rsync verbosity
 def get_rsync_v():
-    if VERBOSITY <= 0:
-        return ""
-    if VERBOSITY == 1:
-        return " --progress"
     if VERBOSITY & 16:
         return "v --progress"
     if VERBOSITY & 32:
         return "vv --progress"
     if VERBOSITY & 64:
         return "vvv --progress"
+    if VERBOSITY >= 1:
+        return " --progress"
     return ""
