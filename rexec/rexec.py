@@ -227,7 +227,7 @@ if __name__ == "__main__":
     parser.add_argument("--uuid",                               help="run on remote server specified by libcloud uuid")
     parser.add_argument("--rexecuser",                          help="Rexec user name; defaults to local username")
     parser.add_argument("--gpus",                               help="docker run gpu option (usually 'all')")
-    parser.add_argument("-p", action="append",                  help="docker port mapping")
+    parser.add_argument("-p", action="append", metavar="PORTMAP", help="port mapping; example: -p 8080:8080")
     parser.add_argument("--access",                             help="libcloud username (aws: ACCESS_KEY)")
     parser.add_argument("--secret",                             help="libcloud password (aws: SECRET)")
     parser.add_argument("--region",                             help="libcloud location (aws: region)")
