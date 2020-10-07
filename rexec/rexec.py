@@ -316,14 +316,16 @@ if __name__ == "__main__":
         print ("VERSION:", version)
 
     else:
-
-        if args.pubkey==None:
-            try:
-                f=open(os.path.expanduser("~") + "/.ssh/id_rsa.pub")             #FIXME: a bit cheeky
-                pubkey=f.read()
-                f.close()
-            except:
-                print ("Public key not found in usual place; please specify --pubkey")
+        if args.local:
+            pubkey = None
+        else:
+            if args.pubkey==None:
+                try:
+                    f=open(os.path.expanduser("~") + "/.ssh/id_rsa.pub")             #FIXME: a bit cheeky
+                    pubkey=f.read()
+                    f.close()
+                except:
+                    print ("Public key not found in usual place; please specify --pubkey")
         if args.gpus:
             if args.size == None:
                 size = 'DEFAULT_GPU_SIZE'
