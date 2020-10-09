@@ -22,24 +22,30 @@ def init(conf = None):
         conf = {}
 
     try:
+        #FIXME: check for local overriding .rexec
         f = open(os.environ['HOME'] + "/.rexec/config.yml")
         yconf = yaml.load(f, Loader=yaml.FullLoader)
         f.close()
+        if 'configset' in conf:
+            configset = conf['configset']
+        else:
+            configset=yconf['default']
+        yconf = yconf[configset]
     except:
-        vprint ("config.yml not found")
-        yconf = {'EC2': {}, 'GCE': {}}          #dummy yconf
+        vprint ("config.yml syntax error or not found")
+        yconf = {}          #dummy yconf
 
     if 'provider' in conf:
         config.provider = conf['provider']
     else:
-        config.provider = yconf['preferred']
+        config.provider = yconf['provider']
 
     for param in ['access', 'secret', 'region', 'project', 'default_image', 'default_size', 'default_gpu_image',
                   'default_gpu_size', 'default_gpu']:
         if param in conf:
             config[param] = conf[param]
         else:
-            config[param] = yconf[config.provider].get(param, None)
+            config[param] = yconf.get(param, None)
 
     cls = get_driver(Provider[config.provider])
 
@@ -47,7 +53,8 @@ def init(conf = None):
         config.driver = cls(config.access, config.secret, region=config.region)
 
     elif config.provider == 'GCE':
-        config.driver = cls(config.access, config.secret, datacenter=config.region, project=config.project)
+        secret = "%s/%s/%s" % (os.environ['HOME'], ".rexec/", config.secret)
+        config.driver = cls(config.access, secret, datacenter=config.region, project=config.project)
 
     else:
         vprint ("ERROR: unknown cloud provider", config.provider)

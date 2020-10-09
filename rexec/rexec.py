@@ -215,6 +215,7 @@ if __name__ == "__main__":
     parser.add_argument("--list-servers", action="store_true",  help="List all associated remote servers")
     parser.add_argument("--terminate-servers", action="store_true",     help="Terminate associated remote servers")
     parser.add_argument("--version", action="store_true",       help="Print version # & exit")
+    parser.add_argument("--configset",                          help="run on remote server specified by url")
     parser.add_argument("--url",                                help="run on remote server specified by url")
     parser.add_argument("--uuid",                               help="run on remote server specified by libcloud uuid")
     parser.add_argument("--rexecuser",                          help="Rexec user name; defaults to local username")
@@ -267,7 +268,10 @@ if __name__ == "__main__":
         args_conf.project = args.project
         args_conf.provider = args.provider
     else:
-        args_conf = None
+        if args.configset:
+            args_conf = {'configset': args.configset}
+        else:
+            args_conf = None
 
     if args.local and (args.uuid or args.url):
         vprint (args)
