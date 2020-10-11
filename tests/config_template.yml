@@ -1,0 +1,24 @@
+---
+aws1:
+  provider: EC2
+  access: AKIA...GHMH
+  secret: Rgce...QgX0
+  region: us-west-2
+  default_image: ami-0ba3ac9cd67195659
+  default_size: t2.small
+  default_gpu_image: ami-038b493084f00b948
+  default_gpu_size: g4dn.xlarge
+
+goog1:
+  provider: GCE
+  access: abc@xyz.iam.gserviceaccount.com
+  secret: gce_srv_privkey.json
+  region: us-west1-b
+  project: abc
+  default_image: rexec-nogpu
+  default_size: e2-micro
+  default_gpu_image: rexec-gpu
+  default_gpu_size: n1-standard-4
+  default_gpu: nvidia-tesla-t4
+
+default: goog1
