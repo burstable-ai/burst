@@ -148,8 +148,10 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
     if not sizes:
         raise Exception("Instance size %s not found" % size)
     size = sizes[0]
-
-    vprint ("Launching instance node, image=%s, name=%s, size=%s" % (image.id, name, size.id))
+    if size.disk < 50:
+        size.disk = 50              #bit confusing how to force this at AMI level
+    vprint ("Launching instance node, image=%s, name=%s, type=%s ram=%s disk=%s" % (image.id, name, size.id, size.ram, size.disk))
+    
     if pubkey:
         if config.provider == 'EC2':                #Everybody makes it up
             auth = NodeAuthSSHKey(pubkey)
