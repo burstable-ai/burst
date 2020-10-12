@@ -41,10 +41,10 @@ def vvprint(*args, **kw):
 def get_piper():
     if VERBOSITY < 3:
         return ">/dev/null 2>/dev/null"
-    elif VERBOSITY & 4:
-        return ">/dev/null"
     elif VERBOSITY & 8:
         return ""
+    elif VERBOSITY & 4:
+        return ">/dev/null"
 
 #rsync verbosity
 def get_rsync_v():
