@@ -1,8 +1,8 @@
 # Introduction
 
-`rexec` is an open-source tool enabling developers to run their software remotely - on any sized virtual machine - without any change to their existing development process.
+`rexec` lets you run your software remotely - on any sized virtual machine - without any change to your existing development process, as long as you have a working Dockerfile.
 
-We currently support Amazon and Google cloud services, with the intent to add more over time.
+We currently support Amazon and Google cloud services and will be adding more.
 
 # Dependencies
 
@@ -16,7 +16,7 @@ We currently support Amazon and Google cloud services, with the intent to add mo
 
 or 
 
-TODO - add `pip install -e git+ssh://git@github.com/datahub-projects/rexec#egg=rexec`
+`pip install -e git+ssh://git@github.com/datahub-projects/rexec#egg=rexec`
 
 # Configuration
 
@@ -24,12 +24,28 @@ Our configuration is currently manual. You will need to do the following:
 
 `mkdir -p ~/.rexec` # create config folder if it the folder does not exist
 
-Edit `~/.rexec/config.py` with:
+Edit `~/.rexec/config.yml` with:
 
 ```
-access="<your-aws-access-key>"
-secret="<your-aws-secret>"
-region="us-west-2"
+default: myaws
+
+myaws:
+  provider: EC2
+  access: <Amazon AWS Access Key>
+  secret: <Amazon AWS Access Secret>
+  region: us-west-2
+  default_image: ami-0ba3ac9cd67195659
+  default_size: t2.small
+  default_gpu_image: ami-038b493084f00b948 
+  default_gpu_size: g4dn.xlarge
+
+mygoogle:
+  provider: GCE
+  access: <Google Cloud Account Key>
+  secret: ~/.rexec/<Google Cloud Account Private Key Filename>.json
+  region: us-west1-b
+  project: <Google Cloud Project ID>
+  default_image: rexec-nogpu
 ```
 
 # Run `rexec` tests
@@ -110,7 +126,10 @@ docker -H localhost:2376 run --rm -d rexec_image rexec --stop_instance_by_url 34
 Shutdown process container ID:
 b518a1110e7f9f6607166637f012d36c96b93c3d38be3f0c2c50bcc6302f11ce
 DONE
+```
 
+# Run Examples
 
+TODO - add GPU-enabled machine learning examples! 
 
 
