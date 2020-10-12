@@ -308,7 +308,7 @@ if __name__ == "__main__":
 
     elif args.terminate_servers:
         v0print ("-------------------------------------------------------------")
-        for s in list_servers(args.rexecuser, args_conf):
+        for s in list_servers(args.rexecuser, args_conf, terminated=False):
             yes = input("Terminating %s %s are you sure?" % (s.name, s.public_ips))
             if yes=='y':
                 terminate_server(s)

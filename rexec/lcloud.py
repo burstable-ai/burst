@@ -207,11 +207,13 @@ def terminate_server(srv):
         vprint ("server state:", state)
     return "success"
 
-def list_servers(name, conf = None, pretty=False):
+def list_servers(name, conf = None, pretty=False, terminated=True):
     init(conf)
     ret = []
     nodes = config.driver.list_nodes()
     for x in nodes:
+        if (not terminated) and (x.state=='terminated'): #don't include terminated
+            continue
         if x.name==name:
             if pretty:
                 img = x.extra['image_id'] if config.provider == 'EC2' else x.image
