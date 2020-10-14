@@ -176,15 +176,15 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             vprint ("Scheduling shutdown of VM at %s for %d seconds from now" % (url, stop))
             conf = get_config()
             if conf.provider == "GCE":
-                secret = conf.raw_secret
+                secret = ".rexec/" + conf.raw_secret
             else:
                 secret = conf.secret
             # print("SECRET 1:", secret)
-            cmd = "docker {7} run --rm {11} -v {9}:/home/rexec/work {8} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6} {10}".format(url,
+            cmd = "docker {7} run --rm {11} -v {9}:/home/rexec/work {8} rexec --verbosity {12} --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6} {10}".format(url,
                                                                     stop, conf.access, secret, conf.region,
                                                                     ("--project=" + conf.project) if conf.project else "",
                                                                     conf.provider,
-                                                                    remote, SHUTDOWN_IMAGE, path, get_piper(), get_dockrunflags())
+                                                                    remote, SHUTDOWN_IMAGE, path, get_piper(), get_dockrunflags(), get_verbosity())
             # cmd = "docker {0} run --rm -ti {1} rexec --version".format(remote, DEFAULT_IMAGE)
             vvprint (cmd)
             vprint ("Shutdown process container ID:")
