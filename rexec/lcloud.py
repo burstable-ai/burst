@@ -61,7 +61,7 @@ def init(conf = None):
             secret = "%s/%s/%s" % (os.path.expanduser(os.environ['HOME']), ".rexec", config.secret)
             print ("SECRET 4:", secret)
         config.driver = cls(config.access, secret, datacenter=config.region, project=config.project)
-
+        config.secret = secret
     else:
         vprint ("ERROR: unknown cloud provider", config.provider)
 

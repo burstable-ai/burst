@@ -46,6 +46,11 @@ def get_piper():
     elif VERBOSITY & 4:
         return ">/dev/null"
 
+def get_dockrunflags():
+    if VERBOSITY & 128:
+        return "-ti"            #run in foreground
+    return "-d"
+
 #rsync verbosity
 def get_rsync_v():
     if VERBOSITY & 16:

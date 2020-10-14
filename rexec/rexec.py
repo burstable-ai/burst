@@ -15,7 +15,7 @@ sys.path.insert(0, abspath)
 from rexec.lcloud import *
 from rexec.runrun import run
 from rexec.version import version
-from rexec.verbos import set_verbosity, get_verbosity, vprint, vvprint, v0print, get_piper, get_rsync_v
+from rexec.verbos import set_verbosity, get_verbosity, vprint, vvprint, v0print, get_piper, get_rsync_v, get_dockrunflags
 
 os.chdir(opath)
 
@@ -178,14 +178,14 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             secret = conf.secret
             # hack to look for GCE service acct key in local dir on container
             print ("SECRET 1:", secret)
-            if  conf.provider == 'GCE' and secret[-5:]==".json" and secret[0:2] == '~/': #the things we do
-                secret = "./" + secret[2:]
+            # if  conf.provider == 'GCE' and secret[-5:]==".json" and secret[0:2] == '~/': #the things we do
+            #     secret = "./" + secret[2:]
             print("SECRET 2:", secret)
-            cmd = "docker {7} run --rm -d -v {9}:/home/rexec/work {8} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6} {10}".format(url,
+            cmd = "docker {7} run --rm {11} -v {9}:/home/rexec/work {8} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6} {10}".format(url,
                                                                     stop, conf.access, secret, conf.region,
                                                                     ("--project=" + conf.project) if conf.project else "",
                                                                     conf.provider,
-                                                                    remote, SHUTDOWN_IMAGE, path, get_piper())
+                                                                    remote, SHUTDOWN_IMAGE, path, get_piper(), get_dockrunflags())
             # cmd = "docker {0} run --rm -ti {1} rexec --version".format(remote, DEFAULT_IMAGE)
             vvprint (cmd)
             vprint ("Shutdown process container ID:")
