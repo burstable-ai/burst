@@ -299,22 +299,32 @@ if __name__ == "__main__":
 
     elif args.shutdown == None:
         v0print ("-------------------------------------------------------------")
-        for s in list_servers(args.rexecuser, args_conf):
-            yes = input("Stopping (warm shutdown) %s %s are you sure?" % (s.name, s.public_ips))
+        count = 0
+        for s in list_servers(args.rexecuser, args_conf, pretty=True):
+            if "STATE: stopped" in s:
+                continue
+            count += 1
+            yes = input("Stopping (warm shutdown) %s, are you sure?" % s)
             if yes=='y':
                 stop_server(s)
             else:
                 print ("Aborted")
+        if not count:
+            print ("no servers to shut down")
         v0print ("-------------------------------------------------------------")
 
     elif args.terminate_servers:
         v0print ("-------------------------------------------------------------")
-        for s in list_servers(args.rexecuser, args_conf, terminated=False):
-            yes = input("Terminating %s %s are you sure?" % (s.name, s.public_ips))
+        count = 0
+        for s in list_servers(args.rexecuser, args_conf, terminated=False, pretty=True):
+            count += 1
+            yes = input("Terminating %s, are you sure?" % s)
             if yes=='y':
                 terminate_server(s)
             else:
                 print ("Aborted")
+        if not count:
+            print ("no servers to terminate")
         v0print ("-------------------------------------------------------------")
 
     elif args.version:
