@@ -53,7 +53,13 @@ def init(conf = None):
         config.driver = cls(config.access, config.secret, region=config.region)
 
     elif config.provider == 'GCE':
-        secret = "%s/%s/%s" % (os.environ['HOME'], ".rexec/", config.secret)
+        print ("SECRET 2.5:", config.secret)
+        print ("ABS 1:", os.path.abspath('.'))
+        secret = os.path.expanduser(config.secret)
+        print ("SECRET 3:", secret)
+        if not os.path.exists(secret):
+            secret = "%s/%s/%s" % (os.path.expanduser(os.environ['HOME']), ".rexec", config.secret)
+            print ("SECRET 4:", secret)
         config.driver = cls(config.access, secret, datacenter=config.region, project=config.project)
 
     else:
