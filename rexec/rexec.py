@@ -175,12 +175,11 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         else:
             vprint ("Scheduling shutdown of VM at %s for %d seconds from now" % (url, stop))
             conf = get_config()
-            secret = conf.secret
-            # hack to look for GCE service acct key in local dir on container
-            print ("SECRET 1:", secret)
-            # if  conf.provider == 'GCE' and secret[-5:]==".json" and secret[0:2] == '~/': #the things we do
-            #     secret = "./" + secret[2:]
-            print("SECRET 2:", secret)
+            if conf.provider == "GCE":
+                secret = conf.raw_secret
+            else:
+                secret = conf.secret
+            # print("SECRET 1:", secret)
             cmd = "docker {7} run --rm {11} -v {9}:/home/rexec/work {8} rexec --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6} {10}".format(url,
                                                                     stop, conf.access, secret, conf.region,
                                                                     ("--project=" + conf.project) if conf.project else "",
