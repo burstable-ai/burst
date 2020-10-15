@@ -99,9 +99,9 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             # print ("DEEBG ex:", node.extra)
             size, image = fix_size_and_image(size, image)
             if size and size != get_server_size(node):
-                raise Exception("FIXME: cannot change size (EC2 instance type) -- need to re-launch")
+                raise Exception("FIXME: cannot change size (instance type) -- need to re-launch")
             if image and image != get_server_image(node):
-                raise Exception("FIXME: cannot change image (EC2 ami) -- need to terminate & re-launch server")
+                raise Exception("FIXME: cannot change host image -- need to terminate & re-launch server")
             vprint ("rexec: name %s size %s image %s url %s" % (node.name, size, image, url))
 
             #sync project directory
@@ -293,20 +293,20 @@ if __name__ == "__main__":
 
     elif args.list_servers:     #note this is different than --shutdown 0 -- we just shut down without running
         v0print ("-------------------------------------------------------------\nSERVERS associated with %s:" % args.rexecuser)
-        for s in list_servers(args.rexecuser, args_conf, pretty=True):
+        for _, s in list_servers(args.rexecuser, args_conf):
             print (s)
         v0print ("-------------------------------------------------------------")
 
     elif args.shutdown == None:
         v0print ("-------------------------------------------------------------")
         count = 0
-        for s in list_servers(args.rexecuser, args_conf, pretty=True):
-            if "STATE: stopped" in s:
+        for node, s in list_servers(args.rexecuser, args_conf):
+            if node.state == "stopped":
                 continue
             count += 1
             yes = input("Stopping (warm shutdown) %s, are you sure?" % s)
             if yes=='y':
-                stop_server(s)
+                stop_server(node)
             else:
                 print ("Aborted")
         if not count:
@@ -316,11 +316,11 @@ if __name__ == "__main__":
     elif args.terminate_servers:
         v0print ("-------------------------------------------------------------")
         count = 0
-        for s in list_servers(args.rexecuser, args_conf, terminated=False, pretty=True):
+        for node, s in list_servers(args.rexecuser, args_conf, terminated=False):
             count += 1
             yes = input("Terminating %s, are you sure?" % s)
             if yes=='y':
-                terminate_server(s)
+                terminate_server(node)
             else:
                 print ("Aborted")
         if not count:

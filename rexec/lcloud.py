@@ -212,7 +212,7 @@ def terminate_server(srv):
         vprint ("server state:", state)
     return "success"
 
-def list_servers(name, conf = None, pretty=False, terminated=True):
+def list_servers(name, conf = None, terminated=True):
     init(conf)
     ret = []
     nodes = config.driver.list_nodes()
@@ -220,16 +220,14 @@ def list_servers(name, conf = None, pretty=False, terminated=True):
         if (not terminated) and (x.state=='terminated'): #don't include terminated
             continue
         if x.name==name:
-            if pretty:
-                img = x.extra['image_id'] if config.provider == 'EC2' else x.image
-                if img == config.default_image:
-                    img += " (default_image, no gpu)"
-                elif img == config.default_gpu_image:
-                    img += " (default_gpu_image)"
-                s = "IMAGE: %s STATE: %s IP's: %s ID: %s/%s" %(img, x.state, x.public_ips, config.provider, x.id)
-                ret.append(s)
-            else:
-                ret.append(x)
+            ret.append([x])
+            img = x.extra['image_id'] if config.provider == 'EC2' else x.image
+            if img == config.default_image:
+                img += " (default_image, no gpu)"
+            elif img == config.default_gpu_image:
+                img += " (default_gpu_image)"
+            s = "IMAGE: %s STATE: %s IP's: %s ID: %s/%s" %(img, x.state, x.public_ips, config.provider, x.id)
+            ret[-1].append(s)
     return ret
 
 
