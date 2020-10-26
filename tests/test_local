@@ -1,0 +1,3 @@
+#!/bin/bash
+rexec python3 test_script.py arg1 arg2 arg3
+
