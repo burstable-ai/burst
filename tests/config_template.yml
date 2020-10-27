@@ -2,51 +2,62 @@
 compute:
   # Not important for now, just demonstrating how a cross-provider default settings might work
   settings:
-    default_provider: leela_gce
+    default_compute: leela_gce
     default_to_gpu: yes
 
   providers:
     - name: leela_gce
       driver: GCE
-      project: pyvision # Not sure what this is about but it's in the existing config file
+      access: <key>
+      region: us-central1-a
+      default_image: rexec-nogpu
+      default_size: e2-micro
+      default_gpu_image: rexec-gpu
+      default_gpu_size: n1-standard-4
       settings: # Everything GCE-specific goes here
-        access: <key>
-        secret: <secret>
-        region: us-central1-a
-        default_image: rexec-nogpu
-        default_size: e2-micro
-        default_gpu_image: rexec-gpu
-        default_gpu_size: n1-standard-4
+        project: pyvision # Not sure what this is about but it's in the existing config file
         default_gpu: nvidia-tesla-t4
+        secret:
+          private_key: <google_private_key>
+          private_key_id: <google_private_key_id>
+          type: <google_type>
+          project_id: <google_project_id>
+          client_email: <google_client_email>
+          client_id: <google_client_id>
+          auth_uri: <google_auth_uri>
+          token_uri: <google_token_uri>
+          auth_provider_x509_cert_url: <google_auth_provider_x509_cert_url>
+          client_x509_cert_url: <google_client_x509_cert_url>
 
     - name: eye0_aws
-      driver: AWS
-      project: pyvision
+      driver: EC2
+      access: <key>
+      region: us-central1-a
+      default_image: rexec-nogpu
+      default_size: e2-micro
+      default_gpu_image: rexec-gpu
+      default_gpu_size: n1-standard-4
       settings: # Everything AWS-specific goes here
-        aws_access_key: <aws_access_key>
-          aws_secret: <aws_secret>
-        region: <aws_region>
-        default_image: rexec-nogpu
-        default_size: e2-micro
-        default_gpu_image: rexec-gpu
-        default_gpu_size: n1-standard-4
-        default_gpu: nvidia-tesla-t4
+        secret:
+          shared_key: <AWS secret>
 
 storage:
   settings:
     default_sync_policy: lazy
+    default_storage: leela_gcs
   providers:
     - name: leela_gcs
       driver: GCS
       default_mount_folder: google_cloud_bucket # For example
       settings: # Everything GCS-specific goes here
-        type: <google_type>
-        project_id: <google_project_id>
-        private_key_id: <google_private_key_id>
-        private_key: <google_private_key>
-        client_email: <google_client_email>
-        client_id: <google_client_id>
-        auth_uri: <google_auth_uri>
-        token_uri: <google_token_uri>
-        auth_provider_x509_cert_url: <google_auth_provider_x509_cert_url>
-        client_x509_cert_url: <google_client_x509_cert_url>
+        secret:
+          type: <google_type>
+          project_id: <google_project_id>
+          private_key_id: <google_private_key_id>
+          private_key: <google_private_key>
+          client_email: <google_client_email>
+          client_id: <google_client_id>
+          auth_uri: <google_auth_uri>
+          token_uri: <google_token_uri>
+          auth_provider_x509_cert_url: <google_auth_provider_x509_cert_url>
+          client_x509_cert_url: <google_client_x509_cert_url>
