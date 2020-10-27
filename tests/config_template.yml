@@ -1,24 +1,52 @@
 ---
-aws1:
-  provider: EC2
-  access: AKIA...GHMH
-  secret: Rgce...QgX0
-  region: us-west-2
-  default_image: ami-0ba3ac9cd67195659
-  default_size: t2.small
-  default_gpu_image: ami-038b493084f00b948
-  default_gpu_size: g4dn.xlarge
+compute:
+  # Not important for now, just demonstrating how a cross-provider default settings might work
+  settings:
+    default_provider: leela_gce
+    default_to_gpu: yes
 
-goog1:
-  provider: GCE
-  access: abc@xyz.iam.gserviceaccount.com
-  secret: gce_srv_privkey.json
-  region: us-west1-b
-  project: abc
-  default_image: burst-nogpu
-  default_size: e2-micro
-  default_gpu_image: burst-gpu
-  default_gpu_size: n1-standard-4
-  default_gpu: nvidia-tesla-t4
+  providers:
+    - name: leela_gce
+      driver: GCE
+      project: pyvision # Not sure what this is about but it's in the existing config file
+      settings: # Everything GCE-specific goes here
+        access: <key>
+        secret: <secret>
+        region: us-central1-a
+        default_image: rexec-nogpu
+        default_size: e2-micro
+        default_gpu_image: rexec-gpu
+        default_gpu_size: n1-standard-4
+        default_gpu: nvidia-tesla-t4
 
-default: goog1
+    - name: eye0_aws
+      driver: AWS
+      project: pyvision
+      settings: # Everything AWS-specific goes here
+        aws_access_key: <aws_access_key>
+          aws_secret: <aws_secret>
+        region: <aws_region>
+        default_image: rexec-nogpu
+        default_size: e2-micro
+        default_gpu_image: rexec-gpu
+        default_gpu_size: n1-standard-4
+        default_gpu: nvidia-tesla-t4
+
+storage:
+  settings:
+    default_sync_policy: lazy
+  providers:
+    - name: leela_gcs
+      driver: GCS
+      default_mount_folder: google_cloud_bucket # For example
+      settings: # Everything GCS-specific goes here
+        type: <google_type>
+        project_id: <google_project_id>
+        private_key_id: <google_private_key_id>
+        private_key: <google_private_key>
+        client_email: <google_client_email>
+        client_id: <google_client_id>
+        auth_uri: <google_auth_uri>
+        token_uri: <google_token_uri>
+        auth_provider_x509_cert_url: <google_auth_provider_x509_cert_url>
+        client_x509_cert_url: <google_client_x509_cert_url>
