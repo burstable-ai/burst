@@ -3,7 +3,7 @@ RUN apt-get update && apt-get install -y python3 python3-pip nano fish git curl 
 #
 # to build shutdown image add burst install
 #
-#RUN pip3 install git+https://github.com/datahub-projects/burst#egg=burst>=0.1.72
+#RUN pip3 install git+https://github.com/burstable-ai/burst#egg=burst>=0.1.72
 RUN pip3 install gputil ipython
 
 WORKDIR /home/burst/work

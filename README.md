@@ -15,11 +15,11 @@ We currently support Amazon and Google cloud services and will be adding more.
 
 # Installation 
 
-`git clone https://github.com/datahub-projects/burst.git && cd burst && pip install -r requirements.txt`
+`git clone https://github.com/burstable-ai/burst.git && cd burst && pip install -r requirements.txt`
 
 or 
 
-`pip install -e git+ssh://git@github.com/datahub-projects/burst#egg=burst`
+`pip install -e git+ssh://git@github.com/burstable-ai/burst#egg=burst`
 
 # Configuration
 
@@ -95,7 +95,7 @@ Step 1/6 : FROM ubuntu:20.04
 Step 2/6 : RUN apt-get update && apt-get install -y python3 python3-pip nano fish git curl
  ---> Using cache
  ---> b1a602f9a279
-Step 3/6 : RUN pip3 install git+https://github.com/datahub-projects/burst#egg=burst
+Step 3/6 : RUN pip3 install git+https://github.com/burstable-ai/burst#egg=burst
  ---> Using cache
  ---> 1e59e57c8cfe
 Step 4/6 : RUN adduser --disabled-password --gecos '' ubuntu
