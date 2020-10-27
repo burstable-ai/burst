@@ -21,7 +21,7 @@ def _vprint_nolf(*args, **kw):
     s += " " * (LIMIT - len(s))
     s = s.replace("\n", "\r")
     s += "\r"
-    file.write("rexec: %s" % s)
+    file.write("burst: %s" % s)
 
 def v0print(*args, **kw):
     if VERBOSITY >=0:

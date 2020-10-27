@@ -1,7 +1,7 @@
 import multiprocessing, GPUtil
 
 
-print ("Welcome rexec-utioners! You're running a virtual machine with %i cpus" % (multiprocessing.cpu_count()))
+print ("Welcome burst-utioners! You're running a virtual machine with %i cpus" % (multiprocessing.cpu_count()))
 
 try:
     gpus = GPUtil.getGPUs()

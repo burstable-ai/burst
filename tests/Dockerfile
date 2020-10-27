@@ -1,2 +1,2 @@
-FROM datahubdock/rexec:rexec_base
+FROM datahubdock/burst:burst_base
 CMD ["/bin/bash"]

@@ -12,19 +12,19 @@ os.chdir(abspath)
 abspath = os.path.abspath("..")
 sys.path.insert(0, abspath)
 
-from rexec.lcloud import *
-from rexec.runrun import run
-from rexec.version import version
-from rexec.verbos import set_verbosity, get_verbosity, vprint, vvprint, v0print, get_piper, get_rsync_v, get_dockrunflags
+from burst.lcloud import *
+from burst.runrun import run
+from burst.version import version
+from burst.verbos import set_verbosity, get_verbosity, vprint, vvprint, v0print, get_piper, get_rsync_v, get_dockrunflags
 
 os.chdir(opath)
 
-DEFAULT_IMAGE = "rexec_image" #FIXME: should be unique to folder structure
-SHUTDOWN_IMAGE = "datahubdock/rexec:rexec_shutdown"
+DEFAULT_IMAGE = "burst_image" #FIXME: should be unique to folder structure
+SHUTDOWN_IMAGE = "datahubdock/burst:burst_shutdown"
 DOCKER_REMPORT = "2376"
 DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
-def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports=None, stop=False,
+def burst(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports=None, stop=False,
           image=None, size=None, pubkey=None, dockerfile="Dockerfile",
           cloudmap="", conf=None):
     tunnel = None
@@ -84,7 +84,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                     if x:
                         j = json.loads(x)
                         Command = j['Command']
-                        if Command.find("rexec --stop") < 2:
+                        if Command.find("burst --stop") < 2:
                             kills.append(j['ID'])
                 if kills:
                     vprint ("Killing shutdown processes:", kills)
@@ -102,7 +102,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                 raise Exception("FIXME: cannot change size (instance type) -- need to re-launch")
             if image and image != get_server_image(node):
                 raise Exception("FIXME: cannot change host image -- need to terminate & re-launch server")
-            vprint ("rexec: name %s size %s image %s url %s" % (node.name, size, image, url))
+            vprint ("burst: name %s size %s image %s url %s" % (node.name, size, image, url))
 
             #sync project directory
             vprint ("Synchronizing folders")
@@ -112,12 +112,12 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             os.system(cmd)
             if get_config().provider == 'GCE':
                 # sync service acct creds (for shutdown)
-                cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.rexec/{5} {3}@{1}:{2}/'.format(os.path.expanduser('~'),
+                cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.burst/{5} {3}@{1}:{2}/'.format(os.path.expanduser('~'),
                                         url, path, sshuser, get_rsync_v(), get_config().raw_secret)
                 vvprint (cmd)
                 os.system(cmd)
         else:
-            vprint ("rexec: running locally")
+            vprint ("burst: running locally")
             remote = ""
             path = os.path.abspath('.')
 
@@ -138,20 +138,20 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         cloud_args = ""
         if cloudmap:
             if remote:
-                rcred = f'{path}/.rexec'
-                cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.rexec/ {3}@{1}:{2}/' \
+                rcred = f'{path}/.burst'
+                cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.burst/ {3}@{1}:{2}/' \
                     .format(os.path.expanduser('~'), url, path, sshuser, get_rsync_v())
                 vvprint(cmd)
                 os.system(cmd)
             else:
-                rcred = f"{os.environ['HOME']}/.rexec"
+                rcred = f"{os.environ['HOME']}/.burst"
 
             cloud_args = f"-v {rcred}:/root/.config/rclone --privileged"
             cloud, host = cloudmap.split(":")
             args = f"bash -c 'mkdir -p {host}; rclone mount {cloud}: {host} & sleep 3; {args}; umount {host}'"
 
         vprint ("Running docker container")
-        cmd = "docker {3} run {4} {5} --rm -ti -v {2}:/home/rexec/work {6} {0} {1}".format(DEFAULT_IMAGE,
+        cmd = "docker {3} run {4} {5} --rm -ti -v {2}:/home/burst/work {6} {0} {1}".format(DEFAULT_IMAGE,
                                                                                   args, path, remote, gpu_args, port_args, cloud_args)
         vvprint (cmd)
         vprint ("")
@@ -176,16 +176,16 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             vprint ("Scheduling shutdown of VM at %s for %d seconds from now" % (url, stop))
             conf = get_config()
             if conf.provider == "GCE":
-                secret = ".rexec/" + conf.raw_secret
+                secret = ".burst/" + conf.raw_secret
             else:
                 secret = conf.secret
             # print("SECRET 1:", secret)
-            cmd = "docker {7} run --rm {11} -v {9}:/home/rexec/work {8} rexec --verbosity {12} --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6} {10}".format(url,
+            cmd = "docker {7} run --rm {11} -v {9}:/home/burst/work {8} burst --verbosity {12} --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6} {10}".format(url,
                                                                     stop, conf.access, secret, conf.region,
                                                                     ("--project=" + conf.project) if conf.project else "",
                                                                     conf.provider,
                                                                     remote, SHUTDOWN_IMAGE, path, get_piper(), get_dockrunflags(), get_verbosity())
-            # cmd = "docker {0} run --rm -ti {1} rexec --version".format(remote, DEFAULT_IMAGE)
+            # cmd = "docker {0} run --rm -ti {1} burst --version".format(remote, DEFAULT_IMAGE)
             vvprint (cmd)
             vprint ("Shutdown process container ID:")
             os.system(cmd)
@@ -195,7 +195,7 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
 
 #
 # Note this function is typically called by the shutdown process so it does
-# not share scope with most of what rexec does
+# not share scope with most of what burst does
 #
 def stop_instance_by_url(url, conf):
     vprint ("STOP instance with public IP", url)
@@ -219,7 +219,7 @@ if __name__ == "__main__":
     parser.add_argument("--configset",                          help="run on remote server specified by url")
     parser.add_argument("--url",                                help="run on remote server specified by url")
     parser.add_argument("--uuid",                               help="run on remote server specified by libcloud uuid")
-    parser.add_argument("--rexecuser",                          help="Rexec user name; defaults to local username")
+    parser.add_argument("--burst_user",                          help="Rexec user name; defaults to local username")
     parser.add_argument("--gpus",                               help="docker run gpu option (usually 'all')")
     parser.add_argument("-p", action="append", metavar="PORTMAP", help="port mapping; example: -p 8080:8080")
     parser.add_argument("--access",                             help="libcloud username (aws: ACCESS_KEY)")
@@ -242,7 +242,7 @@ if __name__ == "__main__":
         sys.exit(1)
     #
     # this got a bit tricky.
-    # we want to parse args BEFORE the main command as rexec options
+    # we want to parse args BEFORE the main command as burst options
     # and pass all args AFTER the main command to the command when it runs remotely
     #
     argv = sys.argv[1:]
@@ -276,31 +276,31 @@ if __name__ == "__main__":
 
     if args.local and (args.uuid or args.url):
         vprint (args)
-        parser.error("when specifying --local, do not set --sshuser, --rexecuser, --uuid, or --url")
+        parser.error("when specifying --local, do not set --sshuser, --burst_user, --uuid, or --url")
         exit()
     t0 = time.time()
     while time.time()-t0 < args.delay:
         vprint ("%d seconds till action" % (args.delay+.5+t0-time.time()))
         time.sleep(5)
 
-    if not (args.rexecuser or args.uuid or args.url or args.local or args.version):
+    if not (args.burst_user or args.uuid or args.url or args.local or args.version):
         rxuser = getpass.getuser()
-        args.rexecuser = "rexec-" + rxuser
-        vprint ("Rexec virtual machine name:", args.rexecuser)
+        args.burst_user = "burst-" + rxuser
+        vprint ("Rexec virtual machine name:", args.burst_user)
 
     if args.stop_instance_by_url:
         stop_instance_by_url(args.stop_instance_by_url, args_conf)
 
     elif args.list_servers:     #note this is different than --shutdown 0 -- we just shut down without running
-        v0print ("-------------------------------------------------------------\nSERVERS associated with %s:" % args.rexecuser)
-        for _, s in list_servers(args.rexecuser, args_conf):
+        v0print ("-------------------------------------------------------------\nSERVERS associated with %s:" % args.burst_user)
+        for _, s in list_servers(args.burst_user, args_conf):
             print (s)
         v0print ("-------------------------------------------------------------")
 
     elif args.shutdown == None:
         v0print ("-------------------------------------------------------------")
         count = 0
-        for node, s in list_servers(args.rexecuser, args_conf):
+        for node, s in list_servers(args.burst_user, args_conf):
             if node.state == "stopped":
                 continue
             count += 1
@@ -316,7 +316,7 @@ if __name__ == "__main__":
     elif args.terminate_servers:
         v0print ("-------------------------------------------------------------")
         count = 0
-        for node, s in list_servers(args.rexecuser, args_conf, terminated=False):
+        for node, s in list_servers(args.burst_user, args_conf, terminated=False):
             count += 1
             yes = input("Terminating %s, are you sure?" % s)
             if yes=='y':
@@ -360,8 +360,8 @@ if __name__ == "__main__":
             else:
                 image = args.image
 
-        rexec(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
-              rxuser=args.rexecuser, gpus=args.gpus, ports=args.p, stop=args.shutdown,
+        burst(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
+              rxuser=args.burst_user, gpus=args.gpus, ports=args.p, stop=args.shutdown,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               conf = args_conf)
         vprint ("DONE")

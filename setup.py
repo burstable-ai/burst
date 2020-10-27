@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
-from rexec.version import version
+from burst.version import version
 
 setup(
-    name="rexec",
+    name="burst",
     version=version,
     packages=find_packages(),
     python_requires='>=3',
-    scripts=['bin/rexec'],
+    scripts=['bin/burst'],
     install_requires=[
         "blessings == 1.7",
         "apache-libcloud == 3.1.0",
