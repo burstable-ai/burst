@@ -1,2 +1,2 @@
-FROM datahubdock/burst:burst_base
+FROM burstableai/burst:burst_base
 CMD ["/bin/bash"]
