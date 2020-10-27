@@ -6,7 +6,7 @@ from libcloud.compute.providers import get_driver
 from libcloud.compute.base import NodeAuthSSHKey
 from easydict import EasyDict as dictobj
 
-from rexec.verbos import vprint
+from burst.verbos import vprint
 
 config = dictobj()
 
@@ -22,8 +22,8 @@ def init(conf = None):
         conf = {}
 
     try:
-        #FIXME: check for local overriding .rexec
-        f = open(os.environ['HOME'] + "/.rexec/config.yml")
+        #FIXME: check for local overriding .burst
+        f = open(os.environ['HOME'] + "/.burst/config.yml")
         yconf = yaml.load(f, Loader=yaml.FullLoader)
         f.close()
         if 'configset' in conf:
@@ -59,7 +59,7 @@ def init(conf = None):
         secret = os.path.expanduser(config.secret)
         # print ("SECRET 3:", secret)
         if not os.path.exists(secret):
-            secret = "%s/%s/%s" % (os.path.expanduser(os.environ['HOME']), ".rexec", config.secret)
+            secret = "%s/%s/%s" % (os.path.expanduser(os.environ['HOME']), ".burst", config.secret)
             # print ("SECRET 4:", secret)
         config.driver = cls(config.access, secret, datacenter=config.region, project=config.project)
         config.secret = secret
