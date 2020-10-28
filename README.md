@@ -60,7 +60,7 @@ ARGV: ['python3', 'test_script.py']
 REXARGS: []
 CMDARGS: ['python3', 'test_script.py']
 ARGS: Namespace(access=None, command=None, delay=0, dockerfile='Dockerfile', gpus=None, image=None, list_servers=False, local=False, p=None, pubkey=None, region=None, burst_user=None, secret=None, shutdown=900, size=None, sshuser='ubuntu', stop_instance_by_url=None, terminate_servers=False, url=None, uuid=None)
-Rexec username: kevincollins
+Burst username: kevincollins
 Waiting for sshd
 ['ssh', '-o StrictHostKeyChecking=no', 'ubuntu@34.221.2.128', 'echo', "'sshd responding'"]
 SSH returns -->sshd responding
@@ -72,9 +72,9 @@ Removing topmost layer
 Error: No such image: burst_image
 
 burst: name burst_kevincollins size t2.small image ami-0ba3ac9cd67195659 url 34.221.2.128
-rsync -vrltzu /Users/kevincollins/datahub/burst/tests/* ubuntu@34.221.2.128:/home/ubuntu/_REXEC_datahub_burst_tests/
+rsync -vrltzu /Users/kevincollins/datahub/burst/tests/* ubuntu@34.221.2.128:/home/ubuntu/_BURST_datahub_burst_tests/
 building file list ... done
-created directory /home/ubuntu/_REXEC_datahub_burst_tests
+created directory /home/ubuntu/_BURST_datahub_burst_tests
 Dockerfile
 foo
 longtest.py
@@ -110,7 +110,7 @@ Removing intermediate container 7039377cb232
  ---> 44c0f2e4825f
 Successfully built 44c0f2e4825f
 Successfully tagged burst_image:latest
-docker -H localhost:2376 run   --rm -it -v /home/ubuntu/_REXEC_datahub_burst_tests:/home/burst burst_image python3 test_script.py
+docker -H localhost:2376 run   --rm -it -v /home/ubuntu/_BURST_datahub_burst_tests:/home/burst burst_image python3 test_script.py
 
 
 ---------------------OUTPUT-----------------------
@@ -118,7 +118,7 @@ test_script running, args: []
 ----------------------END-------------------------
 
 
-rsync -vrltzu 'ubuntu@34.221.2.128:/home/ubuntu/_REXEC_datahub_burst_tests/*' /Users/kevincollins/datahub/burst/tests/
+rsync -vrltzu 'ubuntu@34.221.2.128:/home/ubuntu/_BURST_datahub_burst_tests/*' /Users/kevincollins/datahub/burst/tests/
 receiving file list ... done
 foo
 

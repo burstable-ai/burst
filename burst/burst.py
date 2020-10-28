@@ -70,7 +70,7 @@ def burst(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             tunnel = subprocess.Popen(ssh_args)
             time.sleep(2)
             relpath = os.path.abspath('.')[len(os.path.expanduser('~')):]
-            relpath = "/_REXEC" +  relpath.replace('/', '_') #I can exlain
+            relpath = "/_BURST" +  relpath.replace('/', '_') #I can exlain
             locpath = os.path.abspath('.')
             path = "/home/{0}{1}".format(sshuser, relpath)
 
@@ -175,7 +175,10 @@ def burst(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         else:
             vprint ("Scheduling shutdown of VM at %s for %d seconds from now" % (url, stop))
             conf = get_config()
-            secret = conf.raw_secret
+            if conf.provider == "GCE":
+                secret = ".burst/" + conf.raw_secret
+            else:
+                secret = conf.secret
             # print("SECRET 1:", secret)
             cmd = "docker {7} run --rm {11} -v {9}:/home/burst/work {8} burst --verbosity {12} --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6} {10}".format(url,
                                                                     stop, conf.access, secret, conf.region,
@@ -216,7 +219,7 @@ if __name__ == "__main__":
     parser.add_argument("--configset",                          help="run on remote server specified by url")
     parser.add_argument("--url",                                help="run on remote server specified by url")
     parser.add_argument("--uuid",                               help="run on remote server specified by libcloud uuid")
-    parser.add_argument("--burst_user",                          help="Rexec user name; defaults to local username")
+    parser.add_argument("--burst_user",                          help="Burst user name; defaults to local username")
     parser.add_argument("--gpus",                               help="docker run gpu option (usually 'all')")
     parser.add_argument("-p", action="append", metavar="PORTMAP", help="port mapping; example: -p 8080:8080")
     parser.add_argument("--access",                             help="libcloud username (aws: ACCESS_KEY)")
@@ -283,7 +286,7 @@ if __name__ == "__main__":
     if not (args.burst_user or args.uuid or args.url or args.local or args.version):
         rxuser = getpass.getuser()
         args.burst_user = "burst-" + rxuser
-        vprint ("Rexec virtual machine name:", args.burst_user)
+        vprint ("Burst virtual machine name:", args.burst_user)
 
     if args.stop_instance_by_url:
         stop_instance_by_url(args.stop_instance_by_url, args_conf)
