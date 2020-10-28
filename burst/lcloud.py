@@ -58,8 +58,12 @@ def init(conf = None):
         config.driver = cls(config.access, config.secret, region=config.region)
 
     elif config.provider == 'GCE':
-        config.raw_secret = "%s.json" % config.secret['private_key_id']
-        privkeypath = "%s/.burst/%s.json" % (os.path.expanduser("~"), config.secret['private_key_id'])
+        if hasattr(config.secret, 'lower'):         #string points to key file
+            privkeypath = config.secret
+            config.raw_secret = config.secret
+        else:                                       #if dict, create key file
+            config.raw_secret = "%s.json" % config.secret['private_key_id']
+            privkeypath = "%s/.burst/%s.json" % (os.path.expanduser("~"), config.secret['private_key_id'])
         if not os.path.exists(privkeypath):
             fp =  open(privkeypath, 'w')
             json.dump(config.secret, fp)
