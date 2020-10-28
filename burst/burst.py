@@ -175,10 +175,7 @@ def burst(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         else:
             vprint ("Scheduling shutdown of VM at %s for %d seconds from now" % (url, stop))
             conf = get_config()
-            if conf.provider == "GCE":
-                secret = ".burst/" + conf.raw_secret
-            else:
-                secret = conf.secret
+            secret = conf.raw_secret
             # print("SECRET 1:", secret)
             cmd = "docker {7} run --rm {11} -v {9}:/home/burst/work {8} burst --verbosity {12} --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6} {10}".format(url,
                                                                     stop, conf.access, secret, conf.region,

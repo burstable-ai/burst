@@ -35,10 +35,7 @@ def init(conf = None):
         else:
             configset = yconf['compute']['settings']['default_compute']
         yconf = yconf['compute']['configurations'][configset]
-        yconf.update(yconf['settings'])
-        print("DEEEBG~old~config~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        pprint(yconf)
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DEEEBG~~~~~~~~~~~~~~~~~~~~")
+        yconf.update(yconf['settings'])   #easier to deal with all attributes at top level
     except:
         vprint ("config.yml syntax error or not found")
         yconf = {}          #dummy yconf
@@ -61,16 +58,13 @@ def init(conf = None):
         config.driver = cls(config.access, config.secret, region=config.region)
 
     elif config.provider == 'GCE':
-        # print ("SECRET 2.5:", config.secret)
-        # print ("ABS 1:", os.path.abspath('.'))
-        config.raw_secret = config.secret
-        secret = os.path.expanduser(config.secret)
-        # print ("SECRET 3:", secret)
-        if not os.path.exists(secret):
-            secret = "%s/%s/%s" % (os.path.expanduser(os.environ['HOME']), ".burst", config.secret)
-            # print ("SECRET 4:", secret)
-        config.driver = cls(config.access, secret, datacenter=config.region, project=config.project)
-        config.secret = secret
+        config.raw_secret = "%s.json" % config.secret['private_key_id']
+        privkeypath = "%s/.burst/%s.json" % (os.path.expanduser("~"), config.secret['private_key_id'])
+        if not os.path.exists(privkeypath):
+            fp =  open(privkeypath, 'w')
+            json.dump(config.secret, fp)
+            fp.close()
+        config.driver = cls(config.access, privkeypath, datacenter=config.region, project=config.project)
     else:
         vprint ("ERROR: unknown cloud provider", config.provider)
 
