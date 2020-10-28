@@ -2,14 +2,14 @@
 compute:
   # Not important for now, just demonstrating how a cross-provider default settings might work
   settings:
-    default_compute: leela_gce
+    default_compute: eye0_gce
     default_to_gpu: yes
 
-  providers:
-    - name: leela_gce
-      driver: GCE
-      access: <key>
-      region: us-central1-a
+  configurations:
+    eye0_gce:
+      provider: GCE
+      access: rexec-43@cohesive-point-200601.iam.gserviceaccount.com
+      region: us-west1-b
       default_image: rexec-nogpu
       default_size: e2-micro
       default_gpu_image: rexec-gpu
@@ -18,46 +18,105 @@ compute:
         project: pyvision # Not sure what this is about but it's in the existing config file
         default_gpu: nvidia-tesla-t4
         secret:
-          private_key: <google_private_key>
-          private_key_id: <google_private_key_id>
-          type: <google_type>
-          project_id: <google_project_id>
-          client_email: <google_client_email>
-          client_id: <google_client_id>
-          auth_uri: <google_auth_uri>
-          token_uri: <google_token_uri>
-          auth_provider_x509_cert_url: <google_auth_provider_x509_cert_url>
-          client_x509_cert_url: <google_client_x509_cert_url>
+          type: service_account
+          project_id: cohesive-point-200601
+          private_key_id: bf7...f69
+          private_key: |
+            -----BEGIN PRIVATE KEY-----
+            MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCp9mRcB2zytKNE
+            ...
+            vVaR+8ilUPUT92vHCpeReZXw
+            -----END PRIVATE KEY-----
+          client_email: rexec-43@cohesive-point-200601.iam.gserviceaccount.com
+          client_id: '112942003936444377544'
+          auth_uri: https://accounts.google.com/o/oauth2/auth
+          token_uri: https://oauth2.googleapis.com/token
+          auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
+          client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/rexec-43%40cohesive-point-200601.iam.gserviceaccount.com
 
-    - name: eye0_aws
-      driver: EC2
-      access: <key>
-      region: us-central1-a
+    leela_gce:
+      provider: GCE
+      access: leela-gcs@leela-vision.iam.gserviceaccount.com
+      region: us-west1-b
       default_image: rexec-nogpu
       default_size: e2-micro
       default_gpu_image: rexec-gpu
       default_gpu_size: n1-standard-4
+      settings: # Everything GCE-specific goes here
+        project: pyvision # Not sure what this is about but it's in the existing config file
+        default_gpu: nvidia-tesla-t4
+        secret:
+          type: service_account
+          project_id: leela-vision
+          private_key_id: 69a...7ce3
+          private_key: |
+            -----BEGIN PRIVATE KEY-----
+            MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCcqy4dWAnh2VBu
+            ...
+            C/KVUMcf8memmsec+UM8Ewg=
+            -----END PRIVATE KEY-----
+          client_email: leela-gcs@leela-vision.iam.gserviceaccount.com
+          client_id: '104642350103718111957'
+          auth_uri: https://accounts.google.com/o/oauth2/auth
+          token_uri: https://oauth2.googleapis.com/token
+          auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
+          client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/leela-gcs%40leela-vision.iam.gserviceaccount.com
+
+    eye0_aws:
+      provider: EC2
+      access: AKIAVHUUTYRKGO4CGHMH
+      region: us-west-2
+      default_image: ami-011ab8a4b7a8907c6
+      default_size: t2.medium
+      default_gpu_image: ami-038b493084f00b948
+      default_gpu_size: g4dn.xlarge
       settings: # Everything AWS-specific goes here
         secret:
-          shared_key: <AWS secret>
+          shared_key: Rgc...gX0
 
 storage:
   settings:
-    default_sync_policy: lazy
     default_storage: leela_gcs
-  providers:
-    - name: leela_gcs
-      driver: GCS
-      default_mount_folder: google_cloud_bucket # For example
+    default_sync_policy: lazy
+  configurations:
+    leela_gcs:
+      provider: GCS
+      default_mount_folder: leela-videos
       settings: # Everything GCS-specific goes here
         secret:
-          type: <google_type>
-          project_id: <google_project_id>
-          private_key_id: <google_private_key_id>
-          private_key: <google_private_key>
-          client_email: <google_client_email>
-          client_id: <google_client_id>
-          auth_uri: <google_auth_uri>
-          token_uri: <google_token_uri>
-          auth_provider_x509_cert_url: <google_auth_provider_x509_cert_url>
-          client_x509_cert_url: <google_client_x509_cert_url>
+          type: service_account
+          project_id: leela-vision
+          private_key_id: 69af...7ce3
+          private_key: |
+            -----BEGIN PRIVATE KEY-----
+            MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCcqy4dWAnh2VBu
+            ...
+            C/KVUMcf8memmsec+UM8Ewg=
+            -----END PRIVATE KEY-----
+          client_email: leela-gcs@leela-vision.iam.gserviceaccount.com
+          client_id: '104642350103718111957'
+          auth_uri: https://accounts.google.com/o/oauth2/auth
+          token_uri: https://oauth2.googleapis.com/token
+          auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
+          client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/leela-gcs%40leela-vision.iam.gserviceaccount.com
+
+    eye0_gcs:
+      provider: GCS
+      default_mount_folder: rexec-tests
+      settings: # Everything GCS-specific goes here
+        secret:
+          type: service_account
+          project_id: cohesive-point-200601
+          private_key_id: bf7...f69
+          private_key: |
+            -----BEGIN PRIVATE KEY-----
+            MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCp9mRcB2zytKNE
+            ...
+            vVaR+8ilUPUT92vHCpeReZXw
+            -----END PRIVATE KEY-----
+          client_email: rexec-43@cohesive-point-200601.iam.gserviceaccount.com
+          client_id: '112942003936444377544'
+          auth_uri: https://accounts.google.com/o/oauth2/auth
+          token_uri: https://oauth2.googleapis.com/token
+          auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
+          client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/rexec-43%40cohesive-point-200601.iam.gserviceaccount.com

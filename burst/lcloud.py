@@ -25,16 +25,27 @@ def init(conf = None):
         #FIXME: check for local overriding .burst
         f = open(os.environ['HOME'] + "/.burst/config.yml")
         yconf = yaml.load(f, Loader=yaml.FullLoader)
+        # print ("compute:")
+        # pprint(yconf['compute'])
+        # print ("storage:")
+        # pprint(yconf['storage'])
         f.close()
         if 'configset' in conf:
             configset = conf['configset']
         else:
-            configset=yconf['default']
+            configset = yconf['default']
+            defcomp = yconf['compute']['settings']['default_compute']
+            nuconfig = yconf['compute']['configurations'][defcomp]
         yconf = yconf[configset]
+        print("DEEEBG~old~config~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        pprint(yconf)
+        print("DEEEBG~new~config~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        pprint(nuconfig)
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DEEEBG~~~~~~~~~~~~~~~~~~~~")
     except:
         vprint ("config.yml syntax error or not found")
         yconf = {}          #dummy yconf
-
+ 
     if 'provider' in conf:
         config.provider = conf['provider']
     else:
