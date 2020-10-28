@@ -33,14 +33,11 @@ def init(conf = None):
         if 'configset' in conf:
             configset = conf['configset']
         else:
-            configset = yconf['default']
-            defcomp = yconf['compute']['settings']['default_compute']
-            nuconfig = yconf['compute']['configurations'][defcomp]
-        yconf = yconf[configset]
+            configset = yconf['compute']['settings']['default_compute']
+        yconf = yconf['compute']['configurations'][configset]
+        yconf.update(yconf['settings'])
         print("DEEEBG~old~config~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         pprint(yconf)
-        print("DEEEBG~new~config~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        pprint(nuconfig)
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DEEEBG~~~~~~~~~~~~~~~~~~~~")
     except:
         vprint ("config.yml syntax error or not found")

@@ -70,9 +70,8 @@ compute:
       default_size: t2.medium
       default_gpu_image: ami-038b493084f00b948
       default_gpu_size: g4dn.xlarge
-      settings: # Everything AWS-specific goes here
-        secret:
-          shared_key: Rgc...gX0
+      settings:
+        shared_key: Rgc...gX0
 
 storage:
   settings:
