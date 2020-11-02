@@ -31,6 +31,21 @@ def burst(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
     try:
         if not os.path.exists(dockerfile):
             raise Exception("Dockerfile not found")
+        if not os.path.exists(".dockerignore"):
+            raise Exception("""
+
+.dockerignore file not found. Burst requires a .dockerignore to avoid sending excess data to docker build.
+Because the working directory is rsync'd to the remote host, you typically only need to send the Dockerfile
+and files that are referred to (such as requirements.txt) to the build daemon.
+
+#Template .dockerignore
+#Default to ignoring everything:
+**
+#exceptions (These will be sent to the docker daemon for building):
+!/Dockerfile*
+!requiremments.txt
+""")
+
         if url:
             if not sshuser:
                 sshuser, url = url.split('@')
