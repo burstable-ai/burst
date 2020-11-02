@@ -46,6 +46,15 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 !requiremments.txt
 """)
 
+        host_port_args = []
+        docker_port_args = ""
+        if ports:
+            for pa in ports:
+                if ':' not in pa:
+                    pa = "{0}:{0}".format(pa)
+                docker_port_args += " -p " + pa
+                host_port_args.append("-L " + pa.replace(":", ":localhost:"))
+        # print ("PORTS: |%s|%s|" % (docker_port_args, host_port_args))
         if url:
             if not sshuser:
                 sshuser, url = url.split('@')
@@ -80,7 +89,10 @@ and files that are referred to (such as requirements.txt) to the build daemon.
         if url:
             vprint ("Connecting through ssh")
             remote = "-H " + DOCKER_REMOTE
-            ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null", "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(sshuser, url)]
+            ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
+                        "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(DOCKER_REMPORT), "{0}@{1}".format(sshuser, url)]
+            for arg in host_port_args:
+                ssh_args.insert(3, arg)
             vvprint (ssh_args)
             tunnel = subprocess.Popen(ssh_args)
             time.sleep(2)
@@ -143,12 +155,6 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 
         args = " ".join(args)
         gpu_args = "--gpus "+gpus if gpus else ""
-        port_args = ""
-        if ports:
-            for pa in ports:
-                if ':' not in pa:
-                    pa = "{0}:{0}".format(pa)
-                port_args += " -p " + pa
 
         cloud_args = ""
         if cloudmap:
@@ -167,7 +173,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 
         vprint ("Running docker container")
         cmd = "docker {3} run {4} {5} --rm -ti -v {2}:/home/burst/work {6} {0} {1}".format(DEFAULT_IMAGE,
-                                                                                  args, path, remote, gpu_args, port_args, cloud_args)
+                                                                                  args, path, remote, gpu_args, docker_port_args, cloud_args)
         vvprint (cmd)
         vprint ("")
         v0print ("---------------------OUTPUT-----------------------")
