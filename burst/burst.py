@@ -45,16 +45,22 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 !/Dockerfile*
 !requiremments.txt
 """)
-
+        #
+        # Chunnel container to local via host:
+        # on host, docker map remote_port:remote_port
+        # on local, ssh tunnel local_port:localhost:remote_port
+        #
         host_port_args = []
         docker_port_args = ""
         if ports:
             for pa in ports:
-                if ':' not in pa:
-                    pa = "{0}:{0}".format(pa)
-                docker_port_args += " -p " + pa
-                host_port_args.append("-L " + pa.replace(":", ":localhost:"))
-        # print ("PORTS: |%s|%s|" % (docker_port_args, host_port_args))
+                if ':' in pa:
+                    local_port, remote_port = pa.split(':')
+                else:
+                    remote_port = local_port = pa
+                docker_port_args += " -p {0}:{0}".format(remote_port)
+                host_port_args.append("-L {0}:localhost:{1}".format(local_port, remote_port))
+        # print ("PORTS: |%s|%s|" % (docker_port_args, host_port_args)); exit()
         if url:
             if not sshuser:
                 sshuser, url = url.split('@')
