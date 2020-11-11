@@ -223,6 +223,10 @@ def list_servers(name, conf = None, terminated=True):
     ret = []
     nodes = config.driver.list_nodes()
     for x in nodes:
+        x = get_server(uuid=x.uuid)       #seems necessary to refresh to update state
+        if not x:
+            continue
+        # print ("DBG", terminated, x.state)
         if (not terminated) and (x.state=='terminated'): #don't include terminated
             continue
         if x.name==name:
