@@ -66,9 +66,11 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 sshuser, url = url.split('@')
         node = None
         if url or uuid or rxuser:
+            fresh = False
             node = get_server(url=url, uuid=uuid, name=rxuser, conf=conf)
             if rxuser and not node:
                 node = launch_server(rxuser, pubkey=pubkey, size=size, image=image, conf=conf, user=sshuser, gpus=gpus)
+                fresh = True
             if node:
                 if node.state.lower() != "running":
                     vprint ("Starting server")
@@ -93,6 +95,14 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 raise Exception("Error: node not found")
 
         if url:
+            if fresh:
+                print("Installing Docker")
+                cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {0}@{1} ' \
+                      '"sudo apt-get -y update; sudo apt-get -y install docker.io; sudo usermod -a -G docker ubuntu"'.format(
+                    sshuser, url)
+                vvprint(cmd)
+                os.system(cmd)
+
             vprint ("Connecting through ssh")
             remote = "-H " + DOCKER_REMOTE
             ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
@@ -107,33 +117,26 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             locpath = os.path.abspath('.')
             path = "/home/{0}{1}".format(sshuser, relpath)
 
-            for trys in range(2):
-                cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
-                vvprint (cmd)
-                out = run(cmd)
-                vvprint("PS returns -->%s|%s<--" % out)
-                if out[0].strip():
-                    kills = []
-                    for x in out[0].split("\n"):
-                        if x:
-                            try:
-                                j = json.loads(x)
-                            except:
-                                # raise Exception("ERROR in Docker check (is Docker installed?): %s" % x)
-                                print ("Docker not found; installing")
-                                cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {0}@{1} ' \
-                                      '"sudo apt-get -y update; sudo apt-get -y install docker.io; sudo usermod -a -G docker ubuntu"'.format(sshuser, url)
-                                vvprint(cmd)
-                                os.system(cmd)
-                                break
-                            Command = j['Command']
-                            if Command.find("burst --stop") < 2:
-                                kills.append(j['ID'])
-                    if kills:
-                        vprint ("Killing shutdown processes:", kills)
-                        cmd = "docker {0} stop {1} {2} &".format(remote, " ".join(kills), get_piper())
-                        vvprint (cmd)
-                        os.system(cmd)
+            cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
+            vvprint (cmd)
+            out = run(cmd)
+            vvprint("PS returns -->%s|%s<--" % out)
+            if out[0].strip():
+                kills = []
+                for x in out[0].split("\n"):
+                    if x:
+                        try:
+                            j = json.loads(x)
+                        except:
+                            raise Exception("ERROR in Docker check (is Docker installed?): %s" % x)
+                        Command = j['Command']
+                        if Command.find("burst --stop") < 2:
+                            kills.append(j['ID'])
+                if kills:
+                    vprint ("Killing shutdown processes:", kills)
+                    cmd = "docker {0} stop {1} {2} &".format(remote, " ".join(kills), get_piper())
+                    vvprint (cmd)
+                    os.system(cmd)
 
             vprint ("Removing topmost layer")        #to avoid running stale image
             cmd = ["docker", "{0}".format(remote), "rmi", "--no-prune", DEFAULT_IMAGE]
