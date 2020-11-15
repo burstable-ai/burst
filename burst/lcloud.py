@@ -4,6 +4,7 @@ from pprint import pprint
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.base import NodeAuthSSHKey
+from libcloud.common.google import ResourceNotFoundError
 from easydict import EasyDict as dictobj
 
 from burst.verbos import vprint
@@ -151,11 +152,18 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
     size, image = fix_size_and_image(size, image)
     if config.provider=='EC2':
         images = config.driver.list_images(ex_image_ids=[image])
+    elif config.provider=='GCE':
+        #note: GCE libcloud driver list_images is hella borke, list is incomplete so...
+        images = []
+        for proj in ["deeplearning-platform-release", "ubuntu-os-cloud"]:
+            try:
+                im = config.driver.ex_get_image(image, ex_project_list=proj)
+                images = [im]
+                break
+            except ResourceNotFoundError:
+                pass
     else:
         ims = config.driver.list_images()
-        # print ("-----------IMAGES------------")
-        # for x in ims:
-        #     print (x)
         images = [x for x in ims if x.name == image]
     if not images:
         raise Exception("Image %s not found" % image)
