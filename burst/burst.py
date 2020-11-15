@@ -118,7 +118,12 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                         try:
                             j = json.loads(x)
                         except:
-                            raise Exception("ERROR in Docker check (is Docker installed?): %s" % x)
+                            # raise Exception("ERROR in Docker check (is Docker installed?): %s" % x)
+                            print ("Docker not found; installing")
+                            cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {0}@{1} ' \
+                                  '"sudo apt-get -y update; sudo apt-get -y install docker.io; sudo usermod -a -G docker ubuntu"'.format(sshuser, url)
+                            vvprint(cmd)
+                            os.system(cmd)
                         Command = j['Command']
                         if Command.find("burst --stop") < 2:
                             kills.append(j['ID'])
