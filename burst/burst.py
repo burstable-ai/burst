@@ -107,31 +107,34 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             locpath = os.path.abspath('.')
             path = "/home/{0}{1}".format(sshuser, relpath)
 
-            cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
-            vvprint (cmd)
-            out = run(cmd)
-            vvprint("PS returns -->%s|%s<--" % out)
-            if out[0].strip():
-                kills = []
-                for x in out[0].split("\n"):
-                    if x:
-                        try:
-                            j = json.loads(x)
-                        except:
-                            # raise Exception("ERROR in Docker check (is Docker installed?): %s" % x)
-                            print ("Docker not found; installing")
-                            cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {0}@{1} ' \
-                                  '"sudo apt-get -y update; sudo apt-get -y install docker.io; sudo usermod -a -G docker ubuntu"'.format(sshuser, url)
-                            vvprint(cmd)
-                            os.system(cmd)
-                        Command = j['Command']
-                        if Command.find("burst --stop") < 2:
-                            kills.append(j['ID'])
-                if kills:
-                    vprint ("Killing shutdown processes:", kills)
-                    cmd = "docker {0} stop {1} {2} &".format(remote, " ".join(kills), get_piper())
-                    vvprint (cmd)
-                    os.system(cmd)
+            for trys in range(2):
+                cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
+                vvprint (cmd)
+                out = run(cmd)
+                vvprint("PS returns -->%s|%s<--" % out)
+                if out[0].strip():
+                    kills = []
+                    for x in out[0].split("\n"):
+                        if x:
+                            try:
+                                j = json.loads(x)
+                            except:
+                                # raise Exception("ERROR in Docker check (is Docker installed?): %s" % x)
+                                print ("Docker not found; installing")
+                                cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {0}@{1} ' \
+                                      '"sudo apt-get -y update; sudo apt-get -y install docker.io; sudo usermod -a -G docker ubuntu"'.format(sshuser, url)
+                                vvprint(cmd)
+                                os.system(cmd)
+                                break
+                            Command = j['Command']
+                            if Command.find("burst --stop") < 2:
+                                kills.append(j['ID'])
+                    if kills:
+                        vprint ("Killing shutdown processes:", kills)
+                        cmd = "docker {0} stop {1} {2} &".format(remote, " ".join(kills), get_piper())
+                        vvprint (cmd)
+                        os.system(cmd)
+
             vprint ("Removing topmost layer")        #to avoid running stale image
             cmd = ["docker", "{0}".format(remote), "rmi", "--no-prune", DEFAULT_IMAGE]
             vvprint (cmd)
