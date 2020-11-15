@@ -327,7 +327,7 @@ if __name__ == "__main__":
     if not (args.burst_user or args.uuid or args.url or args.local or args.version):
         rxuser = getpass.getuser()
         args.burst_user = "burst-" + rxuser
-        vprint ("Burst virtual machine name:", args.burst_user)
+        vprint ("Session: %s" % args.burst_user)
 
     if args.stop_instance_by_url:
         stop_instance_by_url(args.stop_instance_by_url, args_conf)
