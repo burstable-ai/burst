@@ -147,8 +147,11 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             size, image = fix_size_and_image(size, image)
             if size and size != get_server_size(node):
                 raise Exception("FIXME: cannot change size (instance type) -- need to re-launch")
-            if image and image != get_server_image(node):
-                raise Exception("FIXME: cannot change host image -- need to terminate & re-launch server")
+
+            # get_server_image is broken, need to prompt better here
+            # if image and image != get_server_image(node):
+            #     raise Exception("FIXME: cannot change host image -- need to terminate & re-launch server")
+
             vprint ("burst: name %s size %s image %s url %s" % (node.name, size, image, url))
 
             #sync project directory

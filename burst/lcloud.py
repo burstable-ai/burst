@@ -105,11 +105,13 @@ def get_server_size(srv):
         i = typ.rfind('/')
         return typ[i+1:]
 
-def get_server_image(srv):
-    if config.provider=='EC2':
-        return srv.extra['image_id']
-    elif config.provider=='GCE':
-        return srv.extra['image']
+# not working now that EC2 image == AMI full name
+# def get_server_image(srv):
+#     if config.provider=='EC2':
+#         pprint(srv.extra)
+#         return srv.extra['name']
+#     elif config.provider=='GCE':
+#         return srv.extra['image']
 
 def start_server(srv):
     result = srv.start()
@@ -151,7 +153,7 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
     init(conf)
     size, image = fix_size_and_image(size, image)
     if config.provider=='EC2':
-        images = config.driver.list_images(ex_image_ids=[image])
+        images = config.driver.list_images(ex_filters={'name': image})
     elif config.provider=='GCE':
         #note: GCE libcloud driver list_images is hella borke, list is incomplete so...
         images = []
