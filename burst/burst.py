@@ -115,7 +115,10 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 kills = []
                 for x in out[0].split("\n"):
                     if x:
-                        j = json.loads(x)
+                        try:
+                            j = json.loads(x)
+                        except:
+                            raise Exception("ERROR in Docker check (is Docker installed?): %s" % x)
                         Command = j['Command']
                         if Command.find("burst --stop") < 2:
                             kills.append(j['ID'])

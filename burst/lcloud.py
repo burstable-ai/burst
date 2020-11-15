@@ -152,7 +152,11 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
     if config.provider=='EC2':
         images = config.driver.list_images(ex_image_ids=[image])
     else:
-        images = [x for x in config.driver.list_images() if x.name == image]
+        ims = config.driver.list_images()
+        # print ("-----------IMAGES------------")
+        # for x in ims:
+        #     print (x)
+        images = [x for x in ims if x.name == image]
     if not images:
         raise Exception("Image %s not found" % image)
     image = images[0]
@@ -161,7 +165,7 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
     if not sizes:
         raise Exception("Instance size %s not found" % size)
     size = sizes[0]
-    vprint ("Launching instance node, image=%s, name=%s, type=%s ram=%s disk=%s" % (image.id, name, size.id, size.ram, size.disk))
+    vprint ("Launching instance image=%s, id=%s, session=%s, type=%s ram=%s disk=%s" % (image.name, image.id, name, size.id, size.ram, size.disk))
 
     if pubkey:
         if config.provider == 'EC2':                #Everybody makes it up
