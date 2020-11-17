@@ -68,7 +68,7 @@ compute:
       region: us-west-2
       default_image: ami-ubuntu-18.04-1.16.0-00-1569343567
       default_size: t2.medium
-      default_gpu_image: ami-038b493084f00b948
+      default_gpu_image: Deep Learning AMI (Ubuntu 18.04) Version 36.0
       default_gpu_size: g4dn.xlarge
       settings:
         secret: Rgc...gX0
