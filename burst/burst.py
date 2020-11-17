@@ -98,8 +98,8 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             if fresh:
                 print("Installing Docker")
                 cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {0}@{1} ' \
-                      '"sudo apt-get -y update; sudo apt-get -y install docker.io; sudo usermod -a -G docker ubuntu"'.format(
-                    sshuser, url)
+                      '"sudo apt-get -y update; sudo apt-get -y install docker.io; sudo usermod -a -G docker ubuntu; ' \
+                      'sudo systemctl unmask docker; sudo service docker start"'.format(sshuser, url)
                 vvprint(cmd)
                 os.system(cmd)
 
