@@ -64,7 +64,7 @@ compute:
 
     eye0_aws:
       provider: EC2
-      access: AKIAVHUUTYRKGO4CGHMH
+      access: AK...MH
       region: us-west-2
       default_image: ami-ubuntu-18.04-1.16.0-00-1569343567
       default_size: t2.medium
