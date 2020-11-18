@@ -45,6 +45,7 @@ def get_piper():
         return ""
     elif VERBOSITY & 4:
         return ">/dev/null"
+    return ""
 
 def get_dockrunflags():
     if VERBOSITY & 128:
