@@ -155,15 +155,16 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             vprint ("burst: name %s size %s image %s url %s" % (node.name, size, image, url))
 
             #sync project directory
-            vprint ("Synchronizing folders")
             cmd = 'rsync -rltzu{4} -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/* {3}@{1}:{2}/'.format(locpath,
                                         url, path, sshuser, get_rsync_v())
+            vprint ("Synchronizing project folders")
             vvprint (cmd)
             os.system(cmd)
             if get_config().provider == 'GCE':
                 # sync service acct creds (for shutdown)
                 cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.burst/{5} {3}@{1}:{2}/'.format(os.path.expanduser('~'),
                                         url, path, sshuser, get_rsync_v(), get_config().raw_secret)
+                vprint("Synchronizing credentials for shutdown")
                 vvprint (cmd)
                 os.system(cmd)
         else:
@@ -185,6 +186,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 rcred = f'{path}/.burst'
                 cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.burst/ {3}@{1}:{2}/' \
                     .format(os.path.expanduser('~'), url, path, sshuser, get_rsync_v())
+                vprint("Synchronizing credentials for cloudmap")
                 vvprint(cmd)
                 os.system(cmd)
             else:
