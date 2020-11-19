@@ -12,7 +12,7 @@ def main():
     args = parse_arguments()
 
     config = get_config(CONFIG_FILE)
-    print('Welcome to rexec!')
+    print('Welcome to rexec configuration!')
     if args.main_choice in [None, 'summary']:
         summary.all(config)
 
