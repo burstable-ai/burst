@@ -317,10 +317,13 @@ if __name__ == "__main__":
         args_compute.project = args.project
         args_compute.provider = args.provider
     else:
+        burst_conf = {}
+
         if args.compute_config:
-            args_compute = {'compute_config': args.compute_config}
-        else:
-            args_compute = None
+            burst_conf['compute_config'] = args.compute_config
+
+        if args.storage_config:
+            burst_conf['storage_config'] = args.storage_config
 
     if args.local and (args.uuid or args.url):
         vprint (args)
@@ -337,18 +340,18 @@ if __name__ == "__main__":
         vprint ("Session: %s" % args.burst_user)
 
     if args.stop_instance_by_url:
-        stop_instance_by_url(args.stop_instance_by_url, args_compute)
+        stop_instance_by_url(args.stop_instance_by_url, burst_conf)
 
     elif args.list_servers:     #note this is different than --shutdown 0 -- we just shut down without running
         v0print ("-------------------------------------------------------------\nSERVERS associated with %s:" % args.burst_user)
-        for _, s in list_servers(args.burst_user, args_compute):
+        for _, s in list_servers(args.burst_user, burst_conf):
             print (s)
         v0print ("-------------------------------------------------------------")
 
     elif args.shutdown == None:
         v0print ("-------------------------------------------------------------")
         count = 0
-        for node, s in list_servers(args.burst_user, args_compute):
+        for node, s in list_servers(args.burst_user, burst_conf):
             if node.state == "stopped":
                 continue
             count += 1
@@ -364,7 +367,7 @@ if __name__ == "__main__":
     elif args.terminate_servers:
         v0print ("-------------------------------------------------------------")
         count = 0
-        for node, s in list_servers(args.burst_user, args_compute, terminated=False):
+        for node, s in list_servers(args.burst_user, burst_conf, terminated=False):
             count += 1
             yes = input("Terminating %s, are you sure?" % s)
             if yes=='y':
@@ -411,6 +414,6 @@ if __name__ == "__main__":
         burst(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
               rxuser=args.burst_user, gpus=args.gpus, ports=args.p, stop=args.shutdown,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
-              conf = args_compute)
+              conf = burst_conf)
         vprint ("DONE")
         v0print()

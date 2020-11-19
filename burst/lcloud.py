@@ -22,25 +22,30 @@ def init(conf = None):
     if conf == None:
         conf = {}
 
-    try:
+    yam = os.environ['HOME'] + "/.burst/config.yml"
+    if os.path.exists(yam):
         #FIXME: check for local overriding .burst
-        f = open(os.environ['HOME'] + "/.burst/config.yml")
+        f = open(yam)
         yconf = yaml.load(f, Loader=yaml.FullLoader)
-        # print ("compute:")
-        # pprint(yconf['compute'])
-        # print ("storage:")
-        # pprint(yconf['storage'])
         f.close()
         if 'compute_config' in conf:
             compute_config = conf['compute_config']
         else:
             compute_config = yconf['compute']['settings']['default_compute']
+
+        if 'storage_config' in conf:
+            storage_config = conf['storage_config']
+        else:
+            storage_config = yconf['storage']['settings']['default_storage']
+
+        storage = yconf['storage']['configurations'][storage_config]
         yconf = yconf['compute']['configurations'][compute_config]
         yconf.update(yconf['settings'])   #easier to deal with all attributes at top level
-    except:
+        yconf['storage'] = storage
+    else:
         vprint ("config.yml syntax error or not found")
         yconf = {}          #dummy yconf
- 
+
     if 'provider' in conf:
         config.provider = conf['provider']
     else:
