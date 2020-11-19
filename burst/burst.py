@@ -184,6 +184,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
         if cloudmap:
             if remote:
                 rcred = f'{path}/.burst'
+                # print ("PUT CREDS HERE:", rcred)
                 cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.burst/ {3}@{1}:{2}/' \
                     .format(os.path.expanduser('~'), url, path, sshuser, get_rsync_v())
                 vprint("Synchronizing credentials for cloudmap")
@@ -262,10 +263,11 @@ if __name__ == "__main__":
     parser.add_argument("--list-servers", action="store_true",  help="List all associated remote servers")
     parser.add_argument("--terminate-servers", action="store_true",     help="Terminate associated remote servers")
     parser.add_argument("--version", action="store_true",       help="Print version # & exit")
-    parser.add_argument("--configset",                          help="run on remote server specified by url")
+    parser.add_argument("--storage-config",                     help="override default storage configuration")
+    parser.add_argument("--compute-config",                     help="override default compute configuration")
     parser.add_argument("--url",                                help="run on remote server specified by url")
     parser.add_argument("--uuid",                               help="run on remote server specified by libcloud uuid")
-    parser.add_argument("--burst_user",                          help="Burst user name; defaults to local username")
+    parser.add_argument("--burst_user",                         help="Burst user name; defaults to local username")
     parser.add_argument("--gpus",                               help="docker run gpu option (usually 'all')")
     parser.add_argument("-p", action="append", metavar="PORTMAP", help="port mapping; example: -p 8080:8080")
     parser.add_argument("--access",                             help="libcloud username (aws: ACCESS_KEY)")
@@ -308,17 +310,17 @@ if __name__ == "__main__":
     set_verbosity(args.verbosity)
 
     if args.access:
-        args_conf = dictobj()
-        args_conf.access = args.access
-        args_conf.secret = args.secret
-        args_conf.region = args.region
-        args_conf.project = args.project
-        args_conf.provider = args.provider
+        args_compute = dictobj()
+        args_compute.access = args.access
+        args_compute.secret = args.secret
+        args_compute.region = args.region
+        args_compute.project = args.project
+        args_compute.provider = args.provider
     else:
-        if args.configset:
-            args_conf = {'configset': args.configset}
+        if args.compute_config:
+            args_compute = {'compute_config': args.compute_config}
         else:
-            args_conf = None
+            args_compute = None
 
     if args.local and (args.uuid or args.url):
         vprint (args)
@@ -335,18 +337,18 @@ if __name__ == "__main__":
         vprint ("Session: %s" % args.burst_user)
 
     if args.stop_instance_by_url:
-        stop_instance_by_url(args.stop_instance_by_url, args_conf)
+        stop_instance_by_url(args.stop_instance_by_url, args_compute)
 
     elif args.list_servers:     #note this is different than --shutdown 0 -- we just shut down without running
         v0print ("-------------------------------------------------------------\nSERVERS associated with %s:" % args.burst_user)
-        for _, s in list_servers(args.burst_user, args_conf):
+        for _, s in list_servers(args.burst_user, args_compute):
             print (s)
         v0print ("-------------------------------------------------------------")
 
     elif args.shutdown == None:
         v0print ("-------------------------------------------------------------")
         count = 0
-        for node, s in list_servers(args.burst_user, args_conf):
+        for node, s in list_servers(args.burst_user, args_compute):
             if node.state == "stopped":
                 continue
             count += 1
@@ -362,7 +364,7 @@ if __name__ == "__main__":
     elif args.terminate_servers:
         v0print ("-------------------------------------------------------------")
         count = 0
-        for node, s in list_servers(args.burst_user, args_conf, terminated=False):
+        for node, s in list_servers(args.burst_user, args_compute, terminated=False):
             count += 1
             yes = input("Terminating %s, are you sure?" % s)
             if yes=='y':
@@ -409,6 +411,6 @@ if __name__ == "__main__":
         burst(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
               rxuser=args.burst_user, gpus=args.gpus, ports=args.p, stop=args.shutdown,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
-              conf = args_conf)
+              conf = args_compute)
         vprint ("DONE")
         v0print()

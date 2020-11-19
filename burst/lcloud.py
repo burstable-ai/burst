@@ -31,11 +31,11 @@ def init(conf = None):
         # print ("storage:")
         # pprint(yconf['storage'])
         f.close()
-        if 'configset' in conf:
-            configset = conf['configset']
+        if 'compute_config' in conf:
+            compute_config = conf['compute_config']
         else:
-            configset = yconf['compute']['settings']['default_compute']
-        yconf = yconf['compute']['configurations'][configset]
+            compute_config = yconf['compute']['settings']['default_compute']
+        yconf = yconf['compute']['configurations'][compute_config]
         yconf.update(yconf['settings'])   #easier to deal with all attributes at top level
     except:
         vprint ("config.yml syntax error or not found")
