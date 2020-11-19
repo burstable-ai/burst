@@ -39,9 +39,11 @@ def init(conf = None):
             storage_config = yconf['storage']['settings']['default_storage']
 
         storage = yconf['storage']['configurations'][storage_config]
+        storage['config'] = storage_config
         yconf = yconf['compute']['configurations'][compute_config]
         yconf.update(yconf['settings'])   #easier to deal with all attributes at top level
         yconf['storage'] = storage
+
     else:
         vprint ("config.yml syntax error or not found")
         yconf = {}          #dummy yconf
@@ -52,7 +54,7 @@ def init(conf = None):
         config.provider = yconf['provider']
 
     for param in ['access', 'secret', 'region', 'project', 'default_image', 'default_size', 'default_gpu_image',
-                  'default_gpu_size', 'default_gpu']:
+                  'default_gpu_size', 'default_gpu', 'storage']:
         if param in conf:
             config[param] = conf[param]
         else:
