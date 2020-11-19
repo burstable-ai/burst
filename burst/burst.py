@@ -154,6 +154,24 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 
             vprint ("burst: name %s size %s image %s url %s" % (node.name, size, image, url))
 
+            if cloudmap:
+                if remote:
+                    stor = get_config()['storage']
+                    # build rclone.conf
+                    s = \
+                        f"""[{stor['config']}]
+                        provider          = {stor['provider']}
+                        access_key_id     = {stor['access']}
+                        region            = {stor['region']}
+                        secret_access_key = {stor['settings']['secret']}
+                        env_auth          = {stor['settings']['env_auth']}
+                        type              = {stor['settings']['type']}
+                        acl               = {stor['settings']['acl']}"""
+                    print(s)
+                    f = open("rclone.conf", 'w')
+                    f.write(s)
+                    f.close()
+
             #sync project directory
             cmd = 'rsync -rltzu{4} -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/* {3}@{1}:{2}/'.format(locpath,
                                         url, path, sshuser, get_rsync_v())
@@ -182,35 +200,9 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 
         cloud_args = ""
         if cloudmap:
-            if remote:
-                rcred = f'{path}'
-                stor = get_config()['storage']
-                #build rclone.conf
-                s = \
-f"""[{stor['config']}]
-provider          = {stor['provider']}
-access_key_id     = {stor['access']}
-region            = {stor['region']}
-secret_access_key = {stor['settings']['secret']}
-env_auth          = {stor['settings']['env_auth']}
-type              = {stor['settings']['type']}
-acl               = {stor['settings']['acl']}"""
-                print (s)
-                f = open("rclone.conf", 'w')
-                f.write(s)
-                f.close()
-
-                cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" ./rclone.conf {3}@{1}:{2}/' \
-                    .format(os.path.expanduser('~'), url, path, sshuser, get_rsync_v())
-                vprint("Synchronizing credentials for cloudmap")
-                vvprint(cmd)
-                os.system(cmd)
-            else:
-                rcred = f"{os.environ['HOME']}/.burst"
-
-            cloud_args = f"-v {rcred}:/root/.config/rclone --privileged"
             cloud, host = cloudmap.split(":")
-            args = f"bash -c 'mkdir -p {host}; rclone mount {cloud}: {host} & sleep 3; {args}; umount {host}'"
+            args = f"bash -c 'mkdir -p {host}; rclone mount --config rclone.conf {cloud}: {host} & sleep 3; {args}; umount {host}'"
+            cloud_args = " --privileged"
 
         vprint ("Running docker container")
         cmd = "docker {3} run {4} {5} --rm -ti -v {2}:/home/burst/work {6} {0} {1}".format(DEFAULT_IMAGE,
