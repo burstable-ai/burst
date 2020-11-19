@@ -183,7 +183,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
         cloud_args = ""
         if cloudmap:
             if remote:
-                rcred = f'{path}/.burst'
+                rcred = f'{path}'
                 stor = get_config()['storage']
                 #build rclone.conf
                 s = \
@@ -196,11 +196,11 @@ env_auth          = {stor['settings']['env_auth']}
 type              = {stor['settings']['type']}
 acl               = {stor['settings']['acl']}"""
                 print (s)
-                f = open(".__rclone_conf__", 'w')
+                f = open("rclone.conf", 'w')
                 f.write(s)
                 f.close()
 
-                cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.burst/ {3}@{1}:{2}/' \
+                cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" ./rclone.conf {3}@{1}:{2}/' \
                     .format(os.path.expanduser('~'), url, path, sshuser, get_rsync_v())
                 vprint("Synchronizing credentials for cloudmap")
                 vvprint(cmd)
