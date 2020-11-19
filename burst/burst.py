@@ -159,21 +159,21 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                     stor = get_config()['storage']
                     # build rclone.conf
                     s = \
-                        f"""[{stor['config']}]
-                        provider          = {stor['provider']}
-                        access_key_id     = {stor['access']}
-                        region            = {stor['region']}
-                        secret_access_key = {stor['settings']['secret']}
-                        env_auth          = {stor['settings']['env_auth']}
-                        type              = {stor['settings']['type']}
-                        acl               = {stor['settings']['acl']}"""
+f"""[{stor['config']}]
+provider          = {stor['provider']}
+access_key_id     = {stor['access']}
+region            = {stor['region']}
+secret_access_key = {stor['settings']['secret']}
+env_auth          = {stor['settings']['env_auth']}
+type              = {stor['settings']['type']}
+acl               = {stor['settings']['acl']}"""
                     print(s)
-                    f = open("rclone.conf", 'w')
+                    f = open(".rclone.conf", 'w')
                     f.write(s)
                     f.close()
 
             #sync project directory
-            cmd = 'rsync -rltzu{4} -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/* {3}@{1}:{2}/'.format(locpath,
+            cmd = 'rsync -rltzu{4} -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/. {3}@{1}:{2}/'.format(locpath,
                                         url, path, sshuser, get_rsync_v())
             vprint ("Synchronizing project folders")
             vvprint (cmd)
@@ -201,7 +201,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
         cloud_args = ""
         if cloudmap:
             cloud, host = cloudmap.split(":")
-            args = f"bash -c 'mkdir -p {host}; rclone mount --config rclone.conf {cloud}: {host} & sleep 3; {args}; umount {host}'"
+            args = f"bash -c 'mkdir -p {host}; rclone mount --config .rclone.conf {cloud}: {host} & sleep 3; {args}; umount {host}'"
             cloud_args = " --privileged"
 
         vprint ("Running docker container")
@@ -214,7 +214,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
         v0print ("----------------------END-------------------------")
         if url:
             vprint ("Synchronizing folders")
-            cmd = "rsync -rltzu{4}  -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error' '{3}@{1}:{2}/*' {0}/".format(locpath,
+            cmd = "rsync -rltzu{4}  -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error' '{3}@{1}:{2}/.' {0}/".format(locpath,
                                             url, path, sshuser, get_rsync_v())
             vvprint (cmd)
             os.system(cmd)
