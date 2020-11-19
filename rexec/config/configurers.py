@@ -31,9 +31,12 @@ def new_storage():
     return alias, config
 
 
-def remove_service(config, service):
-    getattr(summary, service)(config)
-    remove_alias = input('Enter name to remove: ')
+def remove_service(config, service, remove_alias=None):
+
+    if remove_alias is None:
+        getattr(summary, service)(config)
+        remove_alias = input('Enter name to remove: ')
+
     if remove_alias not in config[service].get('configurations', []):
         raise Exception("Name entered is not configured")
 
