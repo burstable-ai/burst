@@ -32,7 +32,7 @@ def get_aws_creds(aws_path='~/.aws'):
         section = config_parser[index_map[selected_index]]
         access_key = section['aws_access_key_id']
         secret = section['aws_secret_access_key']
-        region = section['region']
+        region = section.get('region')
     elif env_available and selected_index == str(index+1):
         access_key = env_access_key
         secret = env_secret
@@ -43,6 +43,16 @@ def get_aws_creds(aws_path='~/.aws'):
         region = input('Region> ')
     else:
         raise Exception('Inavlid Selection')
+
+    if region is None:
+        print('This profile has no region')
+        if 'region' in dict(config_parser).get('default'):
+            default_region = config_parser['default']['region']
+            choice = input(f'The "default" has region of {default_region}.  Should we use this? (y/n)> ')
+            if choice.lower() == 'y':
+                region = default_region
+        if region is None:
+            region = input('Please enter the region> ')
 
     return access_key, secret, region
 

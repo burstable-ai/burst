@@ -1,3 +1,5 @@
+import sys
+
 import summary
 from cred_loaders import get_aws_creds
 from config_file_utils import get_config
@@ -65,3 +67,11 @@ def set_default(config, service, default_service=None):
         settings['default_storage'] = default_service
 
     return settings
+
+def check_existance(config, service, alias):
+
+    if alias in config[service]['configurations']:
+        proceed = input(f"Warning - {alias} is already in use. Overwrite? (y/n)> ")
+
+        if proceed.lower() != 'y':
+            sys.exit()

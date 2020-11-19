@@ -21,7 +21,9 @@ def main():
         second_selection = args.second_choice if args.second_choice else menus.main_service_menu('compute')
         if second_selection == 'add':
             alias, creds = configurers.new_compute(aws_path=args.aws_path)
+            configurers.check_existance(config, 'compute', alias)
             config['compute']['configurations'][alias] = creds
+            print(f'{alias} has been added to compute')
         elif second_selection == 'remove':
             remove_alias = configurers.remove_service(config, 'compute', remove_alias=args.third_choice)
             del config['compute']['configurations'][remove_alias]
@@ -32,6 +34,7 @@ def main():
         if second_selection == 'add':
             alias, creds = configurers.new_storage(aws_path=args.aws_path)
             config['storage']['configurations'][alias] = creds
+            print(f'{alias} has been added to storage')
         elif second_selection == 'remove':
             remove_alias = configurers.remove_service(config, 'storage', remove_alias=args.third_choice)
             del config['storage']['configurations'][remove_alias]
