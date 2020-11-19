@@ -188,7 +188,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 #build rclone.conf
                 s = \
 f"""[{stor['config']}]
-provider = {stor['provider']}
+provider          = {stor['provider']}
 access_key_id     = {stor['access']}
 region            = {stor['region']}
 secret_access_key = {stor['settings']['secret']}
