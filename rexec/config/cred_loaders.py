@@ -3,10 +3,9 @@ import configparser
 
 def get_aws_creds(aws_path='~/.aws'):
 
-    # expand path
     config_parser = configparser.ConfigParser()
 
-    aws_abspath = os.path.expanduser('~/.aws')
+    aws_abspath = os.path.expanduser(aws_path)
     config_parser.read(f'{aws_abspath}/credentials')
     config_parser.read(f'{aws_abspath}/config')
 

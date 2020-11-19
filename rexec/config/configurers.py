@@ -5,24 +5,24 @@ from config_file_utils import get_config
 # The alias used in the template file to set default images/sizes
 TEMPLATE_AWS_ALIAS = 'eye0_aws'
 
-def new_compute():
+def new_compute(aws_path='~/.aws'):
 
     print('\nSetting up EC2 on AWS')
 
     config = get_config(file_name='config_template.yml')['compute']['configurations'][TEMPLATE_AWS_ALIAS]
-    config['access'], config['settings']['secret'], config['region'] = get_aws_creds()
+    config['access'], config['settings']['secret'], config['region'] = get_aws_creds(aws_path)
     alias = input('\nPlease enter an alias (name) to reference these credentials: ')
     # ask if this should be default?
 
     return alias, config
 
 
-def new_storage():
+def new_storage(aws_path='~/.aws'):
     print('\nSetting up S3 on AWS')
 
     config = {'settings': {'type': 's3', 'env_auth': False, 'acl': 'private'}}
 
-    config['access'], config['secret'], config['region'] = get_aws_creds()
+    config['access'], config['secret'], config['region'] = get_aws_creds(aws_path)
     config['provider'] = 'AWS'
     config['default_mount_folder'] = input("\nSet the default mount folder: ")
 

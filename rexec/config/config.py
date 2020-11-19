@@ -20,22 +20,22 @@ def main():
     if main_selection == 'compute':
         second_selection = args.second_choice if args.second_choice else menus.main_service_menu('compute')
         if second_selection == 'add':
-            alias, creds = configurers.new_compute()
+            alias, creds = configurers.new_compute(aws_path=args.aws_path)
             config['compute']['configurations'][alias] = creds
         elif second_selection == 'remove':
             remove_alias = configurers.remove_service(config, 'compute', remove_alias=args.third_choice)
             del config['compute']['configurations'][remove_alias]
-            print(f'{remove_alias} has been removed')
+            print(f'{remove_alias} has been removed from compute')
 
     elif main_selection == 'storage':
         second_selection = args.second_choice if args.second_choice else menus.main_service_menu('storage')
         if second_selection == 'add':
-            alias, creds = configurers.new_storage()
+            alias, creds = configurers.new_storage(aws_path=args.aws_path)
             config['storage']['configurations'][alias] = creds
         elif second_selection == 'remove':
             remove_alias = configurers.remove_service(config, 'storage', remove_alias=args.third_choice)
             del config['storage']['configurations'][remove_alias]
-            print(f'{remove_alias} has been removed')
+            print(f'{remove_alias} has been removed from storage')
 
     elif main_selection == 'default':
         second_selection = args.second_choice if args.second_choice else menus.default_service_menu()
@@ -67,6 +67,8 @@ def parse_arguments():
     parser.add_argument('main_choice', choices=['compute', 'storage', 'default', 'summary'], nargs='?')
     parser.add_argument('second_choice', nargs='?')
     parser.add_argument('third_choice', nargs='?')
+
+    parser.add_argument('--aws_path', '-a', default='~/.aws', help='Specify location of AWS credentials (default "~/.aws")')
 
     args = parser.parse_args()
 
