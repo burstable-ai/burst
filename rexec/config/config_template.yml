@@ -1,0 +1,132 @@
+---
+compute:
+  # Not important for now, just demonstrating how a cross-provider default settings might work
+  settings:
+    default_compute: eye0_gce
+    default_to_gpu: yes
+
+  configurations:
+    eye0_gce:
+      provider: GCE
+      access: rexec-43@cohesive-point-200601.iam.gserviceaccount.com
+      region: us-west1-b
+      default_image: ubuntu-1804-bionic-v20201111
+      default_size: e2-micro
+      default_gpu_image: rexec-gpu
+      default_gpu_size: n1-standard-4
+      settings: # Everything GCE-specific goes here
+        project: pyvision # Not sure what this is about but it's in the existing config file
+        default_gpu: nvidia-tesla-t4
+        secret:
+          type: service_account
+          project_id: cohesive-point-200601
+          private_key_id: bf7...f69
+          private_key: |
+            -----BEGIN PRIVATE KEY-----
+            MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCp9mRcB2zytKNE
+            ...
+            vVaR+8ilUPUT92vHCpeReZXw
+            -----END PRIVATE KEY-----
+          client_email: rexec-43@cohesive-point-200601.iam.gserviceaccount.com
+          client_id: '112942003936444377544'
+          auth_uri: https://accounts.google.com/o/oauth2/auth
+          token_uri: https://oauth2.googleapis.com/token
+          auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
+          client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/rexec-43%40cohesive-point-200601.iam.gserviceaccount.com
+
+    leela_gce:
+      provider: GCE
+      access: leela-gcs@leela-vision.iam.gserviceaccount.com
+      region: us-west1-b
+      default_image: rexec-nogpu
+      default_size: e2-micro
+      default_gpu_image: rexec-gpu
+      default_gpu_size: n1-standard-4
+      settings: # Everything GCE-specific goes here
+        project: pyvision # Not sure what this is about but it's in the existing config file
+        default_gpu: nvidia-tesla-t4
+        secret:
+          type: service_account
+          project_id: leela-vision
+          private_key_id: 69a...7ce3
+          private_key: |
+            -----BEGIN PRIVATE KEY-----
+            MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCcqy4dWAnh2VBu
+            ...
+            C/KVUMcf8memmsec+UM8Ewg=
+            -----END PRIVATE KEY-----
+          client_email: leela-gcs@leela-vision.iam.gserviceaccount.com
+          client_id: '104642350103718111957'
+          auth_uri: https://accounts.google.com/o/oauth2/auth
+          token_uri: https://oauth2.googleapis.com/token
+          auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
+          client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/leela-gcs%40leela-vision.iam.gserviceaccount.com
+
+    eye0_aws:
+      provider: EC2
+      access: AKIAVHUUTYRKGO4CGHMH
+      region: us-west-2
+      default_image: ami-ubuntu-18.04-1.16.0-00-1569343567
+      default_size: t2.medium
+      default_gpu_image: ami-038b493084f00b948
+      default_gpu_size: g4dn.xlarge
+      settings:
+        secret: Rgc...gX0
+
+storage:
+  settings:
+    default_storage: leela_gcs
+    default_sync_policy: lazy
+  configurations:
+    leela_gcs:
+      provider: GCS
+      default_mount_folder: leela-videos
+      settings: # Everything GCS-specific goes here
+        secret:
+          type: service_account
+          project_id: leela-vision
+          private_key_id: 69af...7ce3
+          private_key: |
+            -----BEGIN PRIVATE KEY-----
+            MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCcqy4dWAnh2VBu
+            ...
+            C/KVUMcf8memmsec+UM8Ewg=
+            -----END PRIVATE KEY-----
+          client_email: leela-gcs@leela-vision.iam.gserviceaccount.com
+          client_id: '104642350103718111957'
+          auth_uri: https://accounts.google.com/o/oauth2/auth
+          token_uri: https://oauth2.googleapis.com/token
+          auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
+          client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/leela-gcs%40leela-vision.iam.gserviceaccount.com
+
+    eye0_gcs:
+      provider: GCS
+      default_mount_folder: rexec-tests
+      settings: # Everything GCS-specific goes here
+        secret:
+          type: service_account
+          project_id: cohesive-point-200601
+          private_key_id: bf7...f69
+          private_key: |
+            -----BEGIN PRIVATE KEY-----
+            MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCp9mRcB2zytKNE
+            ...
+            vVaR+8ilUPUT92vHCpeReZXw
+            -----END PRIVATE KEY-----
+          client_email: rexec-43@cohesive-point-200601.iam.gserviceaccount.com
+          client_id: '112942003936444377544'
+          auth_uri: https://accounts.google.com/o/oauth2/auth
+          token_uri: https://oauth2.googleapis.com/token
+          auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
+          client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/rexec-43%40cohesive-point-200601.iam.gserviceaccount.com
+
+    eye0_s3:
+      access: AK...MH
+      secret: Rg...X0
+      provider: AWS
+      region: us-west-2
+      default_mount_folder: tests3
+      settings:
+        type: s3
+        env_auth: false
+        acl: private
