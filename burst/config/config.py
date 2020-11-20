@@ -5,14 +5,14 @@ import summary
 import configurers
 from config_file_utils import get_config, write_config
 
-CONFIG_FILE = '~/.rexec/config.yml'
+CONFIG_FILE = '~/.burst/config.yml'
 
 def main():
 
     args = parse_arguments()
 
     config = get_config(CONFIG_FILE)
-    print('Welcome to rexec configuration!')
+    print('Welcome to the burst tool configuration!')
     if args.main_choice in [None, 'summary']:
         summary.all(config)
 
