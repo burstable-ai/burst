@@ -172,7 +172,6 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                             s += f"{k} = {v}\n"
                     for k, v in stor['settings'].items():
                         s += f"{k} = {v}\n"
-                    print(s)
                     f = open(".rclone.conf", 'w')
                     f.write(s)
                     f.close()
