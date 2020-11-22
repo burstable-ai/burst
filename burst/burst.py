@@ -158,8 +158,14 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 if remote:
                     stor = get_config()['storage']
                     if stor['provider'] == 'GCS':
-                        stor['settings']['service_account_file'] = stor['settings']['secret']['private_key_id'] + ".json"
-                    # build rclone.conf
+                        #create a keyfile & point to it
+                        srvacctf = ".rclone_key_%s.json" % stor['settings']['secret']['private_key_id']
+                        f = open(srvacctf, 'w')
+                        json.dump(stor['settings']['secret'], f)
+                        f.close()
+                        stor['settings']['service_account_file'] = srvacctf
+
+                    # build  & save rclone.conf
                     s = f"[{stor['config']}]\n"
                     for k, v in stor.items():
                         if k != 'settings':
