@@ -159,9 +159,9 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                     stor = get_config()['storage']
                     if stor['provider'] == 'GCS':
                         #create a keyfile & point to it
-                        srvacctf = ".rclone_key_%s.json" % stor['settings']['secret']['private_key_id']
+                        srvacctf = ".rclone_key_%s.json" % stor['settings']['private_key']['private_key_id']
                         f = open(srvacctf, 'w')
-                        json.dump(stor['settings']['secret'], f)
+                        json.dump(stor['settings']['private_key'], f)
                         f.close()
                         stor['settings']['service_account_file'] = srvacctf
 
