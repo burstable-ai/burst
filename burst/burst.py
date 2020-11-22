@@ -157,16 +157,15 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             if cloudmap:
                 if remote:
                     stor = get_config()['storage']
+                    if stor['provider'] == 'GCS':
+                        stor['settings']['service_account_file'] = stor['settings']['secret']['private_key_id'] + ".json"
                     # build rclone.conf
-                    s = \
-f"""[{stor['config']}]
-provider          = {stor['provider']}
-access_key_id     = {stor['access']}
-region            = {stor['region']}
-secret_access_key = {stor['settings']['secret']}
-env_auth          = {stor['settings']['env_auth']}
-type              = {stor['settings']['type']}
-acl               = {stor['settings']['acl']}"""
+                    s = f"[{stor['config']}]\n"
+                    for k, v in stor.items():
+                        if k != 'settings':
+                            s += f"{k} = {v}\n"
+                    for k, v in stor['settings'].items():
+                        s += f"{k} = {v}\n"
                     print(s)
                     f = open(".rclone.conf", 'w')
                     f.write(s)
