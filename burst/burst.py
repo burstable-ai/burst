@@ -269,6 +269,7 @@ def stop_instance_by_url(url, conf):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", nargs='?',                   help="Command to run on remote server")
+    parser.add_argument("--configure", action="store_true",     help="Interactive configuration")
     parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
     parser.add_argument("--local", action="store_true",         help="run on local device")
     parser.add_argument("--list-servers", action="store_true",  help="List all associated remote servers")
@@ -391,6 +392,12 @@ if __name__ == "__main__":
 
     elif args.version:
         print ("VERSION:", version)
+
+    elif args.configure:
+        der = __file__[:__file__.rfind('/')] +"/../burst/config"
+        print ("DER:", der)
+        os.chdir(der)
+        os.system("python3 config.py")
 
     else:
         if args.local:

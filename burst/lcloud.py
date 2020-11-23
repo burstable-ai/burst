@@ -45,13 +45,16 @@ def init(conf = None):
         yconf['storage'] = storage
 
     else:
-        vprint ("config.yml syntax error or not found")
+        vprint ("config.yml not found")
         yconf = {}          #dummy yconf
 
     if 'provider' in conf:
         config.provider = conf['provider']
     else:
-        config.provider = yconf['provider']
+        if 'provider' in yconf:
+            config.provider = yconf['provider']
+        else:
+            raise Exception("Configuration not available. Try running:\nburst --configure")
 
     for param in ['access', 'secret', 'region', 'project', 'default_image', 'default_size', 'default_gpu_image',
                   'default_gpu_size', 'default_gpu', 'storage']:
