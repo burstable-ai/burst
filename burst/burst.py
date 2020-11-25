@@ -26,7 +26,7 @@ SHUTDOWN_IMAGE = "burstableai/burst_shutdown:latest"
 
 def burst(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports=None, stop=False,
           image=None, size=None, pubkey=None, dockerfile="Dockerfile",
-          cloudmap="", dockerport=2376, conf=None):
+          cloudmap="", dockerdport=2376, conf=None):
     tunnel = None
     try:
         if not os.path.exists(dockerfile):
@@ -104,9 +104,9 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 os.system(cmd)
 
             vprint ("Connecting through ssh")
-            remote = "-H localhost:%s" % dockerport
+            remote = "-H localhost:%s" % dockerdport
             ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
-                        "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(dockerport), "{0}@{1}".format(sshuser, url)]
+                        "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(dockerdport), "{0}@{1}".format(sshuser, url)]
             for arg in host_port_args:
                 ssh_args.insert(3, arg)
             vvprint (ssh_args)
@@ -296,7 +296,7 @@ if __name__ == "__main__":
     parser.add_argument("--stop_instance_by_url",               help="internal use")
     parser.add_argument("--cloudmap", type=str, default="",     help="map cloud storage to local mount point")
     parser.add_argument("--dockerfile", type=str, default="Dockerfile",    help="Docker file to build the container with if not ./Dockerfile")
-    parser.add_argument("--dockerport", type=int, default=2376, help="local port to map to remote host docker daemon")
+    parser.add_argument("--dockerdport", type=int, default=2376, help="local port to map to remote host docker daemon")
 
     if len(sys.argv) < 2:
         parser.print_usage()
@@ -433,6 +433,6 @@ if __name__ == "__main__":
         burst(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
               rxuser=args.burst_user, gpus=args.gpus, ports=args.p, stop=args.shutdown,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
-              dockerport=args.dockerport, conf = burst_conf)
+              dockerdport=args.dockerdport, conf = burst_conf)
         vprint ("DONE")
         v0print()
