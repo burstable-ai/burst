@@ -33,16 +33,19 @@ def init(conf = None):
         else:
             compute_config = yconf['compute']['settings']['default_compute']
 
+        storage_config = None
         if 'storage_config' in conf:
             storage_config = conf['storage_config']
         else:
-            storage_config = yconf['storage']['settings']['default_storage']
-
-        storage = yconf['storage']['configurations'][storage_config]
-        storage['config'] = storage_config
+            if 'storage' in yconf:
+                storage_config = yconf['storage']['settings']['default_storage']
+        if storage_config:
+            storage = yconf['storage']['configurations'][storage_config]
+            storage['config'] = storage_config
         yconf = yconf['compute']['configurations'][compute_config]
         yconf.update(yconf['settings'])   #easier to deal with all attributes at top level
-        yconf['storage'] = storage
+        if storage_config:
+            yconf['storage'] = storage
 
     else:
         vprint ("config.yml not found")
