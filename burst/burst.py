@@ -245,7 +245,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                                                                     remote, SHUTDOWN_IMAGE, path, get_piper(), get_dockrunflags(), get_verbosity())
             # cmd = "docker {0} run --rm -ti {1} burst --version".format(remote, DEFAULT_IMAGE)
             vvprint (cmd)
-            vprint ("Shutdown process container ID:")
+            vvprint ("Shutdown process container ID:")
             os.system(cmd)
 
     if tunnel:
@@ -270,6 +270,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", nargs='?',                   help="Command to run on remote server")
     parser.add_argument("--configure", action="store_true",     help="Interactive configuration")
+    parser.add_argument("--build", action="store_true",         help="Download and build environment")
     parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
     parser.add_argument("--local", action="store_true",         help="run on local device")
     parser.add_argument("--list-servers", action="store_true",  help="List all associated remote servers")
@@ -430,9 +431,17 @@ if __name__ == "__main__":
             else:
                 image = args.image
 
+        if args.build:
+            cmdargs = ['echo', 'Build phase 1 success']
+
         burst(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
               rxuser=args.burst_user, gpus=args.gpus, ports=args.p, stop=args.shutdown,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               dockerdport=args.dockerdport, conf = burst_conf)
+
+        if args.build:
+            v0print()
+            print ("Build phase 2 success")
+
         vprint ("DONE")
         v0print()
