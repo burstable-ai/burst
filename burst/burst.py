@@ -96,9 +96,10 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 
         if url:
             if fresh:
-                print("Installing Docker")
+                print("Configuring Docker")
+                # 'sudo apt-get -y update; sudo apt-get -y install docker.io; ' \ #images have docker installed
                 cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {0}@{1} ' \
-                      '"sudo apt-get -y update; sudo apt-get -y install docker.io; sudo usermod -a -G docker ubuntu; ' \
+                      '"sudo usermod -a -G docker ubuntu; ' \
                       'sudo systemctl unmask docker; sudo service docker start"'.format(sshuser, url)
                 vvprint(cmd)
                 os.system(cmd)
@@ -321,7 +322,10 @@ if __name__ == "__main__":
     args = parser.parse_args(rexargs)
     vvprint ("ARGS:", args)
 
-    set_verbosity(args.verbosity)
+    if args.build and args.verbosity < 1:
+        set_verbosity(1)
+    else:
+        set_verbosity(args.verbosity)
 
     if args.access:
         args_compute = dictobj()
