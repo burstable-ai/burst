@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from burst.version import version
 
 setup(
-    name="burst",
+    name="burstable",
     version=version,
     packages=find_packages(),
     python_requires='>=3',
