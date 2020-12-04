@@ -400,10 +400,7 @@ if __name__ == "__main__":
         print ("VERSION:", version)
 
     elif args.configure:
-        der = __file__[:__file__.rfind('/')] +"/../burst/config"
-        print ("DER:", der)
-        os.chdir(der)
-        os.system("python3 config.py")
+        os.system("burst-config")
 
     else:
         if args.local:

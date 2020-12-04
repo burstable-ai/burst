@@ -14,6 +14,12 @@ We currently support Amazon and Google cloud services and will be adding more.
 * A folder/project with a working `Dockerfile`
 
 # Installation 
+### recommended: 
+set up a virtual environment 
+
+https://realpython.com/python-virtual-environments-a-primer/
+
+### Install command-line tool:
 
     pip install burstable
 
