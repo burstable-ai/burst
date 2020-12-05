@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
-import argparse
+import os, sys, argparse
 
-import menus
-import summary
-import configurers
-from config_file_utils import get_config, write_config
+#for absolute imports to work in script mode, we need to import from the parent folder
+opath = os.path.abspath(".")
+abspath = os.path.abspath(__file__)
+abspath = abspath[:abspath.rfind('/') + 1]
+os.chdir(abspath)
+abspath = os.path.abspath("../..")
+sys.path.insert(0, abspath)
+
+from burst.config import menus, summary, configurers
+from burst.config.config_file_utils import get_config, write_config
+
+os.chdir(opath)
 
 CONFIG_FILE = '~/.burst/config.yml'
 

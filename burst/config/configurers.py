@@ -1,8 +1,8 @@
 import sys
 
-import summary
-from cred_loaders import get_aws_creds
-from config_file_utils import get_config
+from burst.config import summary
+from burst.config.cred_loaders import get_aws_creds
+from burst.config.config_file_utils import get_config
 
 # The alias used in the template file to set default images/sizes
 TEMPLATE_AWS_ALIAS = 'eye0_aws'
