@@ -6,7 +6,7 @@ setup(
     version=version,
     packages=find_packages(),
     python_requires='>=3',
-    scripts=['bin/burst'],
+    scripts=['bin/burst', 'bin/burst-config'],
     install_requires=[
         "blessings == 1.7",
         "apache-libcloud == 3.2.0",
