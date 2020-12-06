@@ -29,19 +29,40 @@ https://realpython.com/python-virtual-environments-a-primer/
 
 # Build & test a simple burst environment
 
-### check out source code
+### check out source code:
 
     git clone https://github.com/burstable-ai/burst
     cd burst/tests
 
-### build burst environment
+### build burst environment:
 
-    burst --gpus all --build
+    burst --build
+
+This may take several minutes; be patient. After some output, 
+you should see this: 
+
+    ---------------------OUTPUT-----------------------
+    Build phase 1 success
+    ----------------------END-------------------------
+    Synchronizing folders
+    receiving incremental file list
+    Scheduling shutdown of VM at 52.27.54.55 for 900 seconds from now
+    
+    
+    Build phase 2 success
+    DONE
+
  
- ### run a command
+ ### run a command on the remote server:
  
-     burst --gpus all --verbosity 1  python3 hello_burst.py
+     burst python3 hello_burst.py
  
- ### expected output:
+Response should look like this:
  
- 
+     ---------------------OUTPUT-----------------------                                                         
+    Welcome burst-utioners! You're running a virtual machine with 4 cpus
+    The following GPU's are available:
+    Tesla T4
+    ----------------------END-------------------------
+    burst: DONE 
+
