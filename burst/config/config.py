@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os, sys, argparse
 
-#for absolute imports to work in script mode, we need to import from the parent folder
+#for absolute imports to work in script mode, we need to import from the root folder
 opath = os.path.abspath(".")
 abspath = os.path.abspath(__file__)
 abspath = abspath[:abspath.rfind('/') + 1]

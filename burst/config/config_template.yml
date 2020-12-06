@@ -1,10 +1,10 @@
 ---
 compute:
   settings:
-    default_compute: eye0_aws
+    default_compute: burst_ec2
 
   configurations:
-    ec2:
+    burst_ec2:
       provider: EC2
       access: A...R
       region: us-west-2
@@ -17,10 +17,10 @@ compute:
 
 storage:
   settings:
-    default_storage: eye0_s3
+    default_storage: burst_s3
 
   configurations:
-    s3:
+    burst_s3:
       provider: AWS
       type: s3
       settings:  #AWS-specific
