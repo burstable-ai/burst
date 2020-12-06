@@ -25,18 +25,13 @@ def new_compute(aws_path='~/.aws'):
 def new_storage(aws_path='~/.aws'):
     print('\nSetting up S3 on AWS')
 
-    # config = {'settings': {'type': 's3', 'env_auth': False, 'acl': 'private'}}
-    # config['access'], config['secret'], config['region'] = get_aws_creds(aws_path)
-    # config['provider'] = 'AWS'
-    # config['default_mount_folder'] = input("\nSet the default mount folder: ")
-
     config = {'settings': {}}
     config['provider'] = 'AWS'
     config['type'] = 's3'
     config['settings']['access_key_id'], config['settings']['secret_access_key'], config['settings']['region'] = get_aws_creds(aws_path)
     config['settings']['env_auth'] = False
     config['settings']['acl'] = 'private'
-    config['default_mount_folder'] = input("\nSet the default mount folder: ")
+    # config['default_mount_folder'] = input("\nSet the default mount folder: ")
 
     alias = input('\nPlease enter an alias (name) to reference these credentials: ')
     return alias, config
@@ -71,8 +66,8 @@ def set_default(config, service, default_service=None):
         # settings['default_to_gpu'] = True if default_to_gpu.lower() in ['y', 'yes'] else False
         settings['default_compute'] = default_service
     elif service == 'storage':
-        sync_policy = input('Enter default sync policy (hit enter to select recommended "lazy"): ')
-        settings['sync_policy'] = sync_policy if sync_policy else 'lazy'
+        # sync_policy = input('Enter default sync policy (hit enter to select recommended "lazy"): ')
+        # settings['sync_policy'] = sync_policy if sync_policy else 'lazy'
         settings['default_storage'] = default_service
 
     return settings

@@ -12,7 +12,7 @@ def get_aws_creds(aws_path='~/.aws'):
     index_map = {}
     print('Select AWS credentials to use:')
     for index, section in enumerate(config_parser.sections()):
-        print(f'{index+1}: "{section}" profile was found in {aws_abspath}')
+        print(f'{index+1}: use "{section}" profile from {aws_abspath}')
         index_map[str(index+1)] = section
 
     env_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
@@ -26,7 +26,7 @@ def get_aws_creds(aws_path='~/.aws'):
 
     print(f'{index+2}: manually enter credentials')
 
-    selected_index = input('\nIf you would like to import, select the number: ')
+    selected_index = input('\n1/2> ')
 
     if selected_index and selected_index in index_map:
         section = config_parser[index_map[selected_index]]
