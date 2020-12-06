@@ -282,7 +282,7 @@ if __name__ == "__main__":
     parser.add_argument("--url",                                help="run on remote server specified by url")
     parser.add_argument("--uuid",                               help="run on remote server specified by libcloud uuid")
     parser.add_argument("--burst_user",                         help="Burst user name; defaults to local username")
-    parser.add_argument("--gpus",                               help="docker run gpu option (usually 'all')")
+    parser.add_argument("--gpus", default='all',                help="defaults to 'all'; can be set to specific gpu or 'none'")
     parser.add_argument("-p", action="append", metavar="PORTMAP", help="port mapping; example: -p 8080:8080")
     parser.add_argument("--access",                             help="libcloud username (aws: ACCESS_KEY)")
     parser.add_argument("--secret",                             help="libcloud password (aws: SECRET)")
@@ -309,12 +309,20 @@ if __name__ == "__main__":
     # and pass all args AFTER the main command to the command when it runs remotely
     #
     argv = sys.argv[1:]
-    vvprint ("ARGV:", argv)
     args, unknown = parser.parse_known_args(argv)
+
+    if args.build and args.verbosity < 1:
+        set_verbosity(1)
+    else:
+        set_verbosity(args.verbosity)
+
+    vvprint ("ARGV:", argv)
+
     if args.command != None:
         i = argv.index(args.command)
     else:
         i = len(argv)
+
     rexargs = argv[:i]
     vvprint ("REXARGS:", rexargs)
     cmdargs = argv[i:]
@@ -322,10 +330,8 @@ if __name__ == "__main__":
     args = parser.parse_args(rexargs)
     vvprint ("ARGS:", args)
 
-    if args.build and args.verbosity < 1:
-        set_verbosity(1)
-    else:
-        set_verbosity(args.verbosity)
+    if args.gpus.lower() == 'none':
+        args.gpus = None
 
     if args.access:
         args_compute = dictobj()
