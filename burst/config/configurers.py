@@ -67,8 +67,8 @@ def set_default(config, service, default_service=None):
         print(f'\nSince {default_service} is the only {service} configuration, it will be set to default.')
 
     if service == 'compute':
-        default_to_gpu = input("Default to GPU (y/n): ")
-        settings['default_to_gpu'] = True if default_to_gpu.lower() in ['y', 'yes'] else False
+        # default_to_gpu = input("Default to GPU (y/n): ")
+        # settings['default_to_gpu'] = True if default_to_gpu.lower() in ['y', 'yes'] else False
         settings['default_compute'] = default_service
     elif service == 'storage':
         sync_policy = input('Enter default sync policy (hit enter to select recommended "lazy"): ')
