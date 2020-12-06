@@ -25,7 +25,7 @@ https://realpython.com/python-virtual-environments-a-primer/
 
 # Interactive configuration setup:
 
-    burst --config
+    burst --configure
 
 # Build & test a simple burst environment
 

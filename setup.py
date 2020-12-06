@@ -4,6 +4,7 @@ from burst.version import version
 setup(
     name="burstable",
     version=version,
+    py_modules=['config'],
     packages=find_packages(),
     python_requires='>=3',
     scripts=['bin/burst', 'bin/burst-config'],
