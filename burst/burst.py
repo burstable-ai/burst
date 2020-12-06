@@ -268,7 +268,7 @@ def stop_instance_by_url(url, conf):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, add_help=False)
     parser.add_argument("command", nargs='?',                   help="Command to run on remote server")
     parser.add_argument("--configure", action="store_true",     help="Interactive configuration")
     parser.add_argument("--build", action="store_true",         help="Download and build environment")
@@ -299,9 +299,10 @@ if __name__ == "__main__":
     parser.add_argument("--cloudmap", type=str, default="",     help="map cloud storage to local mount point")
     parser.add_argument("--dockerfile", type=str, default="Dockerfile",    help="Docker file to build the container with if not ./Dockerfile")
     parser.add_argument("--dockerdport", type=int, default=2376, help="local port to map to remote host docker daemon")
+    parser.add_argument("--help", action="store_true",          help="Print usage info")
 
     if len(sys.argv) < 2:
-        parser.print_usage()
+        parser.print_help()
         sys.exit(1)
     #
     # this got a bit tricky.
@@ -329,6 +330,10 @@ if __name__ == "__main__":
     vvprint ("CMDARGS:", cmdargs)
     args = parser.parse_args(rexargs)
     vvprint ("ARGS:", args)
+
+    if args.help:
+        parser.print_help()
+        sys.exit(1)
 
     if args.gpus.lower() == 'none':
         args.gpus = None
