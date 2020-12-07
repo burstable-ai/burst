@@ -24,7 +24,7 @@ def get_aws_creds(aws_path='~/.aws'):
         index += 1
         print(f'{index+1}: credentials in enviornment variables')
 
-    print(f'{index+2}: manually enter credentials')
+    print(f'{index+2}: Manually enter credentials')
 
     selected_index = input('\n1/2> ')
 
