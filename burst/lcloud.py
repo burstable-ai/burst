@@ -80,9 +80,17 @@ def init(conf = None):
             config.raw_secret = "%s.json" % config.secret['private_key_id']
             privkeypath = "%s/.burst/%s.json" % (os.path.expanduser("~"), config.secret['private_key_id'])
         if not os.path.exists(privkeypath):
+            pk = config.secret['private_key']
+            i = pk.find ("-----BEGIN PRIVATE KEY-----") + 27
+            j = pk.find("-----END PRIVATE KEY-----")
+            pk = pk[:i] + pk[i:j].replace(' ', '\n') + pk[j:]
+            pk = pk.strip()
+            pk += '\n'
+            config.secret['private_key'] = pk
             fp =  open(privkeypath, 'w')
             json.dump(config.secret, fp)
             fp.close()
+        print ("DBG", config.access, privkeypath)
         config.driver = cls(config.access, privkeypath, datacenter=config.region, project=config.project)
     else:
         vprint ("ERROR: unknown cloud provider", config.provider)
