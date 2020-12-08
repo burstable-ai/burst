@@ -371,8 +371,11 @@ if __name__ == "__main__":
     if args.stop_instance_by_url:
         stop_instance_by_url(args.stop_instance_by_url, burst_conf)
 
-    elif args.list_servers:     #note this is different than --shutdown 0 -- we just shut down without running
-        v0print ("-------------------------------------------------------------\nSERVERS associated with %s:" % args.burst_user)
+    elif args.list_servers:
+        init(burst_conf)
+        # pprint(get_config())
+        cconf = get_config()['compute_config']
+        v0print ("-------------------------------------------------------------\nSessions with config %s & user %s:" % (cconf, args.burst_user))
         for _, s in list_servers(args.burst_user, burst_conf):
             print (s)
         v0print ("-------------------------------------------------------------")

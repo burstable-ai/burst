@@ -32,7 +32,6 @@ def init(conf = None):
             compute_config = conf['compute_config']
         else:
             compute_config = yconf['compute']['settings']['default_compute']
-
                                                                                     #this got a bit strained. sorry
         storage_config = None
         if 'storage_config' in conf:                                                #if storage_config passed in, use
@@ -45,6 +44,7 @@ def init(conf = None):
             storage['config'] = storage_config                                      #and store the config name too
         yconf = yconf['compute']['configurations'][compute_config]
         yconf.update(yconf['settings'])   #easier to deal with all attributes at top level
+        yconf['compute_config']=compute_config
         if storage_config:                                                          #if specified,
             yconf['storage'] = storage                                              #pull storage to top level for ease
 
@@ -61,7 +61,7 @@ def init(conf = None):
             raise Exception("Configuration not available. Try running:\nburst --configure")
 
     for param in ['access', 'secret', 'region', 'project', 'default_image', 'default_size', 'default_gpu_image',
-                  'default_gpu_size', 'default_gpu', 'storage']:
+                  'default_gpu_size', 'default_gpu', 'storage', 'compute_config']:
         if param in conf:
             config[param] = conf[param]
         else:
@@ -90,7 +90,7 @@ def init(conf = None):
             fp =  open(privkeypath, 'w')
             json.dump(config.secret, fp)
             fp.close()
-        print ("DBG", config.access, privkeypath)
+        # print ("DBG", config.access, privkeypath)
         config.driver = cls(config.access, privkeypath, datacenter=config.region, project=config.project)
     else:
         vprint ("ERROR: unknown cloud provider", config.provider)
