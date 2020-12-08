@@ -11,7 +11,7 @@ setup(
     install_requires=[
         "blessings == 1.7",
         "apache-libcloud == 3.2.0",
-    	"cryptography==3.0",
+    	"cryptography==3.2.1",
         "easydict==1.9",
         "PyYAML==5.3.1"
     ],
