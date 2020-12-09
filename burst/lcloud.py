@@ -174,6 +174,7 @@ def fix_size_and_image(size, image):
 def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=None, gpus=None):
     init(conf)
     size, image = fix_size_and_image(size, image)
+    image_full_path = image
     if config.provider=='EC2':
         images = config.driver.list_images(ex_filters={'name': image})
     elif config.provider=='GCE':
@@ -197,7 +198,7 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
     if not sizes:
         raise Exception("Instance size %s not found" % size)
     size = sizes[0]
-    vprint ("Launching instance image=%s, id=%s, session=%s, type=%s ram=%s disk=%s" % (image.name, image.id, name, size.id, size.ram, size.disk))
+    vprint ("Launching instance image=%s, id=%s, session=%s, type=%s ram=%s disk=%s" % (image_full_path, image.id, name, size.id, size.ram, size.disk))
 
     if pubkey:
         if config.provider == 'EC2':                #Everybody makes it up
