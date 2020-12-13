@@ -387,7 +387,7 @@ if __name__ == "__main__":
             if node.state == "stopped":
                 continue
             count += 1
-            yes = input("Stopping (warm shutdown) %s, are you sure?" % s)
+            yes = input("Stopping (warm shutdown) %s, are you sure? (y/n)" % s)
             if yes=='y':
                 stop_server(node)
             else:
@@ -401,7 +401,7 @@ if __name__ == "__main__":
         count = 0
         for node, s in list_servers(args.burst_user, burst_conf, terminated=False):
             count += 1
-            yes = input("Terminating %s, are you sure?" % s)
+            yes = input("Terminating %s, are you sure? (y/n)" % s)
             if yes=='y':
                 terminate_server(node)
             else:
