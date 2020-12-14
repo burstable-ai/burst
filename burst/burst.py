@@ -206,7 +206,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
         cloud_args = ""
         if cloudmap:
             cloud, host = cloudmap.split(":")
-            args = f"bash -c 'mkdir -p {host}; rclone mount --config .rclone.conf {cloud}: {host} & sleep 3; {args}; umount {host}'"
+            args = f"bash -c 'mkdir -p {host}; rclone mount --vfs-cache-mode writes --vfs-write-back 0 --config .rclone.conf {cloud}: {host} & sleep 3; {args}; umount {host}'"
             cloud_args = " --privileged"
 
         vprint ("Running docker container")
