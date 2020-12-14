@@ -1,6 +1,9 @@
 import os
 import yaml
 
+#
+# Set literal style to block (more readable for long strings)
+#
 def selective_representer(dumper, data):
     return dumper.represent_scalar(u"tag:yaml.org,2002:str", data,
                                    style="|" if "\n" in data else None)
