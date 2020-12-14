@@ -1,6 +1,13 @@
 import os
 import yaml
 
+def selective_representer(dumper, data):
+    return dumper.represent_scalar(u"tag:yaml.org,2002:str", data,
+                                   style="|" if "\n" in data else None)
+
+yaml.add_representer(str, selective_representer)
+
+
 def get_config(file_name):
 
     config = {}
