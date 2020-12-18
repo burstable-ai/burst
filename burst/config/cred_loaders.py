@@ -11,6 +11,7 @@ def get_aws_creds(aws_path='~/.aws'):
 
     index_map = {}
     print('Select AWS credentials to use:')
+    index = -1
     for index, section in enumerate(config_parser.sections()):
         print(f'{index+1}: use "{section}" profile from {aws_abspath}')
         index_map[str(index+1)] = section
