@@ -43,7 +43,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 **
 #exceptions (These will be sent to the docker daemon for building):
 !/Dockerfile*
-!requiremments.txt
+!requirements.txt
 """)
         #
         # Chunnel container to local via host:
