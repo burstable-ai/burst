@@ -14,13 +14,13 @@ from burst.config.config_file_utils import get_config, write_config
 
 os.chdir(opath)
 
-CONFIG_FILE = '~/.burst/config.yml'
+# CONFIG_FILE = '~/.burst/config.yml'
 
 def main():
 
     args = parse_arguments()
 
-    config = get_config(CONFIG_FILE)
+    config = get_config(args.config_path)
     print('Welcome to the burst tool configuration!')
     if args.main_choice in [None, 'summary']:
         summary.all(config)
@@ -69,7 +69,7 @@ def main():
         settings = configurers.set_default(config, 'storage', list(config['storage']['configurations'])[0])
         config['storage']['settings'] = settings
 
-    write_config(config, CONFIG_FILE)
+    write_config(config, args.config_path)
 
 
 def parse_arguments():
@@ -81,6 +81,7 @@ def parse_arguments():
     parser.add_argument('third_choice', nargs='?')
 
     parser.add_argument('--aws_path', '-a', default='~/.aws', help='Specify location of AWS credentials (default "~/.aws")')
+    parser.add_argument('--config_path', default="~/.burst.config.yml", help='Specify location of config file (default "~/.burst.config.yml")')
 
     args = parser.parse_args()
 

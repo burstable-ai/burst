@@ -22,7 +22,8 @@ def init(conf = None):
     if conf == None:
         conf = {}
 
-    yam = os.environ['HOME'] + "/.burst/config.yml"
+    yam = conf.get('configfile', os.environ['HOME'] + "/.burst/config.yml")
+
     if os.path.exists(yam):
         #FIXME: check for local overriding .burst
         f = open(yam)
@@ -58,7 +59,7 @@ def init(conf = None):
         if 'provider' in yconf:
             config.provider = yconf['provider']
         else:
-            raise Exception("Configuration not available. Try running:\nburst --configure")
+            raise Exception("Configuration file %s not available. Try running:\nburst --configure" % yam)
 
     for param in ['access', 'secret', 'region', 'project', 'default_image', 'default_size', 'default_gpu_image',
                   'default_gpu_size', 'default_gpu', 'storage', 'compute_config']:

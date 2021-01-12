@@ -271,6 +271,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
     parser.add_argument("command", nargs='?',                   help="Command to run on remote server")
     parser.add_argument("--configure", action="store_true",     help="Interactive configuration")
+    parser.add_argument("--configfile",                         help="override default config.yml")
     parser.add_argument("--build", action="store_true",         help="Download and build environment")
     parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
     parser.add_argument("--local", action="store_true",         help="run on local device")
@@ -354,6 +355,9 @@ if __name__ == "__main__":
         if args.storage_config:
             burst_conf['storage_config'] = args.storage_config
 
+        if args.configfile:
+            burst_conf['configfile'] = args.configfile
+
     if args.local and (args.uuid or args.url):
         vprint (args)
         parser.error("when specifying --local, do not set --sshuser, --burst_user, --uuid, or --url")
@@ -414,7 +418,11 @@ if __name__ == "__main__":
         print ("VERSION:", version)
 
     elif args.configure:
-        os.system("burst-config")
+        if args.configfile:
+            yam = args.configfile
+        else:
+            yam = os.environ['HOME'] + "/.burst/config.yml"
+        os.system("burst-config --config_path %s" % yam)
 
     else:
         if args.local:
