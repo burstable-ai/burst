@@ -6,7 +6,7 @@ setup(
     version=version,
     py_modules=['config'],
     packages=find_packages(),
-    python_requires='>=3',
+    python_requires='>=3.6',
     scripts=['bin/burst', 'bin/burst-config'],
     install_requires=[
         "blessings == 1.7",
