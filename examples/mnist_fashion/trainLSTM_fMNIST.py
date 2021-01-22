@@ -7,6 +7,7 @@ import mnist_fashion_data as mdata
 import ml_tools as ml
 
 OUTPUT_DIR = 'output/'
+filename_root = 'LSTM_'
 
 #--------------------------------------------
 # Define the LSTM neural net
@@ -68,7 +69,7 @@ def main():
     # Load train/test dataset
     train_dataset, test_dataset, label_dict = mdata.load_FashionMNIST_data(verbose=args.verbose)
     # Plot one example image from each category 
-    mdata.display_example_data(train_dataset, label_dict, filename=OUTPUT_DIR+'training_example_images.png')
+    mdata.display_example_data(train_dataset, label_dict, filename=OUTPUT_DIR+filename_root+'training_example_images.png')
 
     # Construct the model
     model = LSTM(n_inputs=28, n_hidden=128, n_outputs=10, n_rnnlayers=2)
@@ -96,7 +97,7 @@ def main():
                                          verbose=bool(args.verbose), print_every=1)
     
     # Plot loss per epoch to output directory
-    ml.plot_losses(train_losses, test_losses, filename=OUTPUT_DIR+'model_losses.png')
+    ml.plot_losses(train_losses, test_losses, filename=OUTPUT_DIR+filename_root+'model_losses.png')
 
     # Get model predictions
     train_predictions, train_targets = ml.predict(train_loader, model, device=device, 
@@ -114,11 +115,11 @@ def main():
     mdata.display_pred_examples(wrong, 
                                 test_dataset, test_targets, test_predictions,
                                 label_dict,
-                                filename=OUTPUT_DIR+'wrong_examples.png')
+                                filename=OUTPUT_DIR+filename_root+'wrong_examples.png')
     
     # Make the confusion_matrix
     ml.plot_confusion_matrix(test_targets, test_predictions, labels=label_dict, log_color=True, 
-                             filename=OUTPUT_DIR+'confusion_matrix.png')
+                             filename=OUTPUT_DIR+filename_root+'confusion_matrix.png')
     
     
 if __name__ == '__main__':
