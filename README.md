@@ -12,8 +12,16 @@ We currently support Amazon and Google cloud services and will be adding more.
 * Python3 
 * Docker version 19 or higher
 * A folder/project with a working `Dockerfile`
+* ssh keys
+* AWS or Google Cloud Services account and access keys
 
 # Installation 
+
+### ssh keys:
+You must have a public/private ssh key pair, stored as ~/.ssh/id_rsa.pub and ~/.ssh/id_rsa.  If you do not already have ssh keys, run ssh-keygen to generate them.
+
+    ssh-keygen -t rsa -b 4096
+
 ### recommended: 
 set up a virtual environment 
 
@@ -33,6 +41,9 @@ https://realpython.com/python-virtual-environments-a-primer/
 
     git clone https://github.com/burstable-ai/burst
     cd burst/tests
+
+### Make sure Docker is running
+The Docker daemon must be running in the background to use burst.
 
 ### build burst environment:
 
