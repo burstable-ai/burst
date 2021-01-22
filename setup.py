@@ -9,11 +9,11 @@ setup(
     python_requires='>=3.6',
     scripts=['bin/burst', 'bin/burst-config'],
     install_requires=[
-        "blessings == 1.7",
-        "apache-libcloud == 3.2.0",
-    	"cryptography==3.2.1",
-        "easydict==1.9",
-        "PyYAML==5.3.1"
+        "blessings          >=1.7,      <2",
+        "apache-libcloud    >=3.2.0,    <4",
+    	"cryptography       >=3.2,      <4",
+        "easydict           >=1.9,      <2",
+        "PyYAML             >=5.3.1,    <6"
     ],
     include_package_data=True
 )
