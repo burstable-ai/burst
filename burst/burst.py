@@ -284,7 +284,7 @@ if __name__ == "__main__":
     parser.add_argument("--uuid",                               help="run on remote server specified by libcloud uuid")
     parser.add_argument("--burst_user",                         help="Burst user name; defaults to local username")
     parser.add_argument("--gpus", default='all',                help="defaults to 'all'; can be set to specific gpu or 'none'")
-    parser.add_argument("-p", action="append", metavar="PORTMAP", help="port mapping; example: -p 8080:8080")
+    parser.add_argument("--portmap", "-p", action="append",     help="port mapping; example: -p 8080 or -p 8080:8080")
     parser.add_argument("--access",                             help="libcloud username (aws: ACCESS_KEY)")
     parser.add_argument("--secret",                             help="libcloud password (aws: SECRET)")
     parser.add_argument("--region",                             help="libcloud location (aws: region)")
@@ -458,7 +458,7 @@ if __name__ == "__main__":
             cmdargs = ['echo', 'Build phase 1 success']
 
         burst(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
-              rxuser=args.burst_user, gpus=args.gpus, ports=args.p, stop=args.shutdown,
+              rxuser=args.burst_user, gpus=args.gpus, ports=args.portmap, stop=args.shutdown,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               dockerdport=args.dockerdport, conf = burst_conf)
 
