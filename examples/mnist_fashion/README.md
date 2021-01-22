@@ -30,19 +30,19 @@ Make sure you have installed the correct version of the required python packages
 
 To run the command line examples, use 
 
-    python3 train_LSTM.py 
+    python3 trainLSTM_fMNIST.py 
 
 or
 
-    python3 train_CNN.py
+    python3 trainCNN_fMNIST.py
     
 The default only trains for 2 epochs, which produces a poor (underfit) model, but is good for quick testing purposes, especially when you are running on a low-power CPU where each epoch can take minutes to run.  
 
 You can experiment with running for more epochs by specifying `--nepochs` at the command line, e.g., 
 
-    python3 train_LSTM.py --nepochs 20
+    python3 trainLSTM_fMNIST.py --nepochs 20
     
-You can also open the `FashionMNIST_LSTM.ipynb` notebook or the `FashionMNIST_CNN.ipynb` notebook and run the model there.
+You can also open the `fMNIST_LSTM.ipynb` notebook or the `fMNIST_CNN.ipynb` notebook and run the model there.
 
 Note that the first time you run the command line tool or notebook, it will download the FashionMNIST dataset to your local drive.  Subsequent runs will make use of the previously downloaded data.
 
@@ -59,11 +59,11 @@ If you run the Jupyter notebooks, these same visualizations appear in the notebo
 
 To run the command line examples using burst, use
 
-    burst python3 train_LSTM.py --nepochs 20
+    burst python3 trainLSTM_fMNIST.py --nepochs 20
 
 or
 
-    burst python3 train_CNN.py --nepochs 20
+    burst python3 trainCNN_fMNIST.py --nepochs 20
 
 The first time you run burst, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will need to be rebuilt.
 
