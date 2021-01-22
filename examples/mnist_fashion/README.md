@@ -7,7 +7,7 @@ FashionMNIST is a (somewhat old) benchmark dataset for computer vision.  The dat
 
 # This example
 
-This example is a Pytorch implementation neural nets trained to classify the FashionMNIST dataset.  There are two different types of neural net architectures implemented here:
+This example is a Pytorch implementation of neural nets trained to classify the FashionMNIST dataset.  There are two different types of neural net architectures implemented here:
 
 * a recurrent neural net (RNN) using LSTM (long/short term memory) neurons
 * a convolutional neural net (CNN)
@@ -19,9 +19,14 @@ Each example is implemented two ways:
 * as a command-line python script that can be run remotely through `burst` (data visualizations are written into an `output/` folder)
 * in interactive Jupyter notebooks, with in-notebook visualizations
 
-Burst can support both types of model training.
+`burst` can support both types of model training.
 
 # Running the example on a local machine
+
+We recommend creating a python virtual environment dedicated to this project.  (https://realpython.com/python-virtual-environments-a-primer/)
+Make sure you have installed the correct version of the required python packages.  
+
+    pip install -r requirements.txt
 
 To run the command line examples, use 
 
