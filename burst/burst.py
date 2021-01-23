@@ -146,8 +146,8 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             vvprint (out)
             # print ("DEEBG ex:", node.extra)
             size, image = fix_size_and_image(size, image)
-            if size and size != get_server_size(node):
-                raise Exception("FIXME: cannot change size (instance type) -- need to re-launch")
+            if size and size != get_server_size(node):                      #FIXME
+                raise Exception("Cannot change size (instance type) -- need to re-launch")
 
             # get_server_image is broken, need to prompt better here
             # if image and image != get_server_image(node):
@@ -223,9 +223,15 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                                             url, path, sshuser, get_rsync_v())
             vvprint (cmd)
             os.system(cmd)
-    except:
-        traceback.print_exc()
-        v0print ("--------------------------------")
+
+    except Exception as ex:
+        if get_verbosity() >= 256:
+            v0print ("--------------------------------")
+            traceback.print_exc()
+            v0print ("--------------------------------")
+        else:
+            print ()
+        print (ex)
 
     if url and node:
         if stop == 0:
