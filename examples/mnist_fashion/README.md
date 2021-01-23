@@ -65,7 +65,7 @@ or
 
     burst python3 trainCNN_fMNIST.py --nepochs 20
 
-The first time you run burst, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will need to be rebuilt.
+The first time you run `burst`, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will need to be rebuilt.
 
 When burst has finished running training and running your model, it will automatically transfer the output and any modified files back to your local directory and close the connection.  Once a burst connection has been closed for > 15 minutes, it will stop the remote server so that you will not be paying for it.
 
@@ -87,5 +87,7 @@ Paste this URL into a new browser window, then replace the 0.0.0.0 with 'localho
 
 Edit and run the Jupyter notebook, just as you would on a local Jupyter server.  You should notice that it can access the GPU, and that the training epochs run much faster on the remote GPU than on a local CPU.
 
-NOTE: When you are done, **you must manually close the Jupyter server** by returning to the window where you launched it and hitting `Ctl-C`, then responding `y` to shutdown the server.  **If you leave the Jupyter server running, you will continue to pay for the remote server, even if no code is being executed.  burst will not automatically stop a remote Jupyter server.**
+NOTE: When you are done, **you must manually close the Jupyter server** by returning to the window where you launched it and hitting `Ctl-C`, then responding `y` to shutdown the server.  
+
+***If you leave the Jupyter server running, you will continue to pay for the remote server, even if no code is being executed.  `burst` will not automatically stop a remote Jupyter server.***
 
