@@ -5,7 +5,7 @@ Command-line tool to remotely execute code in the cloud
 
 `burst` lets you run your software remotely - on any sized virtual machine - without any change to your existing development process, as long as you have a working Dockerfile.
 
-We currently support Amazon and Google cloud services and will be adding more.
+We currently support Amazon cloud services and will be adding more.
 
 # Dependencies
 
