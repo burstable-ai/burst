@@ -178,8 +178,12 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                     f.close()
 
             #sync project directory
-            cmd = 'rsync -rltzu{4} -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/. {3}@{1}:{2}/'.format(locpath,
-                                        url, path, sshuser, get_rsync_v())
+            rsync_ignore_path = os.path.abspath("./.burstignore")
+            if not os.path.exists(rsync_ignore_path):
+                vprint("creating empty .burstignore")
+                os.system("touch .burstignore")
+            cmd = 'rsync -rltzu{4} --exclude-from {5} -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/. {3}@{1}:{2}/'.format(locpath,
+                                        url, path, sshuser, get_rsync_v(), rsync_ignore_path)
             vprint ("Synchronizing project folders")
             vvprint (cmd)
             os.system(cmd)
@@ -219,8 +223,8 @@ and files that are referred to (such as requirements.txt) to the build daemon.
         v0print ("----------------------END-------------------------")
         if url:
             vprint ("Synchronizing folders")
-            cmd = "rsync -rltzu{4}  -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error' '{3}@{1}:{2}/.' {0}/".format(locpath,
-                                            url, path, sshuser, get_rsync_v())
+            cmd = "rsync -rltzu{4} --exclude-from {5} -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error' '{3}@{1}:{2}/.' {0}/".format(locpath,
+                                        url, path, sshuser, get_rsync_v(), rsync_ignore_path)
             vvprint (cmd)
             os.system(cmd)
 
