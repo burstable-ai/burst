@@ -58,7 +58,7 @@ To run a remote Jupyter server through burst, use
     
 The screen will then display a URL, which will look something like
     http://0.0.0.0:8888/lab?token=f60aaf215e2bd8a92015f732388e16b6407181aaca4a1a9a
-Paste this URL into a new browser window, then replace the 0.0.0.0 with 'localhost'.  This will load a JupyterLab window that is running on the remote burst server.
+Paste this URL into a new browser window.  This will load a JupyterLab window that is running on the remote burst server.
 
 Edit and run the Jupyter notebook, just as you would on a local Jupyter server.  You should notice that it can access the GPU, and that the training epochs run much faster on the remote GPU than on a local CPU.
 
