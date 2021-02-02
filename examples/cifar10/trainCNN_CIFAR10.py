@@ -58,6 +58,10 @@ class CNN(nn.Module):
         x = F.dropout(x, p=0.2)
         x = self.fc2(x)
         return x
+    def summarize(self):
+        # Print summary of model
+        summary(self, (3, 32, 32))
+        return
     
 #----------------------------------------------------------
 # Train the model and see how we do!
@@ -138,8 +142,8 @@ def main():
     ml.plot_confusion_matrix(test_targets, test_predictions, labels=label_dict, log_color=True, 
                              filename=OUTPUT_DIR+'confusion_matrix.png')
     
-    # Print summary of model
-    summary(model)
+    # Plot model summary info
+    model.summarize()
     
     # Flush logging
     if args.verbose:
