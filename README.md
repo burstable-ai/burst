@@ -1,13 +1,13 @@
 # burst
-Command-line tool to remotely execute code in the cloud
-=======
-# Introduction
+## Command-line tool to remotely execute code in the cloud
+
+## Introduction
 
 `burst` lets you run your software remotely - on any sized virtual machine - without any change to your existing development process, as long as you have a working Dockerfile.
 
 We currently support Amazon cloud services and will be adding more.
 
-# Dependencies
+## Dependencies
 
 * Python3 
 * Docker version 19 or higher
@@ -15,7 +15,9 @@ We currently support Amazon cloud services and will be adding more.
 * ssh keys
 * AWS or Google Cloud Services account and access keys
 
-# Installation 
+## Installation 
+
+_Note: if you want to contribute or just follow bleeding-edge development, install as described [here](https://github.com/burstable-ai/burst/wiki/Contributing-To-Burst) instead._
 
 ### ssh keys:
 You must have a public/private ssh key pair, stored as ~/.ssh/id_rsa.pub and ~/.ssh/id_rsa.  If you do not already have ssh keys, run ssh-keygen to generate them.
@@ -31,11 +33,11 @@ https://realpython.com/python-virtual-environments-a-primer/
 
     pip install burstable
 
-# Interactive configuration setup:
+## Interactive configuration setup:
 
     burst --configure
 
-# Build & test a simple burst environment
+## Build & test a simple burst environment
 
 ### check out source code:
 
@@ -76,4 +78,3 @@ Response should look like this:
     Tesla T4
     ----------------------END-------------------------
     burst: DONE 
-
