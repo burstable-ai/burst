@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchsummary import summary
 
 import argparse
 import subprocess, os, sys
@@ -136,6 +137,9 @@ def main():
     # Make the confusion_matrix
     ml.plot_confusion_matrix(test_targets, test_predictions, labels=label_dict, log_color=True, 
                              filename=OUTPUT_DIR+'confusion_matrix.png')
+    
+    # Print summary of model
+    summary(model)
     
     # Flush logging
     if args.verbose:
