@@ -105,6 +105,8 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 os.system(cmd)
 
             vprint ("Connecting through ssh")
+
+            #set up ssh tunnel mapping docker socket
             remote = "-H localhost:%s" % dockerdport
             ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
                         "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(dockerdport), "{0}@{1}".format(sshuser, url)]
@@ -113,16 +115,23 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             vvprint (ssh_args)
             tunnel = subprocess.Popen(ssh_args)
             time.sleep(2)
+
+            #path = absolute working directory on host
             relpath = os.path.abspath('.')[len(os.path.expanduser('~')):]
             relpath = "/_BURST" +  relpath.replace('/', '_') #I can exlain
             locpath = os.path.abspath('.')
             path = "/home/{0}{1}".format(sshuser, relpath)
 
+            #part of check to see if docker is installed and running
             cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
             vvprint (cmd)
             out = run(cmd)
             vvprint("PS returns -->%s|%s<--" % out)
+
+            #if any docker processes are running
             if out[0].strip():
+
+                #kill any pending shutdown containers FIXME: should only fix shutdowns associated with session
                 kills = []
                 for x in out[0].split("\n"):
                     if x:
@@ -139,12 +148,12 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                     vvprint (cmd)
                     os.system(cmd)
 
+            #prepare to build docker container
             vprint ("Removing topmost layer")        #to avoid running stale image
             cmd = ["docker", "{0}".format(remote), "rmi", "--no-prune", DEFAULT_IMAGE]
             vvprint (cmd)
             out, err = run(cmd)
             vvprint (out)
-            # print ("DEEBG ex:", node.extra)
             size, image = fix_size_and_image(size, image)
             if size and size != get_server_size(node):                      #FIXME
                 raise Exception("Cannot change size (instance type) -- need to re-launch")
@@ -155,6 +164,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 
             vprint ("burst: name %s size %s image %s url %s" % (node.name, size, image, url))
 
+            #if using cloud storage (s3 etc), set up config & auth for rclone
             if cloudmap:
                 if remote:
                     stor = get_config()['storage']
@@ -177,7 +187,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                     f.write(s)
                     f.close()
 
-            #sync project directory
+            #sync local working data to host
             rsync_ignore_path = os.path.abspath("./.burstignore")
             if not os.path.exists(rsync_ignore_path):
                 vprint("creating empty .burstignore")
@@ -199,6 +209,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             remote = ""
             path = os.path.abspath('.')
 
+        #actually build container -- for reals
         vprint ("Building docker container")
         cmd = "docker {1} build . --file {2} -t {0} {3}".format(DEFAULT_IMAGE, remote, dockerfile, get_piper())
         vvprint (cmd)
@@ -207,6 +218,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
         args = " ".join(args)
         gpu_args = "--gpus "+gpus if gpus else ""
 
+        #if mounting storage, add arguments & insert commands before (to mount) and after (to unmount) user-specified args
         cloud_args = ""
         if cloudmap:
             cloud, host = cloudmap.split(":")
@@ -216,11 +228,14 @@ and files that are referred to (such as requirements.txt) to the build daemon.
         vprint ("Running docker container")
         cmd = "docker {3} run {4} {5} --rm -ti -v {2}:/home/burst/work {6} {0} {1}".format(DEFAULT_IMAGE,
                                                                                   args, path, remote, gpu_args, docker_port_args, cloud_args)
+        #run user-specified args
         vvprint (cmd)
         vprint ("")
         v0print ("---------------------OUTPUT-----------------------")
         os.system(cmd)
         v0print ("----------------------END-------------------------")
+
+        #sync data on host back to local
         if url:
             vprint ("Synchronizing folders")
             cmd = "rsync -rltzu{4} --exclude-from {5} -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error' '{3}@{1}:{2}/.' {0}/".format(locpath,
@@ -238,6 +253,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
         print (ex)
 
     if url and node:
+        # set up shutdown process
         if stop == 0:
             vprint ("Stopping VM at %s immediately as instructed" % url)
             stop_server(node)
