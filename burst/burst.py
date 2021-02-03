@@ -24,7 +24,7 @@ SHUTDOWN_IMAGE = "burstableai/burst_shutdown:latest"
 # DOCKER_REMPORT = "2376"
 # DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
-def burst(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports=None, stop=False,
+def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpus = "", ports=None, stop=False,
           image=None, size=None, pubkey=None, dockerfile="Dockerfile",
           cloudmap="", dockerdport=2376, conf=None):
     tunnel = None
@@ -46,7 +46,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 !requirements.txt
 """)
         #
-        # Chunnel container to local via host:
+        # build args to tunnel container ports to local via host:
         # on host, docker map remote_port:remote_port
         # on local, ssh tunnel local_port:localhost:remote_port
         #
@@ -65,17 +65,28 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             if not sshuser:
                 sshuser, url = url.split('@')
         node = None
-        if url or uuid or rxuser:
+
+        #unless running --local:
+        if url or uuid or burst_user:
+
+            #are we launching a fresh one?
             fresh = False
-            node = get_server(url=url, uuid=uuid, name=rxuser, conf=conf)
-            if rxuser and not node:
-                node = launch_server(rxuser, pubkey=pubkey, size=size, image=image, conf=conf, user=sshuser, gpus=gpus)
+            node = get_server(url=url, uuid=uuid, name=burst_user, conf=conf)
+            if burst_user and not node:
+                node = launch_server(burst_user, pubkey=pubkey, size=size, image=image, conf=conf, user=sshuser, gpus=gpus)
                 fresh = True
+
             if node:
+
+                #if stopped, restart
                 if node.state.lower() != "running":
                     vprint ("Starting server")
                     node = start_server(node)
+
+                #by now we must have a public IP address
                 url = node.public_ips[0]
+
+                #wait for ssh daemon to be ready
                 vprint ("Waiting for sshd")
                 cmd = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null", "-o LogLevel=error", "{0}@{1}".format(sshuser, url), "echo", "'sshd responding'"]
                 vvprint(cmd)
@@ -94,7 +105,10 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             else:
                 raise Exception("Error: node not found")
 
+        #we have a url unless running --local:
         if url:
+
+            #if just launched, install docker
             if fresh:
                 print("Configuring Docker")
                 # 'sudo apt-get -y update; sudo apt-get -y install docker.io; ' \ #images have docker installed
@@ -128,7 +142,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             out = run(cmd)
             vvprint("PS returns -->%s|%s<--" % out)
 
-            #if any docker processes are running
+            #if any docker shutdown processes are running, kill
             if out[0].strip():
 
                 #kill any pending shutdown containers FIXME: should only fix shutdowns associated with session
@@ -394,8 +408,8 @@ if __name__ == "__main__":
         time.sleep(5)
 
     if not (args.burst_user or args.uuid or args.url or args.local or args.version):
-        rxuser = getpass.getuser()
-        args.burst_user = "burst-" + rxuser
+        burst_user = getpass.getuser()
+        args.burst_user = "burst-" + burst_user
         vprint ("Session: %s" % args.burst_user)
 
     if args.stop_instance_by_url:
@@ -484,7 +498,7 @@ if __name__ == "__main__":
             cmdargs = ['echo', 'Build phase 1 success']
 
         burst(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
-              rxuser=args.burst_user, gpus=args.gpus, ports=args.portmap, stop=args.shutdown,
+              burst_user=args.burst_user, gpus=args.gpus, ports=args.portmap, stop=args.shutdown,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               dockerdport=args.dockerdport, conf = burst_conf)
 
