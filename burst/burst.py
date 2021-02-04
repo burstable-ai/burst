@@ -45,31 +45,19 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 !/Dockerfile*
 !requirements.txt
 """)
-        #
-        # build args to tunnel container ports to local via host:
-        # on host, docker map remote_port:remote_port
-        # on local, ssh tunnel local_port:localhost:remote_port
-        #
-        host_port_args = []
-        docker_port_args = ""
-        if ports:
-            for pa in ports:
-                if ':' in pa:
-                    local_port, remote_port = pa.split(':')
-                else:
-                    remote_port = local_port = pa
-                docker_port_args += " -p {0}:{0}".format(remote_port)
-                host_port_args.append("-L {0}:localhost:{1}".format(local_port, remote_port))
-        # print ("PORTS: |%s|%s|" % (docker_port_args, host_port_args)); exit()
+
+        #if url specified, split into user & IP
         if url:
             if not sshuser:
                 sshuser, url = url.split('@')
+
+        #launch, restart, or reconnect to node
         node = None
 
         #unless running --local:
         if url or uuid or burst_user:
 
-            #are we launching a fresh one?
+            #if server does not exist, launch a fresh one
             fresh = False
             node = get_server(url=url, uuid=uuid, name=burst_user, conf=conf)
             if burst_user and not node:
@@ -120,7 +108,18 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 
             vprint ("Connecting through ssh")
 
-            #set up ssh tunnel mapping docker socket
+            #set up ssh tunnel mapping docker socket, ports
+            host_port_args = []
+            docker_port_args = ""
+            if ports:
+                for pa in ports:
+                    if ':' in pa:
+                        local_port, remote_port = pa.split(':')
+                    else:
+                        remote_port = local_port = pa
+                    docker_port_args += " -p {0}:{0}".format(remote_port)
+                    host_port_args.append("-L {0}:localhost:{1}".format(local_port, remote_port))
+            # print ("PORTS: |%s|%s|" % (docker_port_args, host_port_args)); exit()
             remote = "-H localhost:%s" % dockerdport
             ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
                         "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(dockerdport), "{0}@{1}".format(sshuser, url)]
