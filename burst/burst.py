@@ -245,8 +245,11 @@ and files that are referred to (such as requirements.txt) to the build daemon.
         vvprint (cmd)
         vprint ("")
         v0print ("---------------------OUTPUT-----------------------")
+        sys.stdout.flush()
         os.system(cmd)
+        sys.stdout.flush()
         v0print ("----------------------END-------------------------")
+        sys.stdout.flush()
 
         #sync data on host back to local
         if url:
