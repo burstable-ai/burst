@@ -18,7 +18,7 @@ os.system("rm fulltest.log fulltest.foo fulltest.ports")
 
 os.system("python3 fulltest_ports.py &")
 
-opts = "--verbosity={0} --cloudmap={1}".format(args.verbosity, args.cloudmap)
+opts = "--verbosity={0} --cloudmap={1}".format(args.verbosity|128, args.cloudmap)
 if args.storage_config:
     opts += " --storage-config={0}".format(args.storage_config)
 if args.compute_config:
@@ -26,9 +26,11 @@ if args.compute_config:
 
 root = args.cloudmap.split(':')[1]
 
-cmd = "burst -p 6789:80 {0} 'python3 fulltest_command.py --testpath={1}/{2}' 2>&1 | tee fulltest.log".format(opts, root, args.testpath)
+cmd = "burst --shutdown 10 -p 6789:80 {0} 'python3 fulltest_command.py --testpath={1}/{2}' 2>&1 | tee fulltest.log".format(opts, root, args.testpath)
 print (cmd)
 os.system(cmd)
+
+os.system("burst --list > fulltest.shut")
 
 f = open("fulltest.log")
 s = f.read()
@@ -44,6 +46,12 @@ ports = ""
 if os.path.exists("fulltest.ports"):
     f = open("fulltest.ports")
     ports = f.read()
+    f.close()
+
+shut = ""
+if os.path.exists("fulltest.shut"):
+    f = open("fulltest.shut")
+    shut = f.read()
     f.close()
 
 print ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~TEST COMPLETED~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -63,4 +71,7 @@ if ports.find(out3)==0:
 else:
     print ("FAILED portmap test")
 
-
+if shut.find("running")==-1:
+    print ("PASSED shutdown test")
+else:
+    print ("FAILED shutdown test")
