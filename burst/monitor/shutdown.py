@@ -1,5 +1,14 @@
-import os, sys, time
+import os, sys, json, time, subprocess
+from pprint import pprint
 
 while True:
-    os.system("docker ps")
-    time.sleep(8)
+    proc = subprocess.Popen(["docker",  "ps", "--format='{{json .}}'"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    out = proc.stdout.read()
+    if out:
+        out = eval("""r%s""" % out.decode())
+        print(out)
+        j = json.loads(out)
+        pprint(j)
+    else:
+        print ("NADA")
+    time.sleep(7)
