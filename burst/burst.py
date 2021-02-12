@@ -340,7 +340,7 @@ if __name__ == "__main__":
     parser.add_argument("--delay", type=int, default=0,         help="delay command by N seconds")
     parser.add_argument("--verbosity", type=int, default=0,     help="-1: just task output 0: status 1-4: more verbose")
     parser.add_argument("--shutdown", type=int, default=900, nargs='?',   help="seconds before server is stopped (default 15 minutes)")
-    # parser.add_argument("--stop_instance_by_url",               help="internal use")
+    parser.add_argument("--stop_instance_by_url",               help="internal use")
     parser.add_argument("--cloudmap", type=str, default="",     help="map cloud storage to local mount point")
     parser.add_argument("--dockerfile", type=str, default="Dockerfile",    help="Docker file to build the container with if not ./Dockerfile")
     parser.add_argument("--dockerdport", type=int, default=2376, help="local port to map to remote host docker daemon")
