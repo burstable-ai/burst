@@ -296,19 +296,19 @@ and files that are referred to (such as requirements.txt) to the build daemon.
     if tunnel:
         tunnel.kill()
 
-# #
-# # Note this function is typically called by the shutdown process so it does
-# # not share scope with most of what burst does
-# #
-# def stop_instance_by_url(url, conf):
-#     vprint ("STOP instance with public IP", url)
-#     # print ("DEBUG", os.path.abspath('.'), conf.secret)
-#     node = get_server(url=url, conf=conf)
-#     if not node:
-#         vprint ("No active instance found for IP", url)
-#     else:
-#         vprint ("shutting down node %s" % node)
-#         stop_server(node)
+#
+# Note this function is typically called by the shutdown process so it does
+# not share scope with most of what burst does
+#
+def stop_instance_by_url(url, conf):
+    vprint ("STOP instance with public IP", url)
+    # print ("DEBUG", os.path.abspath('.'), conf.secret)
+    node = get_server(url=url, conf=conf)
+    if not node:
+        vprint ("No active instance found for IP", url)
+    else:
+        vprint ("shutting down node %s" % node)
+        stop_server(node)
 
 
 if __name__ == "__main__":
@@ -416,12 +416,10 @@ if __name__ == "__main__":
         args.burst_user = "burst-" + burst_user
         vprint ("Session: %s" % args.burst_user)
 
-    # if args.stop_instance_by_url:
-    #     stop_instance_by_url(args.stop_instance_by_url, burst_conf)
+    if args.stop_instance_by_url:
+        stop_instance_by_url(args.stop_instance_by_url, burst_conf)
 
-    # elif args.list_servers:
-
-    if args.list_servers:
+    elif args.list_servers:
         init(burst_conf)
         # pprint(get_config())
         cconf = get_config()['compute_config']

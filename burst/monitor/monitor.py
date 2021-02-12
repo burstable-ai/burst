@@ -27,9 +27,9 @@ while True:
                         shuttime = t
                 else:
                     print ("ERROR -- unknown docker label %s=%s" % (key, val))
-        count += 1
+            count += 1
     if count==0:
-        print ("NADA")
+        print ("No burstable containers are running")
 
     now = datetime.datetime.utcnow()
     remain = (shuttime-now) if shuttime else None
