@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os, sys, json, time, subprocess
 from pprint import pprint
 
