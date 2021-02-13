@@ -283,11 +283,10 @@ and files that are referred to (such as requirements.txt) to the build daemon.
     #         else:
     #             secret = conf.secret
     #         # print("SECRET 1:", secret)
-    #         cmd = "docker {7} run --rm {11} -v {9}:/home/burst/work {8} burst --verbosity {12} --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6} {10}".format(url,
-    #                                                                 stop, conf.access, secret, conf.region,
-    #                                                                 ("--project=" + conf.project) if conf.project else "",
-    #                                                                 conf.provider,
-    #                                                                 remote, SHUTDOWN_IMAGE, path, get_piper(), get_dockrunflags(), get_verbosity())
+    #         cmd = f"docker {remote} run --rm {get_dockrunflags()} -v {path}:/home/burst/work {SHUTDOWN_IMAGE} burst" \
+    #               f" --verbosity {get_verbosity()} --stop_instance_by_url {url} --delay {stop} --access {conf.access}" \
+    #               f" --secret={secret} --region={conf.region} {('--project ' + conf.project) if conf.project else ''}" \
+    #               f" --provider={conf.provider} {get_piper()}"
     #         # cmd = "docker {0} run --rm -ti {1} burst --version".format(remote, DEFAULT_IMAGE)
     #         vvprint (cmd)
     #         vvprint ("Shutdown process container ID:")
