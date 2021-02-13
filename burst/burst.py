@@ -383,6 +383,7 @@ if __name__ == "__main__":
     if args.gpus.lower() == 'none':
         args.gpus = None
 
+    #stop_instance_by_url takes access args from command line (does not have access to config.yml)
     if args.access:
         args_compute = dictobj()
         args_compute.access = args.access
@@ -393,6 +394,7 @@ if __name__ == "__main__":
     else:
         burst_conf = {}
 
+        #command line overrides:
         if args.compute_config:
             burst_conf['compute_config'] = args.compute_config
 
@@ -411,11 +413,13 @@ if __name__ == "__main__":
         vprint ("%d seconds till action" % (args.delay+.5+t0-time.time()))
         time.sleep(5)
 
+    #set default burst_user if necessary:
     if not (args.burst_user or args.uuid or args.url or args.local or args.version):
         burst_user = getpass.getuser()
         args.burst_user = "burst-" + burst_user
         vprint ("Session: %s" % args.burst_user)
 
+    #master switch clause. First, stand-alone options
     if args.stop_instance_by_url:
         stop_instance_by_url(args.stop_instance_by_url, burst_conf)
 
@@ -469,6 +473,7 @@ if __name__ == "__main__":
         os.system("burst-config --config_path %s" % yam)
 
     else:
+        #no stand-alone options; do burst for reals
         if args.local:
             pubkey = None
         else:
@@ -501,6 +506,7 @@ if __name__ == "__main__":
         if args.build:
             cmdargs = ['echo', 'Build phase 1 success']
 
+        #let's do this thing
         burst(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
               burst_user=args.burst_user, gpus=args.gpus, ports=args.portmap, stop=args.shutdown,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
