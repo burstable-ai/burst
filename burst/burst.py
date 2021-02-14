@@ -166,7 +166,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             #if restarted (including fresh launch), start monitor docker process
 
             if restart:
-                vprint ("Starting monitor process for shutdown++" % (url, stop))
+                vprint ("Starting monitor process for shutdown++")
                 conf = get_config()
                 if conf.provider == "GCE":
                     secret = ".burst/" + conf.raw_secret
