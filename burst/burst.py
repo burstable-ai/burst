@@ -285,8 +285,8 @@ and files that are referred to (such as requirements.txt) to the build daemon.
     #         # print("SECRET 1:", secret)
     #         cmd = f"docker {remote} run --rm {get_dockrunflags()} -v {path}:/home/burst/work {SHUTDOWN_IMAGE} burst" \
     #               f" --verbosity {get_verbosity()} --stop_instance_by_url {url} --delay {stop} --access {conf.access}" \
-    #               f" --secret={secret} --region={conf.region} {('--project ' + conf.project) if conf.project else ''}" \
-    #               f" --provider={conf.provider} {get_piper()}"
+    #               f" --secret={secret} --region {conf.region} {('--project ' + conf.project) if conf.project else ''}" \
+    #               f" --provider {conf.provider} {get_piper()}"
     #         # cmd = "docker {0} run --rm -ti {1} burst --version".format(remote, DEFAULT_IMAGE)
     #         vvprint (cmd)
     #         vvprint ("Shutdown process container ID:")
