@@ -1,9 +1,29 @@
 #!/usr/bin/env python3
 import os, sys, json, time, subprocess, datetime, argparse
+from burst.lcloud import *
 from pprint import pprint
 
+def stop_instance_by_url(url, conf):
+    print ("STOP instance with public IP", url)
+    # print ("DEBUG", os.path.abspath('.'), conf.secret)
+    node = get_server(url=url, conf=conf)
+    if not node:
+        print ("No active instance found for IP", url)
+    else:
+        print ("shutting down node %s" % node)
+        # stop_server(node)
+
+#{url} --delay {stop} --access {conf.access}" \
+    #               f" --secret={secret} --region {conf.region} {('--project ' + conf.project) if conf.project else ''}" \
+    #               f" --provider {conf.provider}
+
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("--ip", required=True)
+parser.add_argument("--ip",         required=True)
+parser.add_argument("--provider",   required=True)
+parser.add_argument("--access",     required=True)
+parser.add_argument("--secret",     required=True)
+parser.add_argument("--region",     required=True)
+parser.add_argument("--project",    default="")
 args = parser.parse_args()
 
 shuttime = None
@@ -40,7 +60,7 @@ while True:
     print ("time now:", now, "shutoff time:", shuttime, "remaining:", remain.total_seconds() if remain != None else "infinite")
     if remain != None and remain < datetime.timedelta(seconds=0):
         print ("Proceeding to shutdown {0}".format(args.ip))
-        os.system("burst --verbosity 1 --stop_instance_by_url {0}".format(args.ip))
+        stop_instance_by_url(args.ip, vars(args))
         break
 
     time.sleep(5)
