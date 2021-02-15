@@ -20,7 +20,7 @@ from burst.verbos import set_verbosity, get_verbosity, vprint, vvprint, v0print,
 os.chdir(opath)
 
 DEFAULT_IMAGE = "burst_image" #FIXME: should be unique to folder structure
-MONITOR_IMAGE = "burstableai/burst_shutdown:latest"
+MONITOR_IMAGE = "burstableai/burst_monitor:latest"
 # DOCKER_REMPORT = "2376"
 # DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
