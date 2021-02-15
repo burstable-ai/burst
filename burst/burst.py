@@ -21,8 +21,6 @@ os.chdir(opath)
 
 DEFAULT_IMAGE = "burst_image" #FIXME: should be unique to folder structure
 MONITOR_IMAGE = "burstableai/burst_monitor:latest"
-# DOCKER_REMPORT = "2376"
-# DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
 
 def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpus = "", ports=None, stop=False,
           image=None, size=None, pubkey=None, dockerfile="Dockerfile",

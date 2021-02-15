@@ -7,7 +7,7 @@ setup(
     py_modules=['config'],
     packages=find_packages(),
     python_requires='>=3.6',
-    scripts=['bin/burst', 'bin/burst-config'],
+    scripts=['bin/burst', 'bin/burst-config', 'bin/burst-monitor'],
     install_requires=[
         "blessings          >=1.7,      <2",
         "apache-libcloud    >=3.2.0,    <4",
