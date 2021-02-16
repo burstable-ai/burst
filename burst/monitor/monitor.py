@@ -48,14 +48,17 @@ while True:
                         shuttime = t
                 else:
                     print ("ERROR -- unknown docker label %s=%s" % (key, val))
+                    sys.stdout.flush()
             count += 1
     # if count==0:
     #     print ("No burstable containers are running")
 
     remain = (shuttime-now) if shuttime else None
     print ("time now:", now, "shutoff time:", shuttime, "remaining:", remain.total_seconds() if remain != None else "infinite")
+    sys.stdout.flush()
     if remain != None and remain < datetime.timedelta(seconds=0):
         print ("Proceeding to shutdown {0}".format(args.ip))
+        sys.stdout.flush()
         stop_instance_by_url(args.ip, vars(args))
         break
 
