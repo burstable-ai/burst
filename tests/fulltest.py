@@ -1,4 +1,4 @@
-import os, sys, argparse
+import os, sys, argparse, time
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--cloudmap", required=True, help="as passed to burst")
@@ -28,9 +28,15 @@ if args.compute_config:
 root = args.cloudmap.split(':')[1]
 shutopt = "--shutdown 10" if args.shutdown_test else ""
 
-cmd = "burst {3} -p 6789:80 {0} 'python3 fulltest_command.py --testpath={1}/{2}' 2>&1 | tee fulltest.log".format(opts, root, args.testpath, shutopt)
+cmd = "burst {3} -p 6789:80 {0} 'python3 -u fulltest_command.py --testpath={1}/{2}' 2>&1 | tee fulltest.log".format(opts, root, args.testpath, shutopt)
 print (cmd)
+sys.stdout.flush()
 os.system(cmd)
+
+if args.shutdown_test:
+    print ("Waiting for shutdown")
+    sys.stdout.flush()
+    time.sleep(16)
 
 os.system("burst --list > fulltest.shut")
 
@@ -78,3 +84,5 @@ if args.shutdown_test:
         print ("PASSED shutdown test")
     else:
         print ("FAILED shutdown test")
+
+sys.stdout.flush()
