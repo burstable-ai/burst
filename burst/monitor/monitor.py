@@ -11,11 +11,7 @@ def stop_instance_by_url(url, conf):
         print ("No active instance found for IP", url)
     else:
         print ("shutting down node %s" % node)
-        # stop_server(node)
-
-#{url} --delay {stop} --access {conf.access}" \
-    #               f" --secret={secret} --region {conf.region} {('--project ' + conf.project) if conf.project else ''}" \
-    #               f" --provider {conf.provider}
+        stop_server(node)
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--ip",         required=True)

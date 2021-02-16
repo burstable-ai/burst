@@ -162,7 +162,6 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             #         os.system(cmd)
 
             #if restarted (including fresh launch), start monitor docker process
-
             if restart:
                 vprint ("Starting monitor process for shutdown++")
                 conf = get_config()
@@ -259,8 +258,9 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             cloud_args = " --privileged"
 
         vprint ("Running docker container")
-        cmd = "docker {3} run {4} {5} --rm -ti -v {2}:/home/burst/work {6} {0} {1}".format(DEFAULT_IMAGE,
-                                                                                  args, path, remote, gpu_args, docker_port_args, cloud_args)
+        cmd = "docker {3} run {4} {5} --rm -ti {7} -v {2}:/home/burst/work {6} {0} {1}".format(DEFAULT_IMAGE,
+                          args, path, remote, gpu_args, docker_port_args, cloud_args,
+                          ("--label ai.burstable.shutdown=%s" % stop) if stop else '')
         #run user-specified args
         vvprint (cmd)
         vprint ("")
