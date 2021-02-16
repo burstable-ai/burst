@@ -19,7 +19,7 @@ os.system("rm fulltest.log fulltest.foo fulltest.ports fulltest.shut")
 
 os.system("python3 fulltest_ports.py &")
 
-opts = "--verbosity={0} --cloudmap={1}".format(args.verbosity | (128 if args.shutdown_test else 0), args.cloudmap)
+opts = "--verbosity={0} --cloudmap={1}".format(args.verbosity, args.cloudmap)
 if args.storage_config:
     opts += " --storage-config={0}".format(args.storage_config)
 if args.compute_config:
