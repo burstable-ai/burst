@@ -171,7 +171,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 else:
                     secret = conf.secret
                 # print("SECRET 1:", secret)
-                cmd = f"docker {remote} run --rm {get_dockrunflags()} -v {path}:/home/burst/work" \
+                cmd = f"docker {remote} run --rm {get_dockrunflags()}  -v /var/run/docker.sock:/var/run/docker.sock" \
                       f" {MONITOR_IMAGE} burst-monitor" \
                       f" --ip {url} --access {conf.access} --provider {conf.provider} {get_piper()}" \
                       f" --secret={secret} --region {conf.region} {('--project ' + conf.project) if conf.project else ''}"
