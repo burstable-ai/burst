@@ -22,13 +22,12 @@ parser.add_argument("--region",     required=True)
 parser.add_argument("--project",    default="")
 args = parser.parse_args()
 
-shuttime = None
-
 while True:
     proc = subprocess.Popen(["docker", "ps", "--format='{{json .}}'"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     count  = 0
     now = datetime.datetime.utcnow()
     lines = proc.stdout.read().strip().split(b"\n")
+    shuttime = 0
     for out in lines:
         out = out.decode().strip()[1:-1] #seems a docker bug; returning single-quoted json blob
         # print("OUT:", out)
@@ -44,19 +43,17 @@ while True:
                 if key == 'ai.burstable.shutdown':
                     delay = int(val)
                     t = now + datetime.timedelta(seconds = delay)
-                    if shuttime == None or shuttime < t:
+                    if shuttime < t:
                         shuttime = t
                 else:
                     print ("ERROR -- unknown docker label %s=%s" % (key, val))
                     sys.stdout.flush()
             count += 1
-    # if count==0:
-    #     print ("No burstable containers are running")
 
-    remain = (shuttime-now) if shuttime else None
-    print ("time now:", now, "shutoff time:", shuttime, "remaining:", remain.total_seconds() if remain != None else "infinite")
+    remain = (shuttime-now).total_seconds() if shuttime else 3600
+    print ("time now:", now, "shutoff time:", shuttime, "remaining:", remain)
     sys.stdout.flush()
-    if remain != None and remain < datetime.timedelta(seconds=0):
+    if remain and remain < datetime.timedelta(seconds=0):
         print ("Proceeding to shutdown {0}".format(args.ip))
         sys.stdout.flush()
         stop_instance_by_url(args.ip, vars(args))

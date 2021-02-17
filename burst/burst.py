@@ -354,8 +354,9 @@ if __name__ == "__main__":
     parser.add_argument("--size",                               help="libcloud size (aws: instance_type")
     parser.add_argument("--pubkey",                             help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
     parser.add_argument("--delay", type=int, default=0,         help="delay command by N seconds")
-    parser.add_argument("--verbosity", type=int, default=0,     help="-1: just task output 0: status 1-4: more verbose")
-    parser.add_argument("--shutdown", type=int, default=900, nargs='?',   help="seconds before server is stopped (default 15 minutes)")
+    parser.add_argument("--verbosity", type=int, default=0,     help="-1: just task output 0: status 1-127: more verbose")
+    parser.add_argument("--shutdown", type=int, default=900, nargs='?',   help="seconds before server is stopped (default 900)"
+                                                                               " 0 means no shutdown; no argument prompts for forced shutdown")
     # parser.add_argument("--stop_instance_by_url",               help="internal use")
     parser.add_argument("--cloudmap", type=str, default="",     help="map cloud storage to local mount point")
     parser.add_argument("--dockerfile", type=str, default="Dockerfile",    help="Docker file to build the container with if not ./Dockerfile")
