@@ -18,7 +18,13 @@ The example is implemented two ways:
 
 # Running the example on a local machine
 
-To run the command line examples, use 
+First, set up a virtual environment (instructions are here[https://realpython.com/python-virtual-environments-a-primer/]).  In the virtual environment, run 
+
+    pip install -r requirements.txt
+
+to ensure that you have the correct versions of all necessary Python packages.
+
+Then, run the command line examples with 
 
     python3 trainCNN_CIFAR10.py 
     
@@ -48,7 +54,7 @@ To run the command line examples using burst, use
 
     burst python3 trainCNN_CIFAR10.py --nepochs 40
 
-The first time you run burst, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will need to be rebuilt.
+The first time you run burst, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will take some time to rebuild itself on the next `burst` run.
 
 When `burst` has finished running training and running your model, it will automatically transfer the output and any modified files back to your local directory and close the connection.  Once a `burst` connection has been closed for > 15 minutes, it will stop the remote server so that you will not be paying for it.
 
