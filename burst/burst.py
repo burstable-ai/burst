@@ -140,6 +140,18 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             vvprint (cmd)
             out = run(cmd)
             vvprint("PS returns -->%s|%s<--" % out)
+            monitor_running = False
+            if out[1]:
+                for line in out[0].split("\n"):
+                    if not line:
+                        continue
+                    j = json.loads(line)
+                    # pprint(j)
+                    # print ("RUNNING:", j['Image'], j['Labels'])
+                    for x in j['Labels'].split(','):
+                        if 'ai.burstable.monitor=' == x:
+                            monitor_running = True
+            vprint ("monitor_running: %s" % monitor_running)
 
             # #if any docker shutdown processes are running, kill
             # if out[0].strip():
@@ -162,7 +174,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             #         os.system(cmd)
 
             #if restarted (including fresh launch), start monitor docker process
-            if restart:
+            if restart or not monitor_running:
                 vprint ("Starting monitor process for shutdown++")
                 conf = get_config()
                 if conf.provider == "GCE":
@@ -170,7 +182,8 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 else:
                     secret = conf.secret
                 # print("SECRET 1:", secret)
-                cmd = f"docker {remote} run --rm {get_dockrunflags()}  -v /var/run/docker.sock:/var/run/docker.sock" \
+                cmd = f"docker {remote} run --label 'ai.burstable.monitor' " \
+                      f"--rm {get_dockrunflags()}  -v /var/run/docker.sock:/var/run/docker.sock" \
                       f" {MONITOR_IMAGE} burst-monitor" \
                       f" --ip {url} --access {conf.access} --provider {conf.provider} {get_piper()}" \
                       f" --secret={secret} --region {conf.region} {('--project ' + conf.project) if conf.project else ''}"
