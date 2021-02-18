@@ -28,7 +28,7 @@ You can experiment with running for more epochs by specifying `--nepochs` at the
 
     python3 trainCNN_CIFAR10.py --nepochs 40
     
-You can also open the CIFAR10_CNN.ipynb notebook and run the model there.
+You can also open the `CIFAR10_CNN.ipynb` notebook and run the model there.
 
 Note that the first time you run the command line tool or notebook, it will download the CIFAR-10 dataset to your local drive.  Subsequent runs will make use of the previously downloaded data.
 
