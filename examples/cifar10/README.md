@@ -18,7 +18,7 @@ The example is implemented two ways:
 
 # Running the example on a local machine
 
-First, set up a virtual environment (instructions are here[https://realpython.com/python-virtual-environments-a-primer/]).  In the virtual environment, run 
+First, set up a virtual environment (instructions are [here](https://realpython.com/python-virtual-environments-a-primer/)).  In the virtual environment, run 
 
     pip install -r requirements.txt
 
