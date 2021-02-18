@@ -13,16 +13,19 @@ This test model achieves ~90% accuracy on this dataset, as implemented here.
 The example is implemented two ways: 
 * as a command-line python script that can be run remotely through burst (data visualizations are written into an `output` folder)
 * in interactive Jupyter notebooks, with in-notebook visualizations
+
 Burst can support both types of model training.
 
 # Running the example on a local machine
 
 To run the command line examples, use 
+
     python3 trainCNN_CIFAR10.py 
     
 The default only trains for 2 epochs, which produces a poor (underfit) model, but is good for quick testing purposes, especially when you are running on a low-power CPU where each epoch can take minutes to run.  
 
 You can experiment with running for more epochs by specifying `--nepochs` at the command line, e.g., 
+
     python3 trainCNN_CIFAR10.py --nepochs 40
     
 You can also open the CIFAR10_CNN.ipynb notebook and run the model there.
@@ -30,6 +33,7 @@ You can also open the CIFAR10_CNN.ipynb notebook and run the model there.
 Note that the first time you run the command line tool or notebook, it will download the CIFAR-10 dataset to your local drive.  Subsequent runs will make use of the previously downloaded data.
 
 The command line code will create an `output/` file and store the following visualizations there:
+
 * training_example_images.png. -- This shows one example image for each classification category.
 * model_losses.png -- This plots the loss per epoch from the model training loop, for both the training data and test data.
 * confusion_matrix.png -- This show a heat map of the confusion matrix, so that you can visualize how well your model is doing and understand what types of categories it tends to confuse with one another.
@@ -41,6 +45,7 @@ If you run the Jupyter notebook, these same visualizations appear in the noteboo
 # Running command line examples using burst
 
 To run the command line examples using burst, use
+
     burst python3 trainCNN_CIFAR10.py --nepochs 40
 
 The first time you run burst, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will need to be rebuilt.
@@ -54,10 +59,13 @@ You can inspect the output files that have been transferred back to your local m
 Sometimes it is useful to be able to have an entire Jupyter notebook running on a GPU, while you are experimenting with a new model, so that the run time is fast while you are developing.  burst can support remote Jupyter notebooks for real-time model experimentation on a GPU.  
 
 To run a remote Jupyter server through burst, use
+
     burst -p 8888 jupyter lab --ip 0.0.0.0 --allow-root
     
 The screen will then display a URL, which will look something like
+
     http://0.0.0.0:8888/lab?token=f60aaf215e2bd8a92015f732388e16b6407181aaca4a1a9a
+
 Paste this URL into a new browser window.  This will load a JupyterLab window that is running on the remote burst server.
 
 Edit and run the Jupyter notebook, just as you would on a local Jupyter server.  You should notice that it can access the GPU, and that the training epochs run much faster on the remote GPU than on a local CPU.
