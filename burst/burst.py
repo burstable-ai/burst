@@ -20,9 +20,7 @@ from burst.verbos import set_verbosity, get_verbosity, vprint, vvprint, v0print,
 os.chdir(opath)
 
 DEFAULT_IMAGE = "burst_image" #FIXME: should be unique to folder structure
-SHUTDOWN_IMAGE = "burstableai/burst_shutdown:latest"
-# DOCKER_REMPORT = "2376"
-# DOCKER_REMOTE = "localhost:"+DOCKER_REMPORT
+MONITOR_IMAGE = "burstableai/burst_monitor:latest"
 
 def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpus = "", ports=None, stop=False,
           image=None, size=None, pubkey=None, dockerfile="Dockerfile",
@@ -59,15 +57,17 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 
             #if server does not exist, launch a fresh one
             fresh = False
+            restart = False
             node = get_server(url=url, uuid=uuid, name=burst_user, conf=conf)
             if burst_user and not node:
                 node = launch_server(burst_user, pubkey=pubkey, size=size, image=image, conf=conf, user=sshuser, gpus=gpus)
                 fresh = True
-
+                restart = True
             if node:
 
                 #if stopped, restart
                 if node.state.lower() != "running":
+                    restart = True
                     vprint ("Starting server")
                     node = start_server(node)
 
@@ -141,25 +141,42 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             out = run(cmd)
             vvprint("PS returns -->%s|%s<--" % out)
 
-            #if any docker shutdown processes are running, kill
-            if out[0].strip():
+            # #if any docker shutdown processes are running, kill
+            # if out[0].strip():
+            #
+            #     #kill any pending shutdown containers FIXME: should only fix shutdowns associated with session
+            #     kills = []
+            #     for x in out[0].split("\n"):
+            #         if x:
+            #             try:
+            #                 j = json.loads(x)
+            #             except:
+            #                 raise Exception("ERROR in Docker check (is Docker installed?): %s" % x)
+            #             Command = j['Command']
+            #             if Command.find("burst --stop") < 2:
+            #                 kills.append(j['ID'])
+            #     if kills:
+            #         vprint ("Killing shutdown processes:", kills)
+            #         cmd = "docker {0} stop {1} {2} &".format(remote, " ".join(kills), get_piper())
+            #         vvprint (cmd)
+            #         os.system(cmd)
 
-                #kill any pending shutdown containers FIXME: should only fix shutdowns associated with session
-                kills = []
-                for x in out[0].split("\n"):
-                    if x:
-                        try:
-                            j = json.loads(x)
-                        except:
-                            raise Exception("ERROR in Docker check (is Docker installed?): %s" % x)
-                        Command = j['Command']
-                        if Command.find("burst --stop") < 2:
-                            kills.append(j['ID'])
-                if kills:
-                    vprint ("Killing shutdown processes:", kills)
-                    cmd = "docker {0} stop {1} {2} &".format(remote, " ".join(kills), get_piper())
-                    vvprint (cmd)
-                    os.system(cmd)
+            #if restarted (including fresh launch), start monitor docker process
+            if restart:
+                vprint ("Starting monitor process for shutdown++")
+                conf = get_config()
+                if conf.provider == "GCE":
+                    secret = ".burst/" + conf.raw_secret
+                else:
+                    secret = conf.secret
+                # print("SECRET 1:", secret)
+                cmd = f"docker {remote} run --rm {get_dockrunflags()}  -v /var/run/docker.sock:/var/run/docker.sock" \
+                      f" {MONITOR_IMAGE} burst-monitor" \
+                      f" --ip {url} --access {conf.access} --provider {conf.provider} {get_piper()}" \
+                      f" --secret={secret} --region {conf.region} {('--project ' + conf.project) if conf.project else ''}"
+                vvprint (cmd)
+                vvprint ("Shutdown process container ID:")
+                os.system(cmd)
 
             #prepare to build docker container
             vprint ("Removing topmost layer")        #to avoid running stale image
@@ -210,13 +227,15 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             vprint ("Synchronizing project folders")
             vvprint (cmd)
             os.system(cmd)
-            if get_config().provider == 'GCE':
-                # sync service acct creds (for shutdown)
-                cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.burst/{5} {3}@{1}:{2}/'.format(os.path.expanduser('~'),
-                                        url, path, sshuser, get_rsync_v(), get_config().raw_secret)
-                vprint("Synchronizing credentials for shutdown")
-                vvprint (cmd)
-                os.system(cmd)
+
+            # if get_config().provider == 'GCE':
+            #     # sync service acct creds (for shutdown)
+            #     cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.burst/{5} {3}@{1}:{2}/'.format(os.path.expanduser('~'),
+            #                             url, path, sshuser, get_rsync_v(), get_config().raw_secret)
+            #     vprint("Synchronizing credentials for shutdown")
+            #     vvprint (cmd)
+            #     os.system(cmd)
+
         else:
             vprint ("burst: running locally")
             remote = ""
@@ -239,8 +258,9 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             cloud_args = " --privileged"
 
         vprint ("Running docker container")
-        cmd = "docker {3} run {4} {5} --rm -ti -v {2}:/home/burst/work {6} {0} {1}".format(DEFAULT_IMAGE,
-                                                                                  args, path, remote, gpu_args, docker_port_args, cloud_args)
+        cmd = "docker {3} run {4} {5} --rm -ti --label ai.burstable.shutdown={7} -v {2}:/home/burst/work {6} {0} {1}".format(DEFAULT_IMAGE,
+                          args, path, remote, gpu_args, docker_port_args, cloud_args, stop)
+
         #run user-specified args
         vvprint (cmd)
         vprint ("")
@@ -268,45 +288,43 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             print ()
         print (ex)
 
-    if url and node:
-        # set up shutdown process
-        if stop == 0:
-            vprint ("Stopping VM at %s immediately as instructed" % url)
-            stop_server(node)
-        else:
-            vprint ("Scheduling shutdown of VM at %s for %d seconds from now" % (url, stop))
-            conf = get_config()
-            if conf.provider == "GCE":
-                secret = ".burst/" + conf.raw_secret
-            else:
-                secret = conf.secret
-            # print("SECRET 1:", secret)
-            cmd = "docker {7} run --rm {11} -v {9}:/home/burst/work {8} burst --verbosity {12} --stop_instance_by_url {0} --delay={1} --access={2} --secret={3} --region={4} {5} --provider={6} {10}".format(url,
-                                                                    stop, conf.access, secret, conf.region,
-                                                                    ("--project=" + conf.project) if conf.project else "",
-                                                                    conf.provider,
-                                                                    remote, SHUTDOWN_IMAGE, path, get_piper(), get_dockrunflags(), get_verbosity())
-            # cmd = "docker {0} run --rm -ti {1} burst --version".format(remote, DEFAULT_IMAGE)
-            vvprint (cmd)
-            vvprint ("Shutdown process container ID:")
-            os.system(cmd)
+    # if url and node:
+    #     # set up shutdown process
+    #     if stop == 0:
+    #         vprint ("Stopping VM at %s immediately as instructed" % url)
+    #         stop_server(node)
+    #     else:
+    #         vprint ("Scheduling shutdown of VM at %s for %d seconds from now" % (url, stop))
+    #         conf = get_config()
+    #         if conf.provider == "GCE":
+    #             secret = ".burst/" + conf.raw_secret
+    #         else:
+    #             secret = conf.secret
+    #         # print("SECRET 1:", secret)
+    #         cmd = f"docker {remote} run --rm {get_dockrunflags()} -v {path}:/home/burst/work {MONITOR_IMAGE} burst" \
+    #               f" --verbosity {get_verbosity()} --stop_instance_by_url {url} --delay {stop} --access {conf.access}" \
+    #               f" --secret={secret} --region {conf.region} {('--project ' + conf.project) if conf.project else ''}" \
+    #               f" --provider {conf.provider} {get_piper()}"
+    #         vvprint (cmd)
+    #         vvprint ("Shutdown process container ID:")
+    #         os.system(cmd)
 
     if tunnel:
         tunnel.kill()
 
-#
-# Note this function is typically called by the shutdown process so it does
-# not share scope with most of what burst does
-#
-def stop_instance_by_url(url, conf):
-    vprint ("STOP instance with public IP", url)
-    # print ("DEBUG", os.path.abspath('.'), conf.secret)
-    node = get_server(url=url, conf=conf)
-    if not node:
-        vprint ("No active instance found for IP", url)
-    else:
-        vprint ("shutting down node %s" % node)
-        stop_server(node)
+# #
+# # Note this function is typically called by the shutdown process so it does
+# # not share scope with most of what burst does
+# #
+# def stop_instance_by_url(url, conf):
+#     vprint ("STOP instance with public IP", url)
+#     # print ("DEBUG", os.path.abspath('.'), conf.secret)
+#     node = get_server(url=url, conf=conf)
+#     if not node:
+#         vprint ("No active instance found for IP", url)
+#     else:
+#         vprint ("shutting down node %s" % node)
+#         stop_server(node)
 
 
 if __name__ == "__main__":
@@ -336,9 +354,10 @@ if __name__ == "__main__":
     parser.add_argument("--size",                               help="libcloud size (aws: instance_type")
     parser.add_argument("--pubkey",                             help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
     parser.add_argument("--delay", type=int, default=0,         help="delay command by N seconds")
-    parser.add_argument("--verbosity", type=int, default=0,     help="-1: just task output 0: status 1-4: more verbose")
-    parser.add_argument("--shutdown", type=int, default=900, nargs='?',   help="seconds before server is stopped (default 15 minutes)")
-    parser.add_argument("--stop_instance_by_url",               help="internal use")
+    parser.add_argument("--verbosity", type=int, default=0,     help="-1: just task output 0: status 1-127: more verbose")
+    parser.add_argument("--shutdown", type=int, default=900, nargs='?',   help="seconds before server is stopped (default 900)"
+                                                                               " 0 means no shutdown; no argument prompts for forced shutdown")
+    # parser.add_argument("--stop_instance_by_url",               help="internal use")
     parser.add_argument("--cloudmap", type=str, default="",     help="map cloud storage to local mount point")
     parser.add_argument("--dockerfile", type=str, default="Dockerfile",    help="Docker file to build the container with if not ./Dockerfile")
     parser.add_argument("--dockerdport", type=int, default=2376, help="local port to map to remote host docker daemon")
@@ -381,6 +400,7 @@ if __name__ == "__main__":
     if args.gpus.lower() == 'none':
         args.gpus = None
 
+    #override config credentials on command line: --access implies all must be provided
     if args.access:
         args_compute = dictobj()
         args_compute.access = args.access
@@ -391,6 +411,7 @@ if __name__ == "__main__":
     else:
         burst_conf = {}
 
+        #command line overrides:
         if args.compute_config:
             burst_conf['compute_config'] = args.compute_config
 
@@ -409,15 +430,14 @@ if __name__ == "__main__":
         vprint ("%d seconds till action" % (args.delay+.5+t0-time.time()))
         time.sleep(5)
 
+    #set default burst_user if necessary:
     if not (args.burst_user or args.uuid or args.url or args.local or args.version):
         burst_user = getpass.getuser()
         args.burst_user = "burst-" + burst_user
         vprint ("Session: %s" % args.burst_user)
 
-    if args.stop_instance_by_url:
-        stop_instance_by_url(args.stop_instance_by_url, burst_conf)
-
-    elif args.list_servers:
+    # #master switch clause. First, stand-alone options
+    if args.list_servers:
         init(burst_conf)
         # pprint(get_config())
         cconf = get_config()['compute_config']
@@ -467,6 +487,7 @@ if __name__ == "__main__":
         os.system("burst-config --config_path %s" % yam)
 
     else:
+        #no stand-alone options; do burst for reals
         if args.local:
             pubkey = None
         else:
@@ -499,6 +520,7 @@ if __name__ == "__main__":
         if args.build:
             cmdargs = ['echo', 'Build phase 1 success']
 
+        #let's do this thing
         burst(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
               burst_user=args.burst_user, gpus=args.gpus, ports=args.portmap, stop=args.shutdown,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
