@@ -258,9 +258,9 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             cloud_args = " --privileged"
 
         vprint ("Running docker container")
-        cmd = "docker {3} run {4} {5} --rm -ti {7} -v {2}:/home/burst/work {6} {0} {1}".format(DEFAULT_IMAGE,
-                          args, path, remote, gpu_args, docker_port_args, cloud_args,
-                          ("--label ai.burstable.shutdown=%s" % stop) if stop else '')
+        cmd = "docker {3} run {4} {5} --rm -ti --label ai.burstable.shutdown={7} -v {2}:/home/burst/work {6} {0} {1}".format(DEFAULT_IMAGE,
+                          args, path, remote, gpu_args, docker_port_args, cloud_args, stop)
+
         #run user-specified args
         vvprint (cmd)
         vprint ("")

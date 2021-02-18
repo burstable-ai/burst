@@ -22,12 +22,12 @@ parser.add_argument("--region",     required=True)
 parser.add_argument("--project",    default="")
 args = parser.parse_args()
 
+shuttime = datetime.datetime.utcnow() + datetime.timedelta(seconds = 1800) #default if no process running
 while True:
     proc = subprocess.Popen(["docker", "ps", "--format='{{json .}}'"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    count  = 0
     now = datetime.datetime.utcnow()
     lines = proc.stdout.read().strip().split(b"\n")
-    shuttime = 0
+    cnt = 0
     for out in lines:
         out = out.decode().strip()[1:-1] #seems a docker bug; returning single-quoted json blob
         # print("OUT:", out)
@@ -42,18 +42,24 @@ while True:
                 # print ("LABEL: %s = %s" % (key, val))
                 if key == 'ai.burstable.shutdown':
                     delay = int(val)
-                    t = now + datetime.timedelta(seconds = delay)
-                    if shuttime < t:
-                        shuttime = t
+                    if delay < 0:
+                        shuttime = datetime.datetime(3001, 1, 1)    #Yr 3K problem
+                        break
+                    elif delay == 0:
+                        shuttime = now
+                    else:
+                        t = now + datetime.timedelta(seconds = delay)
+                        if cnt == 0 or shuttime < t:
+                            shuttime = t
+                    cnt += 1
                 else:
                     print ("ERROR -- unknown docker label %s=%s" % (key, val))
                     sys.stdout.flush()
-            count += 1
 
-    remain = (shuttime-now).total_seconds() if shuttime else 3600
+    remain = (shuttime-now).total_seconds()
     print ("time now:", now, "shutoff time:", shuttime, "remaining:", remain)
     sys.stdout.flush()
-    if remain and remain < datetime.timedelta(seconds=0):
+    if remain < 0:
         print ("Proceeding to shutdown {0}".format(args.ip))
         sys.stdout.flush()
         stop_instance_by_url(args.ip, vars(args))
