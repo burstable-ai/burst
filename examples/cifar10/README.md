@@ -11,10 +11,10 @@ This example is a Pytorch implementation neural nets trained to classify the CIF
 This test model achieves ~90% accuracy on this dataset, as implemented here. 
 
 The example is implemented two ways: 
-* as a command-line python script that can be run remotely through burst (data visualizations are written into an `output` folder)
+* as a command-line python script that can be run remotely through `burst` (data visualizations are written into an `output` folder)
 * in interactive Jupyter notebooks, with in-notebook visualizations
 
-Burst can support both types of model training.
+`burst` can support both types of model training.
 
 # Running the example on a local machine
 
@@ -34,11 +34,11 @@ Note that the first time you run the command line tool or notebook, it will down
 
 The command line code will create an `output/` file and store the following visualizations there:
 
-* training_example_images.png. -- This shows one example image for each classification category.
-* model_losses.png -- This plots the loss per epoch from the model training loop, for both the training data and test data.
-* confusion_matrix.png -- This show a heat map of the confusion matrix, so that you can visualize how well your model is doing and understand what types of categories it tends to confuse with one another.
-* wrong_examples.png -- This shows several examples of test images that the model categorized incorrectly.  It's a good sanity check of what types of images tend to be difficult for your model.
-* model_log.txt -- a log version of what is printed to the screen during runtime, including model structure, timing, and accuracy specifications.
+* `training_example_images.png` -- This shows one example image for each classification category.
+* `model_losses.png` -- This plots the loss per epoch from the model training loop, for both the training data and test data.
+* `confusion_matrix.png` -- This show a heat map of the confusion matrix, so that you can visualize how well your model is doing and understand what types of categories it tends to confuse with one another.
+* `wrong_examples.png` -- This shows several examples of test images that the model categorized incorrectly.  It's a good sanity check of what types of images tend to be difficult for your model.
+* `model_log.txt` -- a log version of what is printed to the screen during runtime, including model structure, timing, and accuracy specifications.
 
 If you run the Jupyter notebook, these same visualizations appear in the notebook, rather than being saved as output files.
 
@@ -50,15 +50,15 @@ To run the command line examples using burst, use
 
 The first time you run burst, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will need to be rebuilt.
 
-When burst has finished running training and running your model, it will automatically transfer the output and any modified files back to your local directory and close the connection.  Once a burst connection has been closed for > 15 minutes, it will stop the remote server so that you will not be paying for it.
+When `burst` has finished running training and running your model, it will automatically transfer the output and any modified files back to your local directory and close the connection.  Once a `burst` connection has been closed for > 15 minutes, it will stop the remote server so that you will not be paying for it.
 
 You can inspect the output files that have been transferred back to your local machine.
 
 # Running examples in Jupyter using burst
 
-Sometimes it is useful to be able to have an entire Jupyter notebook running on a GPU, while you are experimenting with a new model, so that the run time is fast while you are developing.  burst can support remote Jupyter notebooks for real-time model experimentation on a GPU.  
+Sometimes it is useful to be able to have an entire Jupyter notebook running on a GPU, while you are experimenting with a new model, so that the run time is fast while you are developing.  `burst` can support remote Jupyter notebooks for real-time model experimentation on a GPU.  
 
-To run a remote Jupyter server through burst, use
+To run a remote Jupyter server through `burst`, use
 
     burst -p 8888 jupyter lab --ip 0.0.0.0 --allow-root
     
@@ -66,12 +66,12 @@ The screen will then display a URL, which will look something like
 
     http://0.0.0.0:8888/lab?token=f60aaf215e2bd8a92015f732388e16b6407181aaca4a1a9a
 
-Paste this URL into a new browser window.  This will load a JupyterLab window that is running on the remote burst server.
+Paste this URL into a new browser window.  This will load a JupyterLab window that is running on the remote `burst` server.
 
 Edit and run the Jupyter notebook, just as you would on a local Jupyter server.  You should notice that it can access the GPU, and that the training epochs run much faster on the remote GPU than on a local CPU.
 
-NOTE: When you are done, *you must manually close the Jupyter server* by returning to the window where you launched it and hitting Ctl-C, then responding 'y' to shutdown the server.  *If you leave the Jupyter server running, you will continue to pay for the remote server, even if no code is being executed.  burst will not automatically stop a remote Jupyter server.*
+NOTE: When you are done, *you must manually close the Jupyter server* by returning to the window where you launched it and hitting Ctl-C, then responding 'y' to shutdown the server.  *If you leave the Jupyter server running, you will continue to pay for the remote server, even if no code is being executed.  `burst` will not automatically stop a remote Jupyter server.*
 
 # Timing benchmarks
 
-On a local test CPU with modest capacity, training this CNN takes ~5 minutes / epoch.  Running through burst on an AWS g4dn.xlarge GPU machine, the model trains in ~14 seconds / epoch, for a ~20x speed-up.  This CNN has ~2.4 million free parameters to train.  Simpler networks will train faster and may show less speed-up when moving to the GPU.
+On a local test CPU with modest capacity, training this CNN takes ~5 minutes / epoch.  Running through `burst` on an AWS g4dn.xlarge GPU machine, the model trains in ~14 seconds / epoch, for a ~20x speed-up.  This CNN has ~2.4 million free parameters to train.  Simpler networks will train faster and may show less speed-up when moving to the GPU.
