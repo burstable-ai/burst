@@ -80,4 +80,8 @@ NOTE: When you are done, *you must manually close the Jupyter server* by returni
 
 # Timing benchmarks
 
-On a local test CPU with modest capacity, training this CNN takes ~5 minutes / epoch.  Running through `burst` on an AWS g4dn.xlarge GPU machine, the model trains in ~14 seconds / epoch, for a ~20x speed-up.  This CNN has ~2.4 million free parameters to train.  Simpler networks will train faster and may show less speed-up when moving to the GPU.
+On an AWS test CPU with modest capacity, training this CNN takes ~5 minutes / epoch.  On a laptop (2020 MacBook Air, M1 chip using Rosetta 2), training this CNN takes ~8.5 minutes / epoch (see the local run example [here](https://github.com/genevievegraves/burst/blob/main/examples/cifar10/readme_images/local_run.png)).  
+
+Running through `burst` on an AWS g4dn.xlarge GPU machine, the model trains in ~14 seconds / epoch, for a ~20-40x speed-up (see the burst example [here](https://github.com/genevievegraves/burst/blob/main/examples/cifar10/readme_images/burst_run.pdf)).  This CNN has ~2.4 million free parameters to train.  
+
+Simpler networks will train faster and may show less speed-up when moving to the GPU.
