@@ -28,7 +28,7 @@ Then, run the command line examples with
 
     python3 trainCNN_CIFAR10.py 
     
-The output should look something like [this](https://github.com/genevievegraves/burst/blob/main/examples/cifar10/readme_images/local_run.png).  The default only trains for 2 epochs, which produces a poor (underfit) model, but is good for quick testing purposes, especially when you are running on a low-power CPU where each epoch can take minutes to run.  
+The output should look something like [this](https://github.com/genevievegraves/burst/blob/main/examples/cifar10/readme_images/local_run.png).  The default only trains for 2 epochs, which produces a poor (underfit) model, but is good for quick testing purposes, especially when you are running on a low-power CPU where each epoch can take 5-10 minutes to run.  
 
 You can experiment with running for more epochs by specifying `--nepochs` at the command line, e.g., 
 
