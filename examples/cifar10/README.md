@@ -28,7 +28,7 @@ Then, run the command line examples with
 
     python3 trainCNN_CIFAR10.py 
     
-The output should look something like [this](https://github.com/genevievegraves/burst/blob/main/examples/cifar10/readme_images/local_run.png).  The default only trains for 2 epochs, which produces a poor (underfit) model, but is good for quick testing purposes, especially when you are running on a low-power CPU where each epoch can take 5-10 minutes to run.  
+The output should look something like [this](/readme_images/local_run.png).  The default only trains for 2 epochs, which produces a poor (underfit) model, but is good for quick testing purposes, especially when you are running on a low-power CPU where each epoch can take 5-10 minutes to run.  
 
 You can experiment with running for more epochs by specifying `--nepochs` at the command line, e.g., 
 
@@ -54,7 +54,7 @@ To run the command line examples using burst, use
 
     burst python3 trainCNN_CIFAR10.py --nepochs 40
 
-The output should look something like [this](https://github.com/genevievegraves/burst/blob/main/examples/cifar10/readme_images/burst_run.pdf).  The first time you run burst, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will take some time to rebuild itself on the next `burst` run.
+The output should look something like [this](/readme_images/burst_run.pdf).  The first time you run burst, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will take some time to rebuild itself on the next `burst` run.
 
 When `burst` has finished running training and running your model, it will automatically transfer the output and any modified files back to your local directory and close the connection.  Once a `burst` connection has been closed for > 15 minutes, it will stop the remote server so that you will not be paying for it.
 
@@ -80,8 +80,8 @@ NOTE: When you are done, *you must manually close the Jupyter server* by returni
 
 # Timing benchmarks
 
-On an AWS test CPU with modest capacity, training this CNN takes ~5 minutes / epoch.  On a laptop (2020 MacBook Air, M1 chip using Rosetta 2), training this CNN takes ~8.5 minutes / epoch (see the local run example [here](https://github.com/genevievegraves/burst/blob/main/examples/cifar10/readme_images/local_run.png)).  
+On an AWS test CPU with modest capacity, training this CNN takes ~5 minutes / epoch.  On a laptop (2020 MacBook Air, M1 chip using Rosetta 2), training this CNN takes ~8.5 minutes / epoch (see the local run example [here](/readme_images/local_run.png)).  
 
-Running through `burst` on an AWS g4dn.xlarge GPU machine, the model trains in ~14 seconds / epoch, for a ~20-40x speed-up (see the burst example [here](https://github.com/genevievegraves/burst/blob/main/examples/cifar10/readme_images/burst_run.pdf)).  This CNN has ~2.4 million free parameters to train.  
+Running through `burst` on an AWS g4dn.xlarge GPU machine, the model trains in ~14 seconds / epoch, for a ~20-40x speed-up (see the burst example [here](/readme_images/burst_run.pdf)).  This CNN has ~2.4 million free parameters to train.  
 
 Simpler networks will train faster and may show less speed-up when moving to the GPU.
