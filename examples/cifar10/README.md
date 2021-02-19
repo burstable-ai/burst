@@ -28,7 +28,7 @@ Then, run the command line examples with
 
     python3 trainCNN_CIFAR10.py 
     
-The default only trains for 2 epochs, which produces a poor (underfit) model, but is good for quick testing purposes, especially when you are running on a low-power CPU where each epoch can take minutes to run.  
+The output should look something like [this](https://github.com/genevievegraves/burst/blob/main/examples/cifar10/readme_images/local_run.png).  The default only trains for 2 epochs, which produces a poor (underfit) model, but is good for quick testing purposes, especially when you are running on a low-power CPU where each epoch can take minutes to run.  
 
 You can experiment with running for more epochs by specifying `--nepochs` at the command line, e.g., 
 
@@ -54,7 +54,7 @@ To run the command line examples using burst, use
 
     burst python3 trainCNN_CIFAR10.py --nepochs 40
 
-The first time you run burst, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will take some time to rebuild itself on the next `burst` run.
+The output should look something like [this](https://github.com/genevievegraves/burst/blob/main/examples/cifar10/readme_images/burst_run.pdf).  The first time you run burst, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will take some time to rebuild itself on the next `burst` run.
 
 When `burst` has finished running training and running your model, it will automatically transfer the output and any modified files back to your local directory and close the connection.  Once a `burst` connection has been closed for > 15 minutes, it will stop the remote server so that you will not be paying for it.
 
