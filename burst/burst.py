@@ -22,12 +22,14 @@ os.chdir(opath)
 DEFAULT_IMAGE = "burst_image" #FIXME: should be unique to folder structure
 MONITOR_IMAGE = "burstableai/burst_monitor:latest"
 
-sentinel_py = """
-import os, time, datetime
+burst_sentinel_py = """
+import os, sys, time, datetime
 while True:
-    os.system("echo %s > burst-monitor.txt" % datetime.datetime.utcnow())
-    os.system("ps ax >> burst-monitor.txt")
-    time.sleep(5)
+    os.system("echo %s > .burst-sentinel.txt" % datetime.datetime.utcnow())
+    os.system("ps ax >> .burst-sentinel.txt")
+    print ("burst-sentinel")
+    sys.stdout.flush()
+    time.sleep(17)
 """
 
 def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpus = "", ports=None, stop=False,
@@ -163,14 +165,14 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 
             #if restarted (including fresh launch), start monitor docker process
             if restart or not monitor_running:
+                #put sentinel script in working dir; gets rsync'd to host
+                if not os.path.exists(".burst-sentinel.py"):
+                    vvprint ("creating .burst-sentinel.py in", os.path.abspath('.'))
+                    f = open(".burst-sentinel.py", 'w')
+                    f.write(burst_sentinel_py)
+                    f.close()
+
                 vprint ("Starting monitor process for shutdown++")
-
-                #set up sentinel script in detached screen on host (not docker) to help check on rsync
-                cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {0}@{1} ' \
-                      '"screen -md -S screentest"'.format(sshuser, url)
-                vvprint(cmd)
-                os.system(cmd)
-
                 #run monitor (in docker container) to check if user's burst OR rsync is still running
                 conf = get_config()
                 if conf.provider == "GCE":
@@ -244,6 +246,15 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             #     vprint("Synchronizing credentials for shutdown")
             #     vvprint (cmd)
             #     os.system(cmd)
+
+            if restart or not monitor_running:
+                vprint ("Starting host sentinel process for shutdown")
+
+                #set up sentinel script in detached screen on host (not docker) to help check on rsync
+                cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {0}@{1} ' \
+                      '"cd {2} ; screen -md python3 .burst-sentinel.py"'.format(sshuser, url, path)
+                vvprint(cmd)
+                os.system(cmd)
 
         else:
             vprint ("burst: running locally")
