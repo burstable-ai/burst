@@ -28,7 +28,36 @@ Then, run the command line examples with
 
     python3 trainCNN_CIFAR10.py 
     
-The output should look something like [this](readme_images/local_run.png).  The default only trains for 2 epochs, which produces a poor (underfit) model, but is good for quick testing purposes, especially when you are running on a low-power CPU where each epoch can take 5-10 minutes to run.  
+The output should look something like this (shortened):
+
+```
+graves@pescadero ~/g/v/s/b/e/cifar10> python3 trainCNN_CIFAR10.py
+Loading CIFAR dataset...
+Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to ./cifar-10-python.tar.gz
+100.0%Extracting ./cifar-10-python.tar.gz to .
+Files already downloaded and verified
+GPU is available?: False
+Using device: cpu
+Training NN through 2 epochs.  Start time: 2021-02-18 15:07:09.813288
+ Iteration   0, avg train_loss = 1.360, avg test_loss = 1.034,1 epoch duration: 0:08:47.014887
+ Iteration   1, avg train_loss = 0.961, avg test_loss = 0.802,1 epoch duration: 0:08:56.699187
+ Done training.
+---------------------------------------
+Training set accuracy: 0.7123
+    Test set accuracy: 0.7269
+------------- Test Set: ---------------
+# Correct predictions: 7269
+  # Wrong predictions: 2731
+---------------------------------------
+.
+.
+.
+stdout flushed
+stderr flushed
+graves@pescadero ~/g/v/s/b/e/cifar10> 
+```
+
+The default only trains for 2 epochs, which produces a poor (underfit) model, but is good for quick testing purposes, especially when you are running on a low-power CPU where each epoch can take 5-10 minutes to run.  
 
 You can experiment with running for more epochs by specifying `--nepochs` at the command line, e.g., 
 
@@ -54,7 +83,67 @@ To run the command line examples using burst, use
 
     burst python3 trainCNN_CIFAR10.py --nepochs 40
 
-The output should look something like [this](readme_images/burst_run.pdf).  The first time you run burst, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will take some time to rebuild itself on the next `burst` run.
+The output should look something like this:
+
+```
+graves@pescadero ~/g/v/s/b/e/cifar10> burst python3 trainCNN_CIFAR10.py --nepochs 40
+burst: Session: burst-graves                                                                             
+burst: Starting server                                                                                   
+burst: server state:pending                                                                              
+burst: server state:running                                                                              
+burst: Waiting for public IP address to be assigned                                                      
+burst: Connecting through ssh                                                                            
+burst: Starting monitor process for shutdown++                                                           
+burst: Removing topmost layer                                                                            
+burst: burst: name burst-graves size g4dn.xlarge image Deep Learning AMI (Ubuntu 18.04) Version 36.0 url 
+burst: Synchronizing project folders                                                                     
+burst: Building docker container                                                                         
+burst: Running docker container                                                                          
+burst:                                                                                                   
+---------------------OUTPUT-----------------------
+Loading CIFAR dataset...
+Files already downloaded and verified
+Files already downloaded and verified
+GPU is available?: True
+Using device: cuda:0
+Training NN through 40 epochs.  Start time: 2021-02-18 23:42:55.319599
+ Iteration   0, avg train_loss = 1.322, avg test_loss = 1.085,1 epoch duration: 0:00:14.692214
+ Iteration   1, avg train_loss = 0.962, avg test_loss = 0.828,1 epoch duration: 0:00:13.578531
+ Iteration   2, avg train_loss = 0.815, avg test_loss = 0.730,1 epoch duration: 0:00:13.301335
+ Iteration   3, avg train_loss = 0.732, avg test_loss = 0.677,1 epoch duration: 0:00:13.297348
+ Iteration   4, avg train_loss = 0.671, avg test_loss = 0.646,1 epoch duration: 0:00:13.757426
+ Iteration   5, avg train_loss = 0.630, avg test_loss = 0.624,1 epoch duration: 0:00:13.326413
+.
+.
+.
+.
+.
+ Iteration  35, avg train_loss = 0.270, avg test_loss = 0.485,1 epoch duration: 0:00:13.413512
+ Iteration  36, avg train_loss = 0.263, avg test_loss = 0.501,1 epoch duration: 0:00:13.411721
+ Iteration  37, avg train_loss = 0.266, avg test_loss = 0.485,1 epoch duration: 0:00:13.283547
+ Iteration  38, avg train_loss = 0.254, avg test_loss = 0.470,1 epoch duration: 0:00:13.476122
+ Iteration  39, avg train_loss = 0.249, avg test_loss = 0.470,1 epoch duration: 0:00:13.343224
+ Done training.
+---------------------------------------
+Training set accuracy: 0.9195
+    Test set accuracy: 0.8635
+------------- Test Set: ---------------
+# Correct predictions: 8635
+  # Wrong predictions: 1365
+---------------------------------------
+.
+.
+.
+stdout flushed
+stderr flushed
+----------------------END-------------------------
+burst: Synchronizing folders                                                                             
+burst: DONE                                                                                                
+graves@pescadero ~/g/v/s/b/e/cifar10> 
+
+```
+
+The first time you run burst, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will take some time to rebuild itself on the next `burst` run.
 
 When `burst` has finished running training and running your model, it will automatically transfer the output and any modified files back to your local directory and close the connection.  Once a `burst` connection has been closed for > 15 minutes, it will stop the remote server so that you will not be paying for it.
 
