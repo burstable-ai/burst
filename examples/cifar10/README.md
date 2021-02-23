@@ -1,6 +1,6 @@
 # burst example: CIFAR-10 CNN model
 =======
-
+    
 # CIFAR-10
 
 CIFAR-10 is a benchmark dataset for computer vision.  The dataset has low-resolution (32 x 32) color images of 10 different categories of items (mostly animals and vehicles).  The CIFAR-10 dataset is described in detail here: https://www.cs.toronto.edu/~kriz/cifar.html.
@@ -169,8 +169,8 @@ NOTE: When you are done, *you must manually close the Jupyter server* by returni
 
 # Timing benchmarks
 
-On an AWS test CPU with modest capacity, training this CNN takes ~5 minutes / epoch.  On a laptop (2020 MacBook Air, M1 chip using Rosetta 2), training this CNN takes ~8.5 minutes / epoch (see the local run example [here](readme_images/local_run.png)).  
+On an AWS test CPU with modest capacity, training this CNN takes ~5 minutes / epoch.  On a laptop (2020 MacBook Air, M1 chip using Rosetta 2), training this CNN takes ~8.5 minutes / epoch (see the local run example above).  
 
-Running through `burst` on an AWS g4dn.xlarge GPU machine, the model trains in ~14 seconds / epoch, for a ~20-40x speed-up (see the burst example [here](readme_images/burst_run.pdf)).  This CNN has ~2.4 million free parameters to train.  
+Running through `burst` on an AWS g4dn.xlarge GPU machine, the model trains in ~14 seconds / epoch, for a ~20-40x speed-up (see the burst example above).  This CNN has ~2.4 million free parameters to train.  
 
 Simpler networks will train faster and may show less speed-up when moving to the GPU.
