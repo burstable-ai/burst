@@ -24,6 +24,8 @@ args = parser.parse_args()
 
 shuttime = datetime.datetime.utcnow() + datetime.timedelta(seconds = 1800) #default if no process running
 while True:
+
+    #check for running burst processes
     proc = subprocess.Popen(["docker", "ps", "--format='{{json .}}'"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     now = datetime.datetime.utcnow()
     lines = proc.stdout.read().strip().split(b"\n")
@@ -52,9 +54,19 @@ while True:
                         if cnt == 0 or shuttime < t:
                             shuttime = t
                     cnt += 1
+                elif key == 'ai.burstable.monitor':
+                    pass
                 else:
                     print ("ERROR -- unknown docker label %s=%s" % (key, val))
                     sys.stdout.flush()
+
+    #check for rsync process
+    s = ""
+    if os.path.exists(".burst-sentinel"):
+        f = open(".burst-sentinel")
+        s = f.read()
+        f.close()
+    print ("rsync check:", 'rsync' in s)
 
     remain = (shuttime-now).total_seconds()
     print ("time now:", now, "shutoff time:", shuttime, "remaining:", remain)

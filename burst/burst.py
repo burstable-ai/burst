@@ -182,6 +182,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 # print("SECRET 1:", secret)
                 cmd = f"docker {remote} run --label 'ai.burstable.monitor' " \
                       f"--rm {get_dockrunflags()}  -v /var/run/docker.sock:/var/run/docker.sock" \
+                      f" -v {path}:/home/burst/work" \
                       f" {MONITOR_IMAGE} burst-monitor" \
                       f" --ip {url} --access {conf.access} --provider {conf.provider} {get_piper()}" \
                       f" --secret={secret} --region {conf.region} {('--project ' + conf.project) if conf.project else ''}"
