@@ -62,8 +62,8 @@ while True:
 
     #check for rsync process
     s = ""
-    if os.path.exists(".burst-sentinel"):
-        f = open(".burst-sentinel")
+    if os.path.exists(".burst-sentinel.txt"):
+        f = open(".burst-sentinel.txt")
         s = f.read()
         f.close()
     print ("rsync check:", 'rsync' in s)
