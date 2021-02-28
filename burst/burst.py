@@ -23,9 +23,9 @@ DEFAULT_IMAGE = "burst_image" #FIXME: should be unique to folder structure
 MONITOR_IMAGE = "burstableai/burst_monitor:latest"
 
 burst_sentinel_py = """
-import os, sys, time, datetime
+import os, sys, time
 while True:
-    os.system("echo %s > .burst-sentinel.txt" % datetime.datetime.utcnow())
+    os.system("echo %s > .burst-sentinel.txt" % time.time())
     os.system("ps ax >> .burst-sentinel.txt")
     print ("burst-sentinel")
     sys.stdout.flush()
@@ -166,11 +166,10 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             #if restarted (including fresh launch), start monitor docker process
             if restart or not monitor_running:
                 #put sentinel script in working dir; gets rsync'd to host
-                if not os.path.exists(".burst-sentinel.py"):
-                    vvprint ("creating .burst-sentinel.py in", os.path.abspath('.'))
-                    f = open(".burst-sentinel.py", 'w')
-                    f.write(burst_sentinel_py)
-                    f.close()
+                vvprint ("creating .burst-sentinel.py in", os.path.abspath('.'))
+                f = open(".burst-sentinel.py", 'w')
+                f.write(burst_sentinel_py)
+                f.close()
 
                 vprint ("Starting monitor process for shutdown++")
                 #run monitor (in docker container) to check if user's burst OR rsync is still running

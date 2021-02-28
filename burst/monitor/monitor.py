@@ -23,6 +23,8 @@ parser.add_argument("--project",    default="")
 args = parser.parse_args()
 
 shuttime = datetime.datetime.utcnow() + datetime.timedelta(seconds = 1800) #default if no process running
+last_rsync = 0 #1970 aka the beginning of time
+tot_delay = 60
 while True:
 
     #check for running burst processes
@@ -44,6 +46,7 @@ while True:
                 # print ("LABEL: %s = %s" % (key, val))
                 if key == 'ai.burstable.shutdown':
                     delay = int(val)
+                    tot_delay = max(delay, tot_delay)
                     if delay < 0:
                         shuttime = datetime.datetime(3001, 1, 1)    #Yr 3K problem
                         break
@@ -61,12 +64,23 @@ while True:
                     sys.stdout.flush()
 
     #check for rsync process
-    s = ""
+    rsync_busy = True
     if os.path.exists(".burst-sentinel.txt"):
         f = open(".burst-sentinel.txt")
+        t = float(f.readline())
         s = f.read()
         f.close()
-    print ("rsync check:", 'rsync' in s)
+        if 'rsync' in s:
+            last_rsync = t
+        else:
+            age = time.time() - last_rsync
+            print("rsync sentinel age: %f" % age)
+            if age > 45:
+                rsync_busy = False
+
+    print ("rsync busy:", rsync_busy)
+    if rsync_busy:
+        shuttime = now + datetime.timedelta(seconds=tot_delay)
 
     remain = (shuttime-now).total_seconds()
     print ("time now:", now, "shutoff time:", shuttime, "remaining:", remain)
