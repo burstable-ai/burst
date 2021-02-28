@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 RUN apt-get update && apt-get install -y python3 python3-pip nano fish git curl docker.io
-RUN pip3 install burstable>=0.2.13b4 gputil ipython
+RUN pip3 install burstable>=0.2.14a1 gputil ipython
 
 RUN adduser --disabled-password --gecos '' ubuntu
 
