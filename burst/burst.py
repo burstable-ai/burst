@@ -308,43 +308,8 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             print ()
         print (ex)
 
-    # if url and node:
-    #     # set up shutdown process
-    #     if stop == 0:
-    #         vprint ("Stopping VM at %s immediately as instructed" % url)
-    #         stop_server(node)
-    #     else:
-    #         vprint ("Scheduling shutdown of VM at %s for %d seconds from now" % (url, stop))
-    #         conf = get_config()
-    #         if conf.provider == "GCE":
-    #             secret = ".burst/" + conf.raw_secret
-    #         else:
-    #             secret = conf.secret
-    #         # print("SECRET 1:", secret)
-    #         cmd = f"docker {remote} run --rm {get_dockrunflags()} -v {path}:/home/burst/work {MONITOR_IMAGE} burst" \
-    #               f" --verbosity {get_verbosity()} --stop_instance_by_url {url} --delay {stop} --access {conf.access}" \
-    #               f" --secret={secret} --region {conf.region} {('--project ' + conf.project) if conf.project else ''}" \
-    #               f" --provider {conf.provider} {get_piper()}"
-    #         vvprint (cmd)
-    #         vvprint ("Shutdown process container ID:")
-    #         os.system(cmd)
-
     if tunnel:
         tunnel.kill()
-
-# #
-# # Note this function is typically called by the shutdown process so it does
-# # not share scope with most of what burst does
-# #
-# def stop_instance_by_url(url, conf):
-#     vprint ("STOP instance with public IP", url)
-#     # print ("DEBUG", os.path.abspath('.'), conf.secret)
-#     node = get_server(url=url, conf=conf)
-#     if not node:
-#         vprint ("No active instance found for IP", url)
-#     else:
-#         vprint ("shutting down node %s" % node)
-#         stop_server(node)
 
 
 if __name__ == "__main__":
