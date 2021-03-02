@@ -129,8 +129,10 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 vvprint(cmd)
                 os.system(cmd)
 
+                time.sleep(30)
                 print ("Installing burst on server")
                 do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh)       #notable quoteables
+                # exit()
 
             vprint ("Connecting through ssh")
             #set up ssh tunnel mapping docker socket, ports
