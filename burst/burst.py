@@ -22,7 +22,9 @@ os.chdir(opath)
 DEFAULT_IMAGE = "burst_image" #FIXME: should be unique to folder structure
 MONITOR_IMAGE = "burstableai/burst_monitor:latest"
 
-install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock* /var/cache/apt/archives/lock /var/lib/apt/lists/lock; " \
+install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock*" \
+                   " /var/cache/apt/archives/lock /var/lib/apt/lists/lock;" \
+                   "sudo systemctl stop apt-daily* ; " \
                    "apt-get -y update; " \
                    "apt-get -y install python3-pip; " \
                    "python3 -m pip install --upgrade pip; " \
@@ -129,7 +131,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 vvprint(cmd)
                 os.system(cmd)
 
-                time.sleep(30)
+                time.sleep(20)                                              #might help
                 print ("Installing burst on server")
                 do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh)       #notable quoteables
                 # exit()
