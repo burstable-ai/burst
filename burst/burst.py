@@ -123,7 +123,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 
             #if just launched, install docker & burst
             if fresh:
-                print("Configuring Docker")
+                vprint("Configuring Docker")
                 # 'sudo apt-get -y update; sudo apt-get -y install docker.io; ' \ #images have docker installed
                 cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {0}@{1} ' \
                       '"sudo usermod -a -G docker ubuntu; ' \
@@ -132,7 +132,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 os.system(cmd)
 
                 time.sleep(20)                                              #might help
-                print ("Installing burst on server")
+                vprint ("Installing burst on server")
                 do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh)       #notable quoteables
                 # exit()
 
