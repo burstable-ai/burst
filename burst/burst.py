@@ -22,6 +22,13 @@ os.chdir(opath)
 DEFAULT_IMAGE = "burst_image" #FIXME: should be unique to folder structure
 MONITOR_IMAGE = "burstableai/burst_monitor:latest"
 
+install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock* /var/cache/apt/archives/lock /var/lib/apt/lists/lock; " \
+                   "apt-get -y update; " \
+                   "apt-get -y install python3-pip; " \
+                   "python3 -m pip install --upgrade pip; " \
+                   "apt-get -y remove python3-yaml; " \
+                   "python3 -m pip install burstable==0.2.14.b1'"
+
 burst_sentinel_py = """
 import os, sys, time
 while True:
@@ -31,6 +38,12 @@ while True:
     sys.stdout.flush()
     time.sleep(17)
 """
+
+def do_ssh(url, cmd):
+    ssh_cmd = f'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {url} ' \
+          f'{cmd}'
+    vvprint (ssh_cmd)
+    os.system(ssh_cmd)
 
 def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpus = "", ports=None, stop=False,
           image=None, size=None, pubkey=None, dockerfile="Dockerfile",
@@ -106,7 +119,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
         #we have a url unless running --local:
         if url:
 
-            #if just launched, install docker
+            #if just launched, install docker & burst
             if fresh:
                 print("Configuring Docker")
                 # 'sudo apt-get -y update; sudo apt-get -y install docker.io; ' \ #images have docker installed
@@ -116,8 +129,10 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 vvprint(cmd)
                 os.system(cmd)
 
-            vprint ("Connecting through ssh")
+                print ("Installing burst on server")
+                do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh)       #notable quoteables
 
+            vprint ("Connecting through ssh")
             #set up ssh tunnel mapping docker socket, ports
             host_port_args = []
             docker_port_args = ""
