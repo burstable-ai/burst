@@ -30,13 +30,12 @@ parser.add_argument("--region",     required=True)
 parser.add_argument("--project",    default="")
 args = parser.parse_args()
 
-shuttime = datetime.datetime.utcnow() + datetime.timedelta(seconds = 1800) #default if no process running
-last_rsync = 0 #1970 aka the beginning of time
-tot_delay = 60
+delay = 900  # if not specified by burst
+shuttime = datetime.datetime.utcnow() + datetime.timedelta(seconds = delay) #default if no process running
 while True:
+    busy = False
 
     #check if rsync active
-    busy = False
     proc = subprocess.Popen(["ps", "ax"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     lines = proc.stdout.read().strip().split(b"\n")
     for out in lines:
@@ -45,18 +44,12 @@ while True:
             continue
         columns = out.split()
         if len(columns) > 4 and "rsync" in columns[4]:
-            # print("OUT:", columns[4])
             busy = True
-    if busy:
-        print ("rsync active, pausing countdown")
-        time.sleep(7.5) #because... the world is round
-        continue
 
     #check for running burst processes
     proc = subprocess.Popen(["docker", "ps", "--format='{{json .}}'"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    now = datetime.datetime.utcnow()
     lines = proc.stdout.read().strip().split(b"\n")
-    cnt = 0
+    max_val = -1
     for out in lines:
         out = out.decode().strip()[1:-1] #seems a docker bug; returning single-quoted json blob
         # print("OUT:", out)
@@ -68,23 +61,22 @@ while True:
                 key, val = x.split('=')
                 # print ("LABEL: %s = %s" % (key, val))
                 if key == 'ai.burstable.shutdown':
-                    delay = int(val)
-                    tot_delay = max(delay, tot_delay)
-                    if delay < 0:
-                        shuttime = datetime.datetime(3001, 1, 1)    #Yr 3K problem
-                        break
-                    elif delay == 0:
-                        shuttime = now
-                    else:
-                        t = now + datetime.timedelta(seconds = delay)
-                        if cnt == 0 or shuttime < t:
-                            shuttime = t
-                    cnt += 1
+                    busy = True
+                    val = int(val)
+                    if val == 0:
+                        val = 10000000000
+                    max_val = max(val, max_val)
                 elif key == 'ai.burstable.monitor':
                     pass
                 else:
                     print ("ERROR -- unknown docker label %s=%s" % (key, val))
                     sys.stdout.flush()
+    if max_val >= 0:
+        delay = max_val
+
+    now = datetime.datetime.utcnow()
+    if busy:
+        shuttime = now + datetime.timedelta(seconds=delay)
 
     remain = (shuttime-now).total_seconds()
     print ("time now:", now, "shutoff time:", shuttime, "remaining:", remain)
