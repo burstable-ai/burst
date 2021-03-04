@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 import os, sys, json, time, subprocess, datetime, argparse
+
+#for absolute imports to work in script mode, we need to import from the root folder
+opath = os.path.abspath(".")
+abspath = os.path.abspath(__file__)
+abspath = abspath[:abspath.rfind('/') + 1]
+os.chdir(abspath)
+abspath = os.path.abspath("../..")
+sys.path.insert(0, abspath)
+
 from burst.lcloud import *
-from pprint import pprint
 
 def stop_instance_by_url(url, conf):
     print ("STOP instance with public IP", url)
@@ -38,8 +46,6 @@ while True:
         if not out:
             continue
         j = json.loads(out)
-        # pprint(j)
-        # print ("RUNNING:", j['Image'], j['Labels'])
         for x in j['Labels'].split(','):
             if 'burstable' in x:
                 key, val = x.split('=')

@@ -27,8 +27,8 @@ install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock*" \
                    "apt-get -y update; " \
                    "apt-get -y install python3-pip; " \
                    "python3 -m pip install --upgrade pip; " \
-                   "apt-get -y remove python3-yaml; " \
-                   "python3 -m pip install burstable==0.2.14.b1'"
+                   "python3 -m pip install easydict apache-libcloud; " \
+                   "git clone -b shutdown_39 https://github.com/danx0r/burst'"
 
 def do_ssh(url, cmd):
     ssh_cmd = f'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {url} ' \
@@ -169,7 +169,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 else:
                     secret = conf.secret
                 # print("SECRET 1:", secret)
-                cmd = f"screen -md burst-monitor" \
+                cmd = f"screen -md python3 ~/burst/burst/monitor/monitor.py" \
                       f" --ip {url} --access {conf.access} --provider {conf.provider} {get_piper()}" \
                       f" --secret={secret} --region {conf.region} {('--project ' + conf.project) if conf.project else ''}"
                 vvprint (cmd)
