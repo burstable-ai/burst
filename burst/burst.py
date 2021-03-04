@@ -20,17 +20,21 @@ from burst.verbos import set_verbosity, get_verbosity, vprint, vvprint, v0print,
 os.chdir(opath)
 
 DEFAULT_IMAGE = "burst_image" #FIXME: should be unique to folder structure
-MONITOR_IMAGE = "burstableai/burst_monitor:latest"
 
-burst_sentinel_py = """
-import os, sys, time, datetime
-while True:
-    os.system("echo %s > .burst-sentinel.txt" % datetime.datetime.utcnow())
-    os.system("ps ax >> .burst-sentinel.txt")
-    print ("burst-sentinel")
-    sys.stdout.flush()
-    time.sleep(17)
-"""
+install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock*" \
+                   " /var/cache/apt/archives/lock /var/lib/apt/lists/lock;" \
+                   "sudo systemctl stop apt-daily* ; " \
+                   "apt-get -y update; " \
+                   "apt-get -y install python3-pip; " \
+                   "python3 -m pip install --upgrade pip; " \
+                   "python3 -m pip install easydict apache-libcloud; " \
+                   "git clone -b 0.2.14 https://github.com/burstable-ai/burst'"
+
+def do_ssh(url, cmd):
+    ssh_cmd = f'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {url} ' \
+          f'{cmd}'
+    vvprint (ssh_cmd)
+    os.system(ssh_cmd)
 
 def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpus = "", ports=None, stop=False,
           image=None, size=None, pubkey=None, dockerfile="Dockerfile",
@@ -106,9 +110,9 @@ and files that are referred to (such as requirements.txt) to the build daemon.
         #we have a url unless running --local:
         if url:
 
-            #if just launched, install docker
+            #if just launched, install docker & burst
             if fresh:
-                print("Configuring Docker")
+                vprint("Configuring Docker")
                 # 'sudo apt-get -y update; sudo apt-get -y install docker.io; ' \ #images have docker installed
                 cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {0}@{1} ' \
                       '"sudo usermod -a -G docker ubuntu; ' \
@@ -116,8 +120,12 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 vvprint(cmd)
                 os.system(cmd)
 
-            vprint ("Connecting through ssh")
+                time.sleep(20)                                              #might help
+                vprint ("Installing burst on server")
+                do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh)       #notable quoteables
+                # exit()
 
+            vprint ("Connecting through ssh")
             #set up ssh tunnel mapping docker socket, ports
             host_port_args = []
             docker_port_args = ""
@@ -150,44 +158,21 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             vvprint (cmd)
             out = run(cmd)
             vvprint("PS returns -->%s|%s<--" % out)
-            monitor_running = False
-            if out[1]:
-                for line in out[0].split("\n"):
-                    if not line:
-                        continue
-                    j = json.loads(line)
-                    # pprint(j)
-                    # print ("RUNNING:", j['Image'], j['Labels'])
-                    for x in j['Labels'].split(','):
-                        if 'ai.burstable.monitor=' == x:
-                            monitor_running = True
-            vprint ("monitor_running: %s" % monitor_running)
 
-            #if restarted (including fresh launch), start monitor docker process
-            if restart or not monitor_running:
-                #put sentinel script in working dir; gets rsync'd to host
-                if not os.path.exists(".burst-sentinel.py"):
-                    vvprint ("creating .burst-sentinel.py in", os.path.abspath('.'))
-                    f = open(".burst-sentinel.py", 'w')
-                    f.write(burst_sentinel_py)
-                    f.close()
-
+            #if restarted (including fresh launch), start monitor (screen, detached)
+            if restart:
                 vprint ("Starting monitor process for shutdown++")
-                #run monitor (in docker container) to check if user's burst OR rsync is still running
+                #run monitor (in detached screen) to check if user's burst OR rsync is still running
                 conf = get_config()
                 if conf.provider == "GCE":
                     secret = ".burst/" + conf.raw_secret
                 else:
                     secret = conf.secret
-                # print("SECRET 1:", secret)
-                cmd = f"docker {remote} run --label 'ai.burstable.monitor' " \
-                      f"--rm {get_dockrunflags()}  -v /var/run/docker.sock:/var/run/docker.sock" \
-                      f" {MONITOR_IMAGE} burst-monitor" \
+                cmd = f"screen -md python3 ~/burst/burst/monitor/monitor.py" \
                       f" --ip {url} --access {conf.access} --provider {conf.provider} {get_piper()}" \
                       f" --secret={secret} --region {conf.region} {('--project ' + conf.project) if conf.project else ''}"
                 vvprint (cmd)
-                vvprint ("Shutdown process container ID:")
-                os.system(cmd)
+                do_ssh(f"{sshuser}@{url}", '"%s"' % cmd)
 
             #prepare to build docker container
             vprint ("Removing topmost layer")        #to avoid running stale image
@@ -247,15 +232,6 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             #     vvprint (cmd)
             #     os.system(cmd)
 
-            if restart or not monitor_running:
-                vprint ("Starting host sentinel process for shutdown")
-
-                #set up sentinel script in detached screen on host (not docker) to help check on rsync
-                cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {0}@{1} ' \
-                      '"cd {2} ; screen -md python3 .burst-sentinel.py"'.format(sshuser, url, path)
-                vvprint(cmd)
-                os.system(cmd)
-
         else:
             vprint ("burst: running locally")
             remote = ""
@@ -308,43 +284,8 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             print ()
         print (ex)
 
-    # if url and node:
-    #     # set up shutdown process
-    #     if stop == 0:
-    #         vprint ("Stopping VM at %s immediately as instructed" % url)
-    #         stop_server(node)
-    #     else:
-    #         vprint ("Scheduling shutdown of VM at %s for %d seconds from now" % (url, stop))
-    #         conf = get_config()
-    #         if conf.provider == "GCE":
-    #             secret = ".burst/" + conf.raw_secret
-    #         else:
-    #             secret = conf.secret
-    #         # print("SECRET 1:", secret)
-    #         cmd = f"docker {remote} run --rm {get_dockrunflags()} -v {path}:/home/burst/work {MONITOR_IMAGE} burst" \
-    #               f" --verbosity {get_verbosity()} --stop_instance_by_url {url} --delay {stop} --access {conf.access}" \
-    #               f" --secret={secret} --region {conf.region} {('--project ' + conf.project) if conf.project else ''}" \
-    #               f" --provider {conf.provider} {get_piper()}"
-    #         vvprint (cmd)
-    #         vvprint ("Shutdown process container ID:")
-    #         os.system(cmd)
-
     if tunnel:
         tunnel.kill()
-
-# #
-# # Note this function is typically called by the shutdown process so it does
-# # not share scope with most of what burst does
-# #
-# def stop_instance_by_url(url, conf):
-#     vprint ("STOP instance with public IP", url)
-#     # print ("DEBUG", os.path.abspath('.'), conf.secret)
-#     node = get_server(url=url, conf=conf)
-#     if not node:
-#         vprint ("No active instance found for IP", url)
-#     else:
-#         vprint ("shutting down node %s" % node)
-#         stop_server(node)
 
 
 if __name__ == "__main__":

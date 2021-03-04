@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 import os, sys, json, time, subprocess, datetime, argparse
+
+#for absolute imports to work in script mode, we need to import from the root folder
+opath = os.path.abspath(".")
+abspath = os.path.abspath(__file__)
+abspath = abspath[:abspath.rfind('/') + 1]
+os.chdir(abspath)
+abspath = os.path.abspath("../..")
+sys.path.insert(0, abspath)
+
 from burst.lcloud import *
-from pprint import pprint
 
 def stop_instance_by_url(url, conf):
     print ("STOP instance with public IP", url)
@@ -22,39 +30,53 @@ parser.add_argument("--region",     required=True)
 parser.add_argument("--project",    default="")
 args = parser.parse_args()
 
-shuttime = datetime.datetime.utcnow() + datetime.timedelta(seconds = 1800) #default if no process running
+delay = 900  # if not specified by burst
+shuttime = datetime.datetime.utcnow() + datetime.timedelta(seconds = delay) #default if no process running
 while True:
-    proc = subprocess.Popen(["docker", "ps", "--format='{{json .}}'"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    now = datetime.datetime.utcnow()
+    busy = False
+
+    #check if rsync active
+    proc = subprocess.Popen(["ps", "ax"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     lines = proc.stdout.read().strip().split(b"\n")
-    cnt = 0
+    for out in lines:
+        out = out.decode().strip()[1:-1] #seems a docker bug; returning single-quoted json blob
+        if not out:
+            continue
+        columns = out.split()
+        if len(columns) > 4 and "rsync" in columns[4]:
+            busy = True
+
+    #check for running burst processes
+    proc = subprocess.Popen(["docker", "ps", "--format='{{json .}}'"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    lines = proc.stdout.read().strip().split(b"\n")
+    max_val = -1
     for out in lines:
         out = out.decode().strip()[1:-1] #seems a docker bug; returning single-quoted json blob
         # print("OUT:", out)
         if not out:
             continue
         j = json.loads(out)
-        # pprint(j)
-        # print ("RUNNING:", j['Image'], j['Labels'])
         for x in j['Labels'].split(','):
             if 'burstable' in x:
                 key, val = x.split('=')
                 # print ("LABEL: %s = %s" % (key, val))
                 if key == 'ai.burstable.shutdown':
-                    delay = int(val)
-                    if delay < 0:
-                        shuttime = datetime.datetime(3001, 1, 1)    #Yr 3K problem
-                        break
-                    elif delay == 0:
-                        shuttime = now
-                    else:
-                        t = now + datetime.timedelta(seconds = delay)
-                        if cnt == 0 or shuttime < t:
-                            shuttime = t
-                    cnt += 1
+                    busy = True
+                    val = int(val)
+                    if val == 0:
+                        val = 10000000000
+                    max_val = max(val, max_val)
+                elif key == 'ai.burstable.monitor':
+                    pass
                 else:
                     print ("ERROR -- unknown docker label %s=%s" % (key, val))
                     sys.stdout.flush()
+    if max_val >= 0:
+        delay = max_val
+
+    now = datetime.datetime.utcnow()
+    if busy:
+        shuttime = now + datetime.timedelta(seconds=delay)
 
     remain = (shuttime-now).total_seconds()
     print ("time now:", now, "shutoff time:", shuttime, "remaining:", remain)
