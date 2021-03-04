@@ -196,7 +196,11 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
     if pubkey:
         if config.provider == 'EC2':                #Everybody makes it up
             auth = NodeAuthSSHKey(pubkey)
-            node = config.driver.create_node(name, size, image, auth=auth)
+            if gpus:
+                node = config.driver.create_node(name, size, image, auth=auth)
+            else:
+                node = config.driver.create_node(name, size, image, auth=auth, ex_blockdevicemappings=[ #So sue me
+                    {'Ebs.VolumeSize': 60, 'DeviceName': '/dev/sda1'}])
         elif config.provider == 'GCE':
             meta = {
                 'items': [
