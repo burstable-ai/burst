@@ -32,12 +32,28 @@ Make sure you have all supporting data files and *.py files in the directory wit
 
 To run the command line example using burst, use
 
-    burst python3 template.py 
+    burst python3 template.py --verbosity 1
 
 The output should look something like this:
 
 ```
-graves@pescadero ~/g/v/s/b/e/your_project> python template.py
+graves@pescadero ~/g/v/s/b/e/your_project> burst python3 template.py --verbosity 1
+Session: burst-graves
+Waiting for sshd
+Connecting through ssh
+Killing shutdown processes: ['53aaf212b1e6']
+Removing topmost layer
+burst: name burst-graves size g4dn.xlarge image Deep Learning AMI (Ubuntu 18.04) Version 36.0 url 34.222.154.210
+Synchronizing project folders
+building file list ... 
+11 files to consider
+
+sent 306 bytes  received 20 bytes  217.33 bytes/sec
+total size is 31518  speedup is 96.68
+Building docker container
+Running docker container
+
+---------------------OUTPUT-----------------------
 0 * 0 = 0
 1 * 1 = 1
 2 * 2 = 4
@@ -48,8 +64,22 @@ graves@pescadero ~/g/v/s/b/e/your_project> python template.py
 7 * 7 = 49
 8 * 8 = 64
 9 * 9 = 81
-graves@pescadero ~/g/v/s/b/e/your_project>
+----------------------END-------------------------
+Synchronizing folders
+receiving file list ... 
+11 files to consider
+example.png
+       10811 100%   10.31MB/s    0:00:00 (xfer#1, to-check=4/11)
+
+sent 134 bytes  received 356 bytes  326.67 bytes/sec
+total size is 31518  speedup is 64.32
+Scheduling shutdown of VM at 34.222.154.210 for 900 seconds from now
+DONE
+
+graves@pescadero ~/g/v/s/b/e/your_project> 
 ```
+
+YOu can suppress most of the `burst` information by not specifying a `verbosity`, e.g., `burst python3 template.py`.
 
 The first time you run burst, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will take some time to rebuild itself on the next `burst` run.
 
