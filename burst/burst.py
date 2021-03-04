@@ -168,12 +168,11 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                     secret = ".burst/" + conf.raw_secret
                 else:
                     secret = conf.secret
-                # print("SECRET 1:", secret)
                 cmd = f"screen -md python3 ~/burst/burst/monitor/monitor.py" \
                       f" --ip {url} --access {conf.access} --provider {conf.provider} {get_piper()}" \
                       f" --secret={secret} --region {conf.region} {('--project ' + conf.project) if conf.project else ''}"
                 vvprint (cmd)
-                os.system(cmd)
+                do_ssh(f"{sshuser}@{url}", '"%s"' % cmd)
 
             #prepare to build docker container
             vprint ("Removing topmost layer")        #to avoid running stale image
