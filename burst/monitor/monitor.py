@@ -35,6 +35,23 @@ last_rsync = 0 #1970 aka the beginning of time
 tot_delay = 60
 while True:
 
+    #check if rsync active
+    busy = False
+    proc = subprocess.Popen(["ps", "ax"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    lines = proc.stdout.read().strip().split(b"\n")
+    for out in lines:
+        out = out.decode().strip()[1:-1] #seems a docker bug; returning single-quoted json blob
+        if not out:
+            continue
+        columns = out.split()
+        if len(columns) > 4 and "rsync" in columns[4]:
+            # print("OUT:", columns[4])
+            busy = True
+    if busy:
+        print ("rsync active, pausing countdown")
+        time.sleep(7.5) #because... the world is round
+        continue
+
     #check for running burst processes
     proc = subprocess.Popen(["docker", "ps", "--format='{{json .}}'"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     now = datetime.datetime.utcnow()
@@ -68,25 +85,6 @@ while True:
                 else:
                     print ("ERROR -- unknown docker label %s=%s" % (key, val))
                     sys.stdout.flush()
-
-    #check for rsync process
-    # rsync_busy = True
-    # if os.path.exists(".burst-sentinel.txt"):
-    #     f = open(".burst-sentinel.txt")
-    #     t = float(f.readline())
-    #     s = f.read()
-    #     f.close()
-    #     if 'rsync' in s:
-    #         last_rsync = t
-    #     else:
-    #         age = time.time() - last_rsync
-    #         print("rsync sentinel age: %f" % age)
-    #         if age > 45:
-    #             rsync_busy = False
-    #
-    # print ("rsync busy:", rsync_busy)
-    # if rsync_busy:
-    #     shuttime = now + datetime.timedelta(seconds=tot_delay)
 
     remain = (shuttime-now).total_seconds()
     print ("time now:", now, "shutoff time:", shuttime, "remaining:", remain)
