@@ -79,9 +79,9 @@ DONE
 graves@pescadero ~/g/v/s/b/e/your_project> 
 ```
 
-YOu can suppress most of the `burst` information by not specifying a `verbosity`, e.g., `burst python3 template.py`.
+You can suppress most of the `burst` information by not specifying a `verbosity`, e.g., `burst python3 template.py`.
 
-The first time you run burst, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will take some time to rebuild itself on the next `burst` run.
+The first time you run `burst`, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will take some time to rebuild itself on the next `burst` run.
 
 When `burst` has finished running your project, it will automatically transfer any modified files back to your local directory and close the connection.  Once a `burst` connection has been closed for > 15 minutes, it will stop the remote server so that you will not be paying for it.
 
