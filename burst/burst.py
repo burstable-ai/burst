@@ -28,7 +28,7 @@ install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock*" \
                    "apt-get -y install python3-pip; " \
                    "python3 -m pip install --upgrade pip; " \
                    "python3 -m pip install easydict apache-libcloud; " \
-                   "git clone -b shutdown_39 https://github.com/danx0r/burst'"
+                   "git clone -b 0.2.14 https://github.com/burstable-ai/burst'"
 
 def do_ssh(url, cmd):
     ssh_cmd = f'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {url} ' \
