@@ -70,23 +70,23 @@ while True:
                     sys.stdout.flush()
 
     #check for rsync process
-    rsync_busy = True
-    if os.path.exists(".burst-sentinel.txt"):
-        f = open(".burst-sentinel.txt")
-        t = float(f.readline())
-        s = f.read()
-        f.close()
-        if 'rsync' in s:
-            last_rsync = t
-        else:
-            age = time.time() - last_rsync
-            print("rsync sentinel age: %f" % age)
-            if age > 45:
-                rsync_busy = False
-
-    print ("rsync busy:", rsync_busy)
-    if rsync_busy:
-        shuttime = now + datetime.timedelta(seconds=tot_delay)
+    # rsync_busy = True
+    # if os.path.exists(".burst-sentinel.txt"):
+    #     f = open(".burst-sentinel.txt")
+    #     t = float(f.readline())
+    #     s = f.read()
+    #     f.close()
+    #     if 'rsync' in s:
+    #         last_rsync = t
+    #     else:
+    #         age = time.time() - last_rsync
+    #         print("rsync sentinel age: %f" % age)
+    #         if age > 45:
+    #             rsync_busy = False
+    #
+    # print ("rsync busy:", rsync_busy)
+    # if rsync_busy:
+    #     shuttime = now + datetime.timedelta(seconds=tot_delay)
 
     remain = (shuttime-now).total_seconds()
     print ("time now:", now, "shutoff time:", shuttime, "remaining:", remain)
