@@ -15,6 +15,12 @@ We currently support Amazon cloud services and will be adding more.
 * ssh keys
 * AWS or Google Cloud Services account and access keys
 
+## Check versions of Python and Docker at the command line
+Make sure you are running the necessary versions of python and Docker (need Python 3, Docker >= 19)
+
+    python --version
+    docker --version 
+
 ## Installation 
 
 _Note: if you want to contribute or just follow bleeding-edge development, install as described [here](https://github.com/burstable-ai/burst/wiki/Contributing-To-Burst) instead._
