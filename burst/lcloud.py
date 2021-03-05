@@ -228,6 +228,7 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
         node = get_server(uuid=node.uuid)       #seems necessary to refresh to update state
         vprint("Public IP's:", node.public_ips)
         time.sleep(5)
+    vprint("Public IP's:", node.public_ips)
     return node
 
 def stop_server(srv):
@@ -267,7 +268,7 @@ def list_servers(name, conf = None, terminated=True):
             ret.append([x])
             img = x.extra['image_id'] if config.provider == 'EC2' else x.image
             if img == config.default_image:
-                img += " (default_image, no gpu)"
+                img += " (default_image)"
             elif img == config.default_gpu_image:
                 img += " (default_gpu_image)"
             s = "IMAGE: %s STATE: %s IP's: %s ID: %s/%s" %(img, x.state, x.public_ips, config.provider, x.id)
