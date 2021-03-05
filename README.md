@@ -93,3 +93,5 @@ The `examples/` folder contains pre-built machine learning examples to help you 
 We recommend walking through the CIFAR-10 example, which uses Pytorch to implement a Convolutional Neural Net (CNN) for image classification on the benchmark CIFAR-10 dataset.  This example also illustrates how to use `burst` to run a Jupyter notebook on a remote GPU, for real-time model building and manipulation on a GPU.
 
 The instructions for running this CNN example are [here.](examples/cifar10/README.md)
+
+The instructions for setting up your own Python project to run through `burst` are [here.](examples/your_example/README.md)
