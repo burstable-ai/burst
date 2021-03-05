@@ -94,4 +94,4 @@ We recommend walking through the CIFAR-10 example, which uses Pytorch to impleme
 
 The instructions for running this CNN example are [here.](examples/cifar10/README.md)
 
-The instructions for setting up your own Python project to run through `burst` are [here.](examples/your_example/README.md)
+The instructions for setting up your own Python project to run through `burst` are [here.](examples/your_project/README.md)
