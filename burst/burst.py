@@ -28,7 +28,10 @@ install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock*" \
                    "apt-get -y install python3-pip; " \
                    "python3 -m pip install --upgrade pip; " \
                    "python3 -m pip install easydict apache-libcloud; " \
-                   "git clone -b 0.2.15 https://github.com/burstable-ai/burst'"
+                   "git clone -b 0.2.15 https://github.com/burstable-ai/burst'"      #for reals
+
+                # "git clone -b shutdown_39 https://github.com/danx0r/burst'"  # for testing
+
 
 def do_ssh(url, cmd):
     ssh_cmd = f'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {url} ' \
@@ -159,21 +162,6 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             out = run(cmd)
             vvprint("PS returns -->%s|%s<--" % out)
 
-            #if restarted (including fresh launch), start monitor (screen, detached)
-            if restart:
-                vprint ("Starting monitor process for shutdown++")
-                #run monitor (in detached screen) to check if user's burst OR rsync is still running
-                conf = get_config()
-                if conf.provider == "GCE":
-                    secret = ".burst/" + conf.raw_secret
-                else:
-                    secret = conf.secret
-                cmd = f"cd {path}; screen -md python3 ~/burst/burst/monitor/monitor.py" \
-                      f" --ip {url} --access {conf.access} --provider {conf.provider} {get_piper()}" \
-                      f" --secret={secret} --region {conf.region} {('--project ' + conf.project) if conf.project else ''}"
-                vvprint (cmd)
-                do_ssh(f"{sshuser}@{url}", '"%s"' % cmd)
-
             #prepare to build docker container
             vprint ("Removing topmost layer")        #to avoid running stale image
             cmd = ["docker", "{0}".format(remote), "rmi", "--no-prune", DEFAULT_IMAGE]
@@ -232,6 +220,23 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 vprint("Synchronizing credentials for shutdown")
                 vvprint (cmd)
                 os.system(cmd)
+
+            #if restarted (including fresh launch), start monitor (screen, detached)
+            if restart:
+                vprint ("Starting monitor process for shutdown++")
+                #run monitor (in detached screen) to check if user's burst OR rsync is still running
+                conf = get_config()
+                if conf.provider == "GCE":
+                    secret = ".burst/" + conf.raw_secret
+                else:
+                    secret = conf.secret
+                proj = ('--project ' + conf.project) if conf.project else ''
+                cmd = f"screen -md bash -c 'cd {path}; python3 ~/burst/burst/monitor/monitor.py" \
+                      f" --ip {url} --access {conf.access} --provider {conf.provider} {get_piper()}" \
+                      f" --secret={secret} --region {conf.region} {proj}'"
+                vvprint (cmd)
+                do_ssh(f"{sshuser}@{url}", '"%s"' % cmd)
+                # exit()
 
         else:
             vprint ("burst: running locally")
