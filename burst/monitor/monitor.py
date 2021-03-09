@@ -11,6 +11,8 @@ sys.path.insert(0, abspath)
 
 from burst.lcloud import *
 
+os.chdir(opath)
+
 def stop_instance_by_url(url, conf):
     print ("STOP instance with public IP", url)
     # print ("DEBUG", os.path.abspath('.'), conf.secret)
