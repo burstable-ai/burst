@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, json, time, subprocess, datetime, argparse
+import os, sys, json, time, subprocess, datetime, argparse, traceback
 
 #for absolute imports to work in script mode, we need to import from the root folder
 opath = os.path.abspath(".")
@@ -10,6 +10,9 @@ abspath = os.path.abspath("../..")
 sys.path.insert(0, abspath)
 
 from burst.lcloud import *
+
+os.chdir(opath)
+print ("monitor.py pwd:", opath)
 
 def stop_instance_by_url(url, conf):
     print ("STOP instance with public IP", url)
@@ -84,7 +87,15 @@ while True:
     if remain < 0:
         print ("Proceeding to shutdown {0}".format(args.ip))
         sys.stdout.flush()
-        stop_instance_by_url(args.ip, vars(args))
+        try:
+            stop_instance_by_url(args.ip, vars(args))
+        except:
+            print ("SHUTDOWN FAIL")
+            os.system("pwd")
+            os.system("ls")
+            traceback.print_exc()
+            sys.stdout.flush()
+            time.sleep(999999)
         break
 
     time.sleep(5)
