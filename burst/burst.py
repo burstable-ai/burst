@@ -297,38 +297,46 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
     parser.add_argument("command", nargs='?',                   help="Command to run on remote server")
-    parser.add_argument("--configure", action="store_true",     help="Interactive configuration")
-    parser.add_argument("--configfile",                         help="override default config.yml")
+    parser.add_argument("--access", metavar="KEY",              help="libcloud username (aws: ACCESS_KEY)")
     parser.add_argument("--build", action="store_true",         help="Download and build environment")
-    parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
-    parser.add_argument("--local", action="store_true",         help="run on local device")
+    parser.add_argument("--burst_user", metavar="NAME",         help="Burst user name; defaults to local username")
+    parser.add_argument("--cloudmap", type=str, default="",
+                                      metavar="STORAGE:MOUNT",  help="map (mount) burst storage service to local folder")
+    parser.add_argument("--compute-config", metavar="COMPUTE_SERVICE",
+                                                                help="override default compute configuration")
+    parser.add_argument("--configfile", metavar="FILE",         help="override default config.yml")
+    parser.add_argument("--configure", action="store_true",     help="Interactive configuration")
+    parser.add_argument("--delay", type=int, default=0, metavar="SECONDS",
+                                                                help="delay command by N seconds")
+    parser.add_argument("--dockerdport", type=int, default=2376,
+                                         metavar="PORT",        help="local port to map to remote host docker daemon"
+                                                                "(default: 2376)")
+    parser.add_argument("--dockerfile", type=str, default="Dockerfile",
+                                        metavar="FILE",         help="Docker file (defaults to ./Dockerfile)")
+    parser.add_argument("--gpus", default='all',                help="list of gpus, 'all' (default), or 'none'")
+    parser.add_argument("--help", action="store_true",          help="Print usage info")
+    parser.add_argument("--image",                              help="libcloud image (aws: ami image_id)")
     parser.add_argument("--list-servers", action="store_true",  help="List all associated remote servers")
-    parser.add_argument("--terminate-servers", action="store_true",     help="Terminate associated remote servers")
-    parser.add_argument("--version", action="store_true",       help="Print version # & exit")
-    parser.add_argument("--storage-config",                     help="override default storage configuration")
-    parser.add_argument("--compute-config",                     help="override default compute configuration")
-    parser.add_argument("--url",                                help="run on remote server specified by url")
-    parser.add_argument("--uuid",                               help="run on remote server specified by libcloud uuid")
-    parser.add_argument("--burst_user",                         help="Burst user name; defaults to local username")
-    parser.add_argument("--gpus", default='all',                help="defaults to 'all'; can be set to specific gpu or 'none'")
-    parser.add_argument("--portmap", "-p", action="append",     help="port mapping; example: -p 8080 or -p 8080:8080")
-    parser.add_argument("--access",                             help="libcloud username (aws: ACCESS_KEY)")
-    parser.add_argument("--secret",                             help="libcloud password (aws: SECRET)")
-    parser.add_argument("--region",                             help="libcloud location (aws: region)")
+    parser.add_argument("--local", action="store_true",         help="run on local device")
+    parser.add_argument("--portmap", "-p", action="append", metavar="LOCAL[:REMOTE]",
+                                                                help="port mapping; example: -p 8080 or -p 8081:8080")
     parser.add_argument("--project",                            help="GCE project ID")
     parser.add_argument("--provider", default='EC2',            help="GCE, EC2 etc.")
-    parser.add_argument("--image",                              help="libcloud image (aws: ami image_id")
-    parser.add_argument("--size",                               help="libcloud size (aws: instance_type")
     parser.add_argument("--pubkey",                             help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
-    parser.add_argument("--delay", type=int, default=0,         help="delay command by N seconds")
-    parser.add_argument("--verbosity", type=int, default=0,     help="-1: just task output 0: status 1-127: more verbose")
-    parser.add_argument("--shutdown", type=int, default=900, nargs='?',   help="seconds before server is stopped (default 900)"
-                                                                               " 0 means no shutdown; no argument prompts for forced shutdown")
-    # parser.add_argument("--stop_instance_by_url",               help="internal use")
-    parser.add_argument("--cloudmap", type=str, default="",     help="map cloud storage to local mount point")
-    parser.add_argument("--dockerfile", type=str, default="Dockerfile",    help="Docker file to build the container with if not ./Dockerfile")
-    parser.add_argument("--dockerdport", type=int, default=2376, help="local port to map to remote host docker daemon")
-    parser.add_argument("--help", action="store_true",          help="Print usage info")
+    parser.add_argument("--region",                             help="libcloud location (aws: region)")
+    parser.add_argument("--secret",                             help="libcloud password (aws: SECRET)")
+    parser.add_argument("--shutdown", type=int, default=900, nargs='?', metavar="SECONDS",
+                                                                help="seconds before server is stopped (default 900) "
+                                                                "0 means no shutdown; no argument prompts for forced shutdown")
+    parser.add_argument("--size",                               help="libcloud size (aws: instance_type; gce: size)")
+    parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
+    parser.add_argument("--storage-config", metavar="STORAGE_SERVICE", help="override default storage configuration")
+    parser.add_argument("--terminate-servers", action="store_true", help="Terminate associated remote servers")
+    parser.add_argument("--url",                                help="run on remote server specified by url")
+    parser.add_argument("--uuid",                               help="run on remote server specified by libcloud uuid")
+    parser.add_argument("--verbosity", type=int, default=0,     help="-1: just task output 0: status 1-127: more verbose"
+                                                                     "(default: -1)")
+    parser.add_argument("--version", action="store_true",       help="Print version # & exit")
 
     if len(sys.argv) < 2:
         parser.print_help()
