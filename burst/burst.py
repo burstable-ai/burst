@@ -41,7 +41,7 @@ def do_ssh(url, cmd):
 
 def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpus = "", ports=None, stop=False,
           image=None, size=None, pubkey=None, dockerfile="Dockerfile",
-          cloudmap="", dockerdport=2376, conf=None):
+          cloudmap="", dockerdport=2376, bgd=False, conf=None):
     tunnel = None
     try:
         if not os.path.exists(dockerfile):
@@ -260,8 +260,11 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             cloud_args = " --privileged"
 
         vprint ("Running docker container")
-        cmd = "docker {3} run {4} {5} --rm -ti --label ai.burstable.shutdown={7} -v {2}:/home/burst/work {6} {0} {1}".format(DEFAULT_IMAGE,
-                          args, path, remote, gpu_args, docker_port_args, cloud_args, stop)
+        # cmd = "docker {3} run {4} {5} --rm -ti --label ai.burstable.shutdown={7} -v {2}:/home/burst/work {6} {0} {1}".format(DEFAULT_IMAGE,
+        #                   args, path, remote, gpu_args, docker_port_args, cloud_args, stop)
+        background_args = "-d" if bgd else "-ti"
+        cmd = f"docker {remote} run {gpu_args} {docker_port_args} --rm {background_args} --label ai.burstable.shutdown={stop} " \
+              f"-v {path}:/home/burst/work {cloud_args} {DEFAULT_IMAGE} {args}"
 
         #run user-specified args
         vvprint (cmd)
@@ -298,6 +301,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
     parser.add_argument("command", nargs='?',                   help="Command to run on remote server")
     parser.add_argument("--access", metavar="KEY",              help="libcloud username (aws: ACCESS_KEY)")
+    parser.add_argument("--background", "-b", action="store_true", help="Run task in background mode")
     parser.add_argument("--build", action="store_true",         help="Download and build environment")
     parser.add_argument("--burst_user", metavar="NAME",         help="Burst user name; defaults to local username")
     parser.add_argument("--cloudmap", type=str, default="",
@@ -361,12 +365,12 @@ if __name__ == "__main__":
     else:
         i = len(argv)
 
-    rexargs = argv[:i]
-    vvprint ("REXARGS:", rexargs)
+    burst_args = argv[:i]
+    vvprint ("BURST ARGS:", burst_args)
     cmdargs = argv[i:]
-    vvprint ("CMDARGS:", cmdargs)
-    args = parser.parse_args(rexargs)
-    vvprint ("ARGS:", args)
+    vvprint ("TASK ARGS:", cmdargs)
+    args = parser.parse_args(burst_args)
+    vvprint ("PARSED BURST ARGS:", args)
 
     if args.help:
         parser.print_help()
@@ -499,7 +503,7 @@ if __name__ == "__main__":
         burst(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
               burst_user=args.burst_user, gpus=args.gpus, ports=args.portmap, stop=args.shutdown,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
-              dockerdport=args.dockerdport, conf = burst_conf)
+              dockerdport=args.dockerdport, bgd = args.background, conf = burst_conf)
 
         if args.build:
             v0print()
