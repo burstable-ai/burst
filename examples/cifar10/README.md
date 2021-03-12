@@ -79,7 +79,17 @@ If you run the Jupyter notebook, these same visualizations appear in the noteboo
 
 # Running command line examples using burst
 
-To run the command line examples using burst, use
+First, make sure your burst build is working and ready to use, by running
+
+    burst --build
+    
+inside your project directory.  If you encounter problems, try ramping up the verbosity for more granular feedback, e.g. 
+
+	burst --build --verbosity 127
+	
+(Note: 127 is maximum verbosity).
+
+Once the burst build is working, run the command line examples using burst:
 
     burst python3 trainCNN_CIFAR10.py --nepochs 40
 
