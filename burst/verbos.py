@@ -30,11 +30,11 @@ def v0print(*args, **kw):
 def vprint(*args, **kw):
     if VERBOSITY == 0:
         _vprint_nolf(*args, **kw)
-    elif VERBOSITY >= 1:
+    elif VERBOSITY & 1:
         print (*args, **kw)
 
 def vvprint(*args, **kw):
-    if VERBOSITY >= 2:
+    if VERBOSITY & 2:
         print (*args, **kw)
 
 #docker verbosity

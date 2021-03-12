@@ -342,7 +342,7 @@ if __name__ == "__main__":
     args, unknown = parser.parse_known_args(argv)
 
     if args.build and args.verbosity < 1:
-        set_verbosity(1)
+        set_verbosity(9)
     else:
         set_verbosity(args.verbosity)
 
