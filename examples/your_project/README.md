@@ -28,6 +28,16 @@ If you use `conda` to manage your python packages, you may need to look elsewher
 
 Make sure you have all supporting data files and *.py files in the directory with your project.  `burst` will transfer all files in the directory from which it is called (except for those specified in the `.burstignore`!).
 
+Then, make sure your burst build is working and ready to use, by running
+
+	burst --build
+
+inside your project directory.  If you encounter problems, try ramping up the verbosity for more granular feedback, e.g. 
+
+	burst --build --verbosity 127
+	
+(Note: 127 is maximum verbosity).
+
 # Running command line examples using burst
 
 To run the command line example using burst, use
