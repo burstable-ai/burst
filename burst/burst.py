@@ -41,7 +41,7 @@ def do_ssh(url, cmd):
 
 def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpus = "", ports=None, stop=False,
           image=None, size=None, pubkey=None, dockerfile="Dockerfile",
-          cloudmap="", dockerdport=2376, conf=None):
+          cloudmap="", dockerdport=2376, bgd=False, sync_only=False, conf=None):
     tunnel = None
     try:
         if not os.path.exists(dockerfile):
@@ -162,12 +162,14 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             out = run(cmd)
             vvprint("PS returns -->%s|%s<--" % out)
 
-            #prepare to build docker container
-            vprint ("Removing topmost layer")        #to avoid running stale image
-            cmd = ["docker", "{0}".format(remote), "rmi", "--no-prune", DEFAULT_IMAGE]
-            vvprint (cmd)
-            out, err = run(cmd)
-            vvprint (out)
+            if not sync_only:
+                #prepare to build docker container
+                vprint ("Removing topmost layer")        #to avoid running stale image
+                cmd = ["docker", "{0}".format(remote), "rmi", "--no-prune", DEFAULT_IMAGE]
+                vvprint (cmd)
+                out, err = run(cmd)
+                vvprint (out)
+
             size, image = fix_size_and_image(size, image)
             if size and size != get_server_size(node):                      #FIXME
                 raise Exception("Cannot change size (instance type) -- need to re-launch")
@@ -202,16 +204,17 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                     f.write(s)
                     f.close()
 
-            #sync local working data to host
             rsync_ignore_path = os.path.abspath("./.burstignore")
-            if not os.path.exists(rsync_ignore_path):
-                vprint("creating empty .burstignore")
-                os.system("touch .burstignore")
-            cmd = 'rsync -rltzu{4} --exclude-from {5} -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/. {3}@{1}:{2}/'.format(locpath,
-                                        url, path, sshuser, get_rsync_v(), rsync_ignore_path)
-            vprint ("Synchronizing project folders")
-            vvprint (cmd)
-            os.system(cmd)
+            if not sync_only:       #sync_only means from remote to local
+                #sync local working data to host
+                if not os.path.exists(rsync_ignore_path):
+                    vprint("creating empty .burstignore")
+                    os.system("touch .burstignore")
+                cmd = 'rsync -rltzu{4} --exclude-from {5} -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/. {3}@{1}:{2}/'.format(locpath,
+                                            url, path, sshuser, get_rsync_v(), rsync_ignore_path)
+                vprint ("Synchronizing project folders")
+                vvprint (cmd)
+                os.system(cmd)
 
             if get_config().provider == 'GCE':
                 # sync service acct creds (for shutdown)
@@ -243,35 +246,39 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             remote = ""
             path = os.path.abspath('.')
 
-        #actually build container -- for reals
-        vprint ("Building docker container")
-        cmd = "docker {1} build . --file {2} -t {0} {3}".format(DEFAULT_IMAGE, remote, dockerfile, get_piper())
-        vvprint (cmd)
-        os.system(cmd)
+        if not sync_only:
+            #actually build container -- for reals
+            vprint ("Building docker container")
+            cmd = "docker {1} build . --file {2} -t {0} {3}".format(DEFAULT_IMAGE, remote, dockerfile, get_piper())
+            vvprint (cmd)
+            os.system(cmd)
 
-        args = " ".join(args)
-        gpu_args = "--gpus "+gpus if gpus else ""
+            args = " ".join(args)
+            gpu_args = "--gpus "+gpus if gpus else ""
 
-        #if mounting storage, add arguments & insert commands before (to mount) and after (to unmount) user-specified args
-        cloud_args = ""
-        if cloudmap:
-            cloud, host = cloudmap.split(":")
-            args = f"bash -c 'mkdir -p {host}; rclone mount --vfs-cache-mode writes --vfs-write-back 0 --config .rclone.conf {cloud}: {host} & sleep 3; {args}; umount {host}'"
-            cloud_args = " --privileged"
+            #if mounting storage, add arguments & insert commands before (to mount) and after (to unmount) user-specified args
+            cloud_args = ""
+            if cloudmap:
+                cloud, host = cloudmap.split(":")
+                args = f"bash -c 'mkdir -p {host}; rclone mount --vfs-cache-mode writes --vfs-write-back 0 --config .rclone.conf {cloud}: {host} & sleep 3; {args}; umount {host}'"
+                cloud_args = " --privileged"
 
-        vprint ("Running docker container")
-        cmd = "docker {3} run {4} {5} --rm -ti --label ai.burstable.shutdown={7} -v {2}:/home/burst/work {6} {0} {1}".format(DEFAULT_IMAGE,
-                          args, path, remote, gpu_args, docker_port_args, cloud_args, stop)
+            vprint ("Running docker container")
+            # cmd = "docker {3} run {4} {5} --rm -ti --label ai.burstable.shutdown={7} -v {2}:/home/burst/work {6} {0} {1}".format(DEFAULT_IMAGE,
+            #                   args, path, remote, gpu_args, docker_port_args, cloud_args, stop)
+            background_args = "-d" if bgd else "-ti"
+            cmd = f"docker {remote} run {gpu_args} {docker_port_args} --rm {background_args} --label ai.burstable.shutdown={stop} " \
+                  f"-v {path}:/home/burst/work {cloud_args} {DEFAULT_IMAGE} {args}"
 
-        #run user-specified args
-        vvprint (cmd)
-        vprint ("")
-        v0print ("---------------------OUTPUT-----------------------")
-        sys.stdout.flush()
-        os.system(cmd)
-        sys.stdout.flush()
-        v0print ("----------------------END-------------------------")
-        sys.stdout.flush()
+            #run user-specified args
+            vvprint (cmd)
+            vprint ("")
+            v0print ("---------------------OUTPUT-----------------------")
+            sys.stdout.flush()
+            os.system(cmd)
+            sys.stdout.flush()
+            v0print ("----------------------END-------------------------")
+            sys.stdout.flush()
 
         #sync data on host back to local
         if url:
@@ -298,6 +305,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
     parser.add_argument("command", nargs='?',                   help="Command to run on remote server")
     parser.add_argument("--access", metavar="KEY",              help="libcloud username (aws: ACCESS_KEY)")
+    parser.add_argument("--background", "-b", action="store_true", help="Run task in background mode")
     parser.add_argument("--build", action="store_true",         help="Download and build environment")
     parser.add_argument("--burst_user", metavar="NAME",         help="Burst user name; defaults to local username")
     parser.add_argument("--cloudmap", type=str, default="",
@@ -329,6 +337,7 @@ if __name__ == "__main__":
                                                                 help="seconds before server is stopped (default 900) "
                                                                 "0 means no shutdown; no argument prompts for forced shutdown")
     parser.add_argument("--size",                               help="libcloud size (aws: instance_type; gce: size)")
+    parser.add_argument("--sync", action="store_true",          help="Synchronize local workspace to remote")
     parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
     parser.add_argument("--storage-config", metavar="STORAGE_SERVICE", help="override default storage configuration")
     parser.add_argument("--terminate-servers", action="store_true", help="Terminate associated remote servers")
@@ -361,12 +370,12 @@ if __name__ == "__main__":
     else:
         i = len(argv)
 
-    rexargs = argv[:i]
-    vvprint ("REXARGS:", rexargs)
+    burst_args = argv[:i]
+    vvprint ("BURST ARGS:", burst_args)
     cmdargs = argv[i:]
-    vvprint ("CMDARGS:", cmdargs)
-    args = parser.parse_args(rexargs)
-    vvprint ("ARGS:", args)
+    vvprint ("TASK ARGS:", cmdargs)
+    args = parser.parse_args(burst_args)
+    vvprint ("PARSED BURST ARGS:", args)
 
     if args.help:
         parser.print_help()
@@ -499,7 +508,7 @@ if __name__ == "__main__":
         burst(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
               burst_user=args.burst_user, gpus=args.gpus, ports=args.portmap, stop=args.shutdown,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
-              dockerdport=args.dockerdport, conf = burst_conf)
+              dockerdport=args.dockerdport, bgd = args.background, sync_only = args.sync, conf = burst_conf)
 
         if args.build:
             v0print()
