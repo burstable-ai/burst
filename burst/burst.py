@@ -28,7 +28,7 @@ install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock*" \
                    "apt-get -y install python3-pip; " \
                    "python3 -m pip install --upgrade pip; " \
                    "python3 -m pip install easydict apache-libcloud; " \
-                   "git clone -b 0.2.15 https://github.com/burstable-ai/burst'"      #for reals
+                   "git clone -b monitor https://github.com/burstable-ai/burst'"      #for reals
 
                 # "git clone -b shutdown_39 https://github.com/danx0r/burst'"  # for testing
 
@@ -307,7 +307,8 @@ if __name__ == "__main__":
     parser.add_argument("--access", metavar="KEY",              help="libcloud username (aws: ACCESS_KEY)")
     parser.add_argument("--background", "-b", action="store_true", help="Run task in background mode")
     parser.add_argument("--build", action="store_true",         help="Download and build environment")
-    parser.add_argument("--burst_user", metavar="NAME",         help="Burst user name; defaults to local username")
+    parser.add_argument("--burst_user", metavar="NAME",         help="Burst user name (defaults to local username; "
+                                                                "different usernames launch new machine instances)")
     parser.add_argument("--cloudmap", type=str, default="",
                                       metavar="STORAGE:MOUNT",  help="map (mount) burst storage service to local folder")
     parser.add_argument("--compute-config", metavar="COMPUTE_SERVICE",
