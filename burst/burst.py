@@ -500,10 +500,9 @@ if __name__ == "__main__":
         except:
             raise Exception(out)
         v0print ("Attaching to docker process", did['ID'])
-        cmd = ["docker", "-H localhost:%s" % args.dockerdport, "attach", did['ID']]
+        cmd = f"docker -H localhost:{args.dockerdport} attach {did['ID']}"
         vvprint (cmd)
-        out, err = run(cmd)
-        vvprint(err, out)
+        os.system(cmd)
         v0print ("-------------------------------------------------------------")
         if tunnel:
             tunnel.kill()
