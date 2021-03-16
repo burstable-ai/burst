@@ -476,9 +476,9 @@ if __name__ == "__main__":
         v0print ("-------------------------------------------------------------")
 
     elif args.attach:
+        tunnel = None
         init(burst_conf)
         cconf = get_config()['compute_config']
-        v0print ("-------------------------------------------------------------")
         url = None
         for node, s in list_servers(args.burst_user, burst_conf):
             vvprint (node, s)
@@ -487,23 +487,26 @@ if __name__ == "__main__":
                     raise Exception("multiple docker processes running, this is not supported")
                 url = node.public_ips[0]
                 break
-        vvprint (f"Attaching to docker process on {url}")
-        print ("DBG", url, args.sshuser, args.portmap, args.dockerdport)
-        tunnel, _ = ssh_tunnel(url, args.sshuser, args.portmap, args.dockerdport)
-        vvprint ("Tunnel:", tunnel)
-        cmd = ["docker", "-H localhost:%s" % args.dockerdport, "ps", "--format", '{{json .}}']
-        vvprint (cmd)
-        out, err = run(cmd)
-        vvprint("PS returns:", out)
-        try:
-            did = json.loads(out)
-        except:
-            raise Exception(out)
-        v0print ("Attaching to docker process", did['ID'])
-        cmd = f"docker -H localhost:{args.dockerdport} attach {did['ID']}"
-        vvprint (cmd)
-        os.system(cmd)
-        v0print ("-------------------------------------------------------------")
+        if not url:
+            print ("No process running")
+        else:
+            vvprint (f"Attaching to docker process on {url}")
+            tunnel, _ = ssh_tunnel(url, args.sshuser, args.portmap, args.dockerdport)
+            vvprint ("Tunnel:", tunnel)
+            cmd = ["docker", "-H localhost:%s" % args.dockerdport, "ps", "--format", '{{json .}}']
+            vvprint (cmd)
+            out, err = run(cmd)
+            vvprint("PS returns:", out)
+            try:
+                did = json.loads(out)
+            except:
+                raise Exception(out)
+            v0print ("Attaching to docker process", did['ID'])
+            cmd = f"docker -H localhost:{args.dockerdport} attach {did['ID']}"
+            vvprint (cmd)
+            v0print ("---------------------OUTPUT-----------------------")
+            os.system(cmd)
+            v0print ("----------------------END-------------------------")
         if tunnel:
             tunnel.kill()
 
