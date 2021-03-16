@@ -39,6 +39,31 @@ def do_ssh(url, cmd):
     vvprint (ssh_cmd)
     os.system(ssh_cmd)
 
+
+def ssh_tunnel(url, sshuser, ports, dockerdport):
+    # set up ssh tunnel mapping docker socket, ports
+    host_port_args = []
+    docker_port_args = ""
+    if ports:
+        for pa in ports:
+            if ':' in pa:
+                local_port, remote_port = pa.split(':')
+            else:
+                remote_port = local_port = pa
+            docker_port_args += " -p {0}:{0}".format(remote_port)
+            host_port_args.append("-L {0}:localhost:{1}".format(local_port, remote_port))
+    # print ("PORTS: |%s|%s|" % (docker_port_args, host_port_args)); exit()
+    ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
+                "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(dockerdport),
+                "{0}@{1}".format(sshuser, url)]
+    for arg in host_port_args:
+        ssh_args.insert(3, arg)
+    vvprint(ssh_args)
+    tunnel = subprocess.Popen(ssh_args)
+    time.sleep(2)
+    return tunnel, docker_port_args
+
+
 def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpus = "", ports=None, stop=False,
           image=None, size=None, pubkey=None, dockerfile="Dockerfile",
           cloudmap="", dockerdport=2376, bgd=False, sync_only=False, conf=None):
@@ -129,26 +154,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 # exit()
 
             vprint ("Connecting through ssh")
-            #set up ssh tunnel mapping docker socket, ports
-            host_port_args = []
-            docker_port_args = ""
-            if ports:
-                for pa in ports:
-                    if ':' in pa:
-                        local_port, remote_port = pa.split(':')
-                    else:
-                        remote_port = local_port = pa
-                    docker_port_args += " -p {0}:{0}".format(remote_port)
-                    host_port_args.append("-L {0}:localhost:{1}".format(local_port, remote_port))
-            # print ("PORTS: |%s|%s|" % (docker_port_args, host_port_args)); exit()
-            remote = "-H localhost:%s" % dockerdport
-            ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
-                        "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(dockerdport), "{0}@{1}".format(sshuser, url)]
-            for arg in host_port_args:
-                ssh_args.insert(3, arg)
-            vvprint (ssh_args)
-            tunnel = subprocess.Popen(ssh_args)
-            time.sleep(2)
+            tunnel, docker_port_args = ssh_tunnel(url, sshuser, ports, dockerdport)
 
             #path = absolute working directory on host
             relpath = os.path.abspath('.')[len(os.path.expanduser('~')):]
@@ -157,6 +163,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             path = "/home/{0}{1}".format(sshuser, relpath)
 
             #part of check to see if docker is installed and running
+            remote = "-H localhost:%s" % dockerdport
             cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
             vvprint (cmd)
             out, err = run(cmd)
