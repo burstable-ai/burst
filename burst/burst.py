@@ -318,6 +318,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
     parser.add_argument("command", nargs='?',                   help="Command to run on remote server")
     parser.add_argument("--access", metavar="KEY",              help="libcloud username (aws: ACCESS_KEY)")
+    parser.add_argument("--attach", action="store_true",        help="Attach to running process")
     parser.add_argument("--background", "-b", action="store_true", help="Run task in background mode")
     parser.add_argument("--build", action="store_true",         help="Download and build environment")
     parser.add_argument("--burst_user", metavar="NAME",         help="Burst user name (defaults to local username; "
@@ -473,6 +474,39 @@ if __name__ == "__main__":
         if not count:
             print ("no servers to terminate")
         v0print ("-------------------------------------------------------------")
+
+    elif args.attach:
+        init(burst_conf)
+        cconf = get_config()['compute_config']
+        v0print ("-------------------------------------------------------------")
+        url = None
+        for node, s in list_servers(args.burst_user, burst_conf):
+            vvprint (node, s)
+            if node.state.upper() == 'RUNNING':
+                if url:
+                    raise Exception("multiple docker processes running, this is not supported")
+                url = node.public_ips[0]
+                break
+        vvprint (f"Attaching to docker process on {url}")
+        print ("DBG", url, args.sshuser, args.portmap, args.dockerdport)
+        tunnel, _ = ssh_tunnel(url, args.sshuser, args.portmap, args.dockerdport)
+        vvprint ("Tunnel:", tunnel)
+        cmd = ["docker", "-H localhost:%s" % args.dockerdport, "ps", "--format", '{{json .}}']
+        vvprint (cmd)
+        out, err = run(cmd)
+        vvprint("PS returns:", out)
+        try:
+            did = json.loads(out)
+        except:
+            raise Exception(out)
+        v0print ("Attaching to docker process", did['ID'])
+        cmd = ["docker", "-H localhost:%s" % args.dockerdport, "attach", did['ID']]
+        vvprint (cmd)
+        out, err = run(cmd)
+        vvprint(err, out)
+        v0print ("-------------------------------------------------------------")
+        if tunnel:
+            tunnel.kill()
 
     elif args.version:
         print ("VERSION:", version)
