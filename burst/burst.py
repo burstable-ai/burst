@@ -159,8 +159,11 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             #part of check to see if docker is installed and running
             cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
             vvprint (cmd)
-            out = run(cmd)
-            vvprint("PS returns -->%s|%s<--" % out)
+            out, err = run(cmd)
+            vvprint("PS returns:", out)
+            running = len([x for x in out.strip().split("\n") if x])
+            if running:
+                raise Exception("docker process already running -- burst does not support multiple processes")
 
             if not sync_only:
                 #prepare to build docker container
@@ -268,12 +271,17 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             cmd = f"docker {remote} run {gpu_args} {docker_port_args} --rm {background_args} --label ai.burstable.shutdown={stop} " \
                   f"-v {path}:/home/burst/work {cloud_args} {DEFAULT_IMAGE} {args}"
 
-            #run user-specified args
+            #run main task
             vvprint (cmd)
             vprint ("")
             v0print ("---------------------OUTPUT-----------------------")
             sys.stdout.flush()
-            os.system(cmd)
+            if bgd:
+                cmd = cmd.split()
+                docker_container, err = run(cmd)
+                print ("Running in background mode. Container =", docker_container[:11])
+            else:
+                os.system(cmd)
             sys.stdout.flush()
             v0print ("----------------------END-------------------------")
             sys.stdout.flush()
