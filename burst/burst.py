@@ -341,6 +341,7 @@ if __name__ == "__main__":
     parser.add_argument("--gpus", default='all',                help="list of gpus, 'all' (default), or 'none'")
     parser.add_argument("--help", action="store_true",          help="Print usage info")
     parser.add_argument("--image",                              help="libcloud image (aws: ami image_id)")
+    parser.add_argument("--kill", action="store_true",          help="Terminate Docker process")
     parser.add_argument("--list-servers", action="store_true",  help="List all associated remote servers")
     parser.add_argument("--local", action="store_true",         help="run on local device")
     parser.add_argument("--portmap", "-p", action="append", metavar="LOCAL[:REMOTE]",
@@ -513,6 +514,47 @@ if __name__ == "__main__":
                     v0print ("----------------------END-------------------------")
                 except:
                     print ("\nFailed to attach:", out)
+                    sys.stdout.flush()
+        if tunnel:
+            tunnel.kill()
+
+    elif args.kill:
+        tunnel = None
+        init(burst_conf)
+        cconf = get_config()['compute_config']
+        url = None
+        for node, s in list_servers(args.burst_user, burst_conf):
+            vvprint (node, s)
+            if node.state.upper() == 'RUNNING':
+                if url:
+                    raise Exception("multiple docker processes running, this is not supported")
+                url = node.public_ips[0]
+                break
+        if not url:
+            print ("No process running")
+        else:
+            vvprint (f"Terminating Docker process on {url}")
+            tunnel, _ = ssh_tunnel(url, args.sshuser, args.portmap, args.dockerdport)
+            vvprint ("Tunnel:", tunnel)
+            cmd = ["docker", "-H localhost:%s" % args.dockerdport, "ps", "--format", '{{json .}}']
+            vvprint (cmd)
+            out, err = run(cmd)
+            vvprint("PS returns:", out)
+            if not out:
+                print ("\nNo Docker process found")
+            else:
+                try:
+                    did = json.loads(out)
+                    yes = input(f"Terminating Docker process {did['ID']}, are you sure? (y/n)")
+                    if yes == 'y':
+                        cmd = f"docker -H localhost:{args.dockerdport} stop {did['ID']}"
+                        vvprint (cmd)
+                        os.system(cmd)
+                        print ("Process terminated")
+                    else:
+                        print("Aborted")
+                except:
+                    print ("\nError:", out)
                     sys.stdout.flush()
         if tunnel:
             tunnel.kill()
