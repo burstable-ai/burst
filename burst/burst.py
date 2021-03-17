@@ -54,12 +54,14 @@ def ssh_tunnel(url, sshuser, ports, dockerdport):
             host_port_args.append("-L {0}:localhost:{1}".format(local_port, remote_port))
     # print ("PORTS: |%s|%s|" % (docker_port_args, host_port_args)); exit()
     ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
+                "-o ExitOnForwardFailure=yes",
                 "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(dockerdport),
                 "{0}@{1}".format(sshuser, url)]
     for arg in host_port_args:
         ssh_args.insert(3, arg)
     vvprint(ssh_args)
     tunnel = subprocess.Popen(ssh_args)
+    vvprint("TUNNEL:", tunnel)
     time.sleep(2)
     return tunnel, docker_port_args
 
@@ -497,16 +499,21 @@ if __name__ == "__main__":
             vvprint (cmd)
             out, err = run(cmd)
             vvprint("PS returns:", out)
-            try:
-                did = json.loads(out)
-            except:
-                raise Exception(out)
-            v0print ("Attaching to docker process", did['ID'])
-            cmd = f"docker -H localhost:{args.dockerdport} attach --sig-proxy=false {did['ID']}"
-            vvprint (cmd)
-            v0print ("---------------------OUTPUT-----------------------")
-            os.system(cmd)
-            v0print ("----------------------END-------------------------")
+            if not out:
+                print ("\nNo Docker process found")
+            else:
+                try:
+                    did = json.loads(out)
+                    v0print ("Attaching to docker process", did['ID'])
+                    cmd = f"docker -H localhost:{args.dockerdport} attach --sig-proxy=false {did['ID']}"
+                    vvprint (cmd)
+                    vprint("ctrl-C only detaches; --kill to stop")
+                    v0print ("---------------------OUTPUT-----------------------")
+                    os.system(cmd)
+                    v0print ("----------------------END-------------------------")
+                except:
+                    print ("\nFailed to attach:", out)
+                    sys.stdout.flush()
         if tunnel:
             tunnel.kill()
 
