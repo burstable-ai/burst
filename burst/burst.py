@@ -274,7 +274,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 cloud_args = " --privileged"
 
             vprint ("Running docker container")
-            background_args = "-tid" if bgd else "-ti"
+            background_args = "-td" if bgd else "-ti"
             cmd = f"docker {remote} run {gpu_args} {docker_port_args} --rm {background_args} --label ai.burstable.shutdown={stop} " \
                   f"-v {path}:/home/burst/work {cloud_args} {DEFAULT_IMAGE} {args}"
 
@@ -502,7 +502,7 @@ if __name__ == "__main__":
             except:
                 raise Exception(out)
             v0print ("Attaching to docker process", did['ID'])
-            cmd = f"docker -H localhost:{args.dockerdport} attach {did['ID']}"
+            cmd = f"docker -H localhost:{args.dockerdport} attach --sig-proxy=false {did['ID']}"
             vvprint (cmd)
             v0print ("---------------------OUTPUT-----------------------")
             os.system(cmd)
