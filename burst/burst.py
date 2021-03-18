@@ -28,6 +28,7 @@ install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock*" \
                    "apt-get -y install python3-pip; " \
                    "python3 -m pip install --upgrade pip; " \
                    "python3 -m pip install easydict apache-libcloud; " \
+                   "rm -fr burst; " \
                    "git clone -b monitor https://github.com/burstable-ai/burst'"      #for reals
 
                 # "git clone -b shutdown_39 https://github.com/danx0r/burst'"  # for testing
@@ -52,7 +53,6 @@ def ssh_tunnel(url, sshuser, ports, dockerdport):
                 remote_port = local_port = pa
             docker_port_args += " -p {0}:{0}".format(remote_port)
             host_port_args.append("-L {0}:localhost:{1}".format(local_port, remote_port))
-    # print ("PORTS: |%s|%s|" % (docker_port_args, host_port_args)); exit()
     ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
                 "-o ExitOnForwardFailure=yes",
                 "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(dockerdport),
@@ -140,7 +140,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
         #we have a url unless running --local:
         if url:
 
-            #if just launched, install docker & burst
+            #if just launched, install docker
             if fresh:
                 vprint("Configuring Docker")
                 # 'sudo apt-get -y update; sudo apt-get -y install docker.io; ' \ #images have docker installed
@@ -149,11 +149,6 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                       'sudo systemctl unmask docker; sudo service docker start"'.format(sshuser, url)
                 vvprint(cmd)
                 os.system(cmd)
-
-                time.sleep(20)                                              #might help
-                vprint ("Installing burst on server")
-                do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh)       #notable quoteables
-                # exit()
 
             vprint ("Connecting through ssh")
             tunnel, docker_port_args = ssh_tunnel(url, sshuser, ports, dockerdport)
@@ -236,8 +231,11 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 vvprint (cmd)
                 os.system(cmd)
 
-            #if restarted (including fresh launch), start monitor (screen, detached)
+            #if restarted (including fresh launch), install & start monitor (screen, detached)
             if restart:
+                vprint ("Installing burst on server")
+                do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh)       #notable quoteables
+
                 vprint ("Starting monitor process for shutdown++")
                 #run monitor (in detached screen) to check if user's burst OR rsync is still running
                 conf = get_config()
@@ -251,7 +249,6 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                       f" --secret={secret} --region {conf.region} {proj}'"
                 vvprint (cmd)
                 do_ssh(f"{sshuser}@{url}", '"%s"' % cmd)
-                # exit()
 
         else:
             vprint ("burst: running locally")
