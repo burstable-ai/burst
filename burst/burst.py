@@ -66,9 +66,10 @@ def ssh_tunnel(url, sshuser, ports, dockerdport):
     return tunnel, docker_port_args
 
 
-def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpus = "", ports=None, stop=False,
+def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpus = None, ports=None, stop=False,
           image=None, size=None, pubkey=None, dockerfile="Dockerfile",
           cloudmap="", dockerdport=2376, bgd=False, sync_only=False, conf=None):
+    error = None
     tunnel = None
     try:
         if not os.path.exists(dockerfile):
@@ -104,6 +105,11 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             restart = False
             node = get_server(url=url, uuid=uuid, name=burst_user, conf=conf)
             if burst_user and not node:
+                if not gpus:
+                    raise Exception("Must specify --gpus on launch: 'all', 'none', or list of gpu types")
+                f = open(".burst_gpus", 'w')
+                f.write(gpus)
+                f.close()
                 node = launch_server(burst_user, pubkey=pubkey, size=size, image=image, conf=conf, user=sshuser, gpus=gpus)
                 fresh = True
                 restart = True
@@ -179,7 +185,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 
             size, image = fix_size_and_image(size, image)
             if size and size != get_server_size(node):                      #FIXME
-                raise Exception("Cannot change size (instance type) -- need to re-launch")
+                raise Exception("Cannot change size (instance type) or gpu status -- need to re-launch")
 
             # get_server_image is broken, need to prompt better here
             # if image and image != get_server_image(node):
@@ -231,11 +237,15 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 vvprint (cmd)
                 os.system(cmd)
 
-            #if restarted (including fresh launch), install & start monitor (screen, detached)
-            if restart:
+            #if fresh launch, clone burst locally for monitor
+            if fresh:
                 vprint ("Installing burst on server")
+                vvprint("Delay for apt-get to settle")
+                time.sleep(30)      #trust me this helps
+                vvprint("Delay done")
                 do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh)       #notable quoteables
 
+            if restart:
                 vprint ("Starting monitor process for shutdown++")
                 #run monitor (in detached screen) to check if user's burst OR rsync is still running
                 conf = get_config()
@@ -262,8 +272,19 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             vvprint (cmd)
             os.system(cmd)
 
+            #build argument list
             args = " ".join(args)
-            gpu_args = "--gpus "+gpus if gpus else ""
+
+            #gpus logic: None means use cache; 'none' means no gpu otherwise list or 'all'
+            if gpus == None:
+                if os.path.exists(".burst_gpus"):
+                    gpu_args = "--gpus " + open(".burst_gpus").read().strip()
+                else:
+                    raise Exception("missing .burst_gpus -- terminate & re-launch")
+            elif gpus.lower()=='none':
+                gpu_args = ""
+            else:
+                gpu_args = "--gpus " + gpus
 
             #if mounting storage, add arguments & insert commands before (to mount) and after (to unmount) user-specified args
             cloud_args = ""
@@ -301,17 +322,17 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             os.system(cmd)
 
     except Exception as ex:
-        if get_verbosity() >= 256:
+        if get_verbosity() & 64:
             v0print ("--------------------------------")
             traceback.print_exc()
             v0print ("--------------------------------")
         else:
             print ()
         print (ex)
-
+        error = "Exception"
     if tunnel:
         tunnel.kill()
-
+    return error
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
@@ -335,7 +356,7 @@ if __name__ == "__main__":
                                                                 "(default: 2376)")
     parser.add_argument("--dockerfile", type=str, default="Dockerfile",
                                         metavar="FILE",         help="Docker file (defaults to ./Dockerfile)")
-    parser.add_argument("--gpus", default='all',                help="list of gpus, 'all' (default), or 'none'")
+    parser.add_argument("--gpus",                               help="'all', 'none', list of gpus, or prompt if not specified")
     parser.add_argument("--help", action="store_true",          help="Print usage info")
     parser.add_argument("--image",                              help="libcloud image (aws: ami image_id)")
     parser.add_argument("--kill", action="store_true",          help="Terminate Docker process")
@@ -395,9 +416,6 @@ if __name__ == "__main__":
     if args.help:
         parser.print_help()
         sys.exit(1)
-
-    if args.gpus.lower() == 'none':
-        args.gpus = None
 
     #override config credentials on command line: --access implies all must be provided
     if args.access:
@@ -578,7 +596,12 @@ if __name__ == "__main__":
                     f.close()
                 except:
                     print ("Public key not found in usual place; please specify --pubkey")
-        if args.gpus:
+
+        args_gpus = args.gpus
+        if args.gpus == None:
+            if os.path.exists(".burst_gpus"):
+                args_gpus = open(".burst_gpus").read().strip()
+        if args_gpus.lower() != 'none':
             if args.size == None:
                 size = 'DEFAULT_GPU_SIZE'
             else:
@@ -601,14 +624,17 @@ if __name__ == "__main__":
             cmdargs = ['echo', 'Build phase 1 success']
 
         #let's do this thing
-        burst(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
+        error = burst(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
               burst_user=args.burst_user, gpus=args.gpus, ports=args.portmap, stop=args.shutdown,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               dockerdport=args.dockerdport, bgd = args.background, sync_only = args.sync, conf = burst_conf)
 
-        if args.build:
-            v0print()
-            print ("Build phase 2 success")
+        if error:
+            v0print ("Build failed")
+        else:
+            if args.build:
+                v0print()
+                print ("Build phase 2 success")
 
-        vprint ("DONE")
-        v0print()
+            vprint ("DONE")
+            v0print()

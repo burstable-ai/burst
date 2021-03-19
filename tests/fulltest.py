@@ -6,7 +6,7 @@ parser.add_argument("--testpath", required=True, help="bucket or root directory 
 parser.add_argument("--storage-config")
 parser.add_argument("--compute-config")
 parser.add_argument("--shutdown-test", action="store_true",)
-parser.add_argument("--gpus", default='all')
+parser.add_argument("--gpus")
 parser.add_argument("--verbosity", type=int, default=1)
 args = parser.parse_args()
 
@@ -29,8 +29,9 @@ if args.compute_config:
 root = args.cloudmap.split(':')[1]
 shutopt = "--shutdown 10" if args.shutdown_test else ""
 
-cmd = "burst {3} --gpus {4} -p 6789:80 {0} 'python3 -u fulltest_command.py --testpath={1}/{2}' 2>&1 | tee fulltest.log".format(opts,
-                                                                        root, args.testpath, shutopt, args.gpus)
+args_gpus = "--gpus " + args.gpus if args.gpus else ""
+cmd = "burst {3} {4} -p 6789:80 {0} 'python3 -u fulltest_command.py --testpath={1}/{2}' 2>&1 | tee fulltest.log".format(opts,
+                                                                        root, args.testpath, shutopt, args_gpus)
 print (cmd)
 sys.stdout.flush()
 os.system(cmd)
