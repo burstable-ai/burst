@@ -375,6 +375,7 @@ if __name__ == "__main__":
     parser.add_argument("--size",                               help="libcloud size (aws: instance_type; gce: size)")
     parser.add_argument("--sync", action="store_true",          help="Synchronize local workspace to remote")
     parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
+    parser.add_argument("--status", action="store_true",        help="Info on running docker process")
     parser.add_argument("--storage-config", metavar="STORAGE_SERVICE", help="override default storage configuration")
     parser.add_argument("--terminate-servers", action="store_true", help="Terminate associated remote servers")
     parser.add_argument("--url",                                help="run on remote server specified by url")
@@ -568,6 +569,47 @@ if __name__ == "__main__":
                         print ("Process terminated")
                     else:
                         print("Aborted")
+                except:
+                    print ("\nError:", out)
+                    sys.stdout.flush()
+        if tunnel:
+            tunnel.kill()
+
+    elif args.status:
+        tunnel = None
+        init(burst_conf)
+        cconf = get_config()['compute_config']
+        url = None
+        for node, s in list_servers(args.burst_user, burst_conf):
+            vvprint (node, s)
+            if node.state.upper() == 'RUNNING':
+                if url:
+                    raise Exception("multiple docker processes running, this is not supported")
+                url = node.public_ips[0]
+                break
+        if not url:
+            v0print("-------------------------------------------------------------")
+            print ("No remote host running")
+            v0print("-------------------------------------------------------------")
+        else:
+            vvprint (f"Looking for docker process on {url}")
+            tunnel, _ = ssh_tunnel(url, args.sshuser, args.portmap, args.dockerdport)
+            vvprint ("Tunnel:", tunnel)
+            cmd = ["docker", "-H localhost:%s" % args.dockerdport, "ps", "--no-trunc", "--format", '{{json .}}']
+            vvprint (cmd)
+            out, err = run(cmd)
+            vvprint("PS returns:", out)
+            if not out:
+                print ("\nNo Docker process found")
+            else:
+                try:
+                    did = json.loads(out)
+                    v0print("-------------------------------------------------------------")
+                    print (f"Docker process ID: {did['ID'][:12]}\n"
+                           f"Status: {did['Status']}\n"
+                           f"Command: {did['Command']}")
+                           # f"Mounts: {did['Mounts']}")
+                    v0print("-------------------------------------------------------------")
                 except:
                     print ("\nError:", out)
                     sys.stdout.flush()
