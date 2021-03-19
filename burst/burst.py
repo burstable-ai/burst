@@ -185,7 +185,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 
             size, image = fix_size_and_image(size, image)
             if size and size != get_server_size(node):                      #FIXME
-                raise Exception("Cannot change size (instance type) -- need to re-launch")
+                raise Exception("Cannot change size (instance type) or gpu status -- need to re-launch")
 
             # get_server_image is broken, need to prompt better here
             # if image and image != get_server_image(node):
@@ -268,8 +268,17 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             vvprint (cmd)
             os.system(cmd)
 
+            #build argument list
             args = " ".join(args)
-            gpu_args = ("--gpus " + gpus) if (gpus and gpus.lower() != 'none') else ""
+
+            #gpus logic: None = use previous (in .burst_gpus) 'none' means no gpu otherwise list or 'all'
+            if gpus == None:
+                f = open(".burst_gpus")
+                gpus = f.read().strip()
+            if gpus.lower()=='none':
+                gpu_args = ""
+            else:
+                gpu_args = "--gpus " + gpus
 
             #if mounting storage, add arguments & insert commands before (to mount) and after (to unmount) user-specified args
             cloud_args = ""
@@ -341,7 +350,7 @@ if __name__ == "__main__":
                                                                 "(default: 2376)")
     parser.add_argument("--dockerfile", type=str, default="Dockerfile",
                                         metavar="FILE",         help="Docker file (defaults to ./Dockerfile)")
-    parser.add_argument("--gpus", nargs='?',                    help="'all', 'none', list of gpus, or prompt if not specified")
+    parser.add_argument("--gpus",                               help="'all', 'none', list of gpus, or prompt if not specified")
     parser.add_argument("--help", action="store_true",          help="Print usage info")
     parser.add_argument("--image",                              help="libcloud image (aws: ami image_id)")
     parser.add_argument("--kill", action="store_true",          help="Terminate Docker process")

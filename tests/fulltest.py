@@ -6,7 +6,7 @@ parser.add_argument("--testpath", required=True, help="bucket or root directory 
 parser.add_argument("--storage-config")
 parser.add_argument("--compute-config")
 parser.add_argument("--shutdown-test", action="store_true",)
-parser.add_argument("--gpus", default='all')
+parser.add_argument("--gpus")
 parser.add_argument("--verbosity", type=int, default=1)
 args = parser.parse_args()
 
