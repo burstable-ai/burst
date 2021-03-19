@@ -240,6 +240,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             #if restarted (including fresh launch), install & start monitor (screen, detached)
             if restart:
                 vprint ("Installing burst on server")
+                time.sleep(25)      #trust me this helps
                 do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh)       #notable quoteables
 
                 vprint ("Starting monitor process for shutdown++")
