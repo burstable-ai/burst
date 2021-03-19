@@ -272,10 +272,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             #build argument list
             args = " ".join(args)
 
-            #gpus logic: None = use previous (in .burst_gpus) 'none' means no gpu otherwise list or 'all'
-            if gpus == None:
-                f = open(".burst_gpus")
-                gpus = f.read().strip()
+            #gpus logic: 'none' means no gpu otherwise list or 'all'
             if gpus.lower()=='none':
                 gpu_args = ""
             else:
@@ -591,7 +588,14 @@ if __name__ == "__main__":
                     f.close()
                 except:
                     print ("Public key not found in usual place; please specify --pubkey")
-        if args.gpus and args.gpus.lower() != 'none':
+
+        #if gpus not specified, use cached value
+        if args.gpus == None:
+            if os.path.exists(".burst_gpus"):
+                args.gpus = open(".burst_gpus").read().strip()
+            else:
+                raise Exception (".burst_gpus not found -- you may need to terminate & re-launch")
+        if args.gpus.lower() != 'none':
             if args.size == None:
                 size = 'DEFAULT_GPU_SIZE'
             else:
