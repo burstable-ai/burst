@@ -237,12 +237,15 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 vvprint (cmd)
                 os.system(cmd)
 
-            #if restarted (including fresh launch), install & start monitor (screen, detached)
-            if restart:
+            #if fresh launch, clone burst locally for monitor
+            if fresh:
                 vprint ("Installing burst on server")
-                time.sleep(25)      #trust me this helps
+                vvprint("Delay for apt-get to settle")
+                time.sleep(30)      #trust me this helps
+                vvprint("Delay done")
                 do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh)       #notable quoteables
 
+            if restart:
                 vprint ("Starting monitor process for shutdown++")
                 #run monitor (in detached screen) to check if user's burst OR rsync is still running
                 conf = get_config()
