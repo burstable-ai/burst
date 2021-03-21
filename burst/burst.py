@@ -278,10 +278,10 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             #gpus logic: None means use cache; 'none' means no gpu otherwise list or 'all'
             if gpus == None:
                 if os.path.exists(".burst_gpus"):
-                    gpu_args = "--gpus " + open(".burst_gpus").read().strip()
+                    gpus = open(".burst_gpus").read().strip()
                 else:
                     raise Exception("missing .burst_gpus -- terminate & re-launch")
-            elif gpus.lower()=='none':
+            if gpus.lower()=='none':
                 gpu_args = ""
             else:
                 gpu_args = "--gpus " + gpus
@@ -643,6 +643,8 @@ if __name__ == "__main__":
         if args.gpus == None:
             if os.path.exists(".burst_gpus"):
                 args_gpus = open(".burst_gpus").read().strip()
+            else:
+                raise Exception("no .burst_gpus; specify --gpus")
         if args_gpus.lower() != 'none':
             if args.size == None:
                 size = 'DEFAULT_GPU_SIZE'

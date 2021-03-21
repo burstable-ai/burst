@@ -1,0 +1,26 @@
+Release notes for burst 0.2.18
+
+(includes previous releases)
+
+New options:
+
+--background -b
+
+Run task in the background. Does usual rsync, docker build/run, then exits
+
+--status
+
+Show status of running task. If task is not present, task has exited
+
+--sync
+
+Synchronize remote workspace to local
+
+--attach
+
+Attach stdio, stdout, stderr to background task. ctrl-c detaches (does not kill)
+
+--kill
+
+Prompts user to kill running task
+
