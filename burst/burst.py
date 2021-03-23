@@ -28,7 +28,8 @@ install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock*" \
                    "apt-get -y install python3-pip; " \
                    "python3 -m pip install --upgrade pip; " \
                    "python3 -m pip install easydict apache-libcloud; " \
-                   "git clone -b 0.2.15 https://github.com/burstable-ai/burst'"      #for reals
+                   "rm -fr burst; " \
+                   "git clone -b monitor https://github.com/burstable-ai/burst'"      #for reals
 
                 # "git clone -b shutdown_39 https://github.com/danx0r/burst'"  # for testing
 
@@ -39,9 +40,36 @@ def do_ssh(url, cmd):
     vvprint (ssh_cmd)
     os.system(ssh_cmd)
 
-def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpus = "", ports=None, stop=False,
+
+def ssh_tunnel(url, sshuser, ports, dockerdport):
+    # set up ssh tunnel mapping docker socket, ports
+    host_port_args = []
+    docker_port_args = ""
+    if ports:
+        for pa in ports:
+            if ':' in pa:
+                local_port, remote_port = pa.split(':')
+            else:
+                remote_port = local_port = pa
+            docker_port_args += " -p {0}:{0}".format(remote_port)
+            host_port_args.append("-L {0}:localhost:{1}".format(local_port, remote_port))
+    ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
+                "-o ExitOnForwardFailure=yes",
+                "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(dockerdport),
+                "{0}@{1}".format(sshuser, url)]
+    for arg in host_port_args:
+        ssh_args.insert(3, arg)
+    vvprint(ssh_args)
+    tunnel = subprocess.Popen(ssh_args)
+    vvprint("TUNNEL:", tunnel)
+    time.sleep(2)
+    return tunnel, docker_port_args
+
+
+def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpus = None, ports=None, stop=False,
           image=None, size=None, pubkey=None, dockerfile="Dockerfile",
-          cloudmap="", dockerdport=2376, conf=None):
+          cloudmap="", dockerdport=2376, bgd=False, sync_only=False, conf=None):
+    error = None
     tunnel = None
     try:
         if not os.path.exists(dockerfile):
@@ -77,6 +105,11 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             restart = False
             node = get_server(url=url, uuid=uuid, name=burst_user, conf=conf)
             if burst_user and not node:
+                if not gpus:
+                    raise Exception("Must specify --gpus on launch: 'all', 'none', or list of gpu types")
+                f = open(".burst_gpus", 'w')
+                f.write(gpus)
+                f.close()
                 node = launch_server(burst_user, pubkey=pubkey, size=size, image=image, conf=conf, user=sshuser, gpus=gpus)
                 fresh = True
                 restart = True
@@ -113,7 +146,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
         #we have a url unless running --local:
         if url:
 
-            #if just launched, install docker & burst
+            #if just launched, install docker
             if fresh:
                 vprint("Configuring Docker")
                 # 'sudo apt-get -y update; sudo apt-get -y install docker.io; ' \ #images have docker installed
@@ -123,32 +156,8 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 vvprint(cmd)
                 os.system(cmd)
 
-                time.sleep(20)                                              #might help
-                vprint ("Installing burst on server")
-                do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh)       #notable quoteables
-                # exit()
-
             vprint ("Connecting through ssh")
-            #set up ssh tunnel mapping docker socket, ports
-            host_port_args = []
-            docker_port_args = ""
-            if ports:
-                for pa in ports:
-                    if ':' in pa:
-                        local_port, remote_port = pa.split(':')
-                    else:
-                        remote_port = local_port = pa
-                    docker_port_args += " -p {0}:{0}".format(remote_port)
-                    host_port_args.append("-L {0}:localhost:{1}".format(local_port, remote_port))
-            # print ("PORTS: |%s|%s|" % (docker_port_args, host_port_args)); exit()
-            remote = "-H localhost:%s" % dockerdport
-            ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
-                        "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(dockerdport), "{0}@{1}".format(sshuser, url)]
-            for arg in host_port_args:
-                ssh_args.insert(3, arg)
-            vvprint (ssh_args)
-            tunnel = subprocess.Popen(ssh_args)
-            time.sleep(2)
+            tunnel, docker_port_args = ssh_tunnel(url, sshuser, ports, dockerdport)
 
             #path = absolute working directory on host
             relpath = os.path.abspath('.')[len(os.path.expanduser('~')):]
@@ -157,20 +166,26 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             path = "/home/{0}{1}".format(sshuser, relpath)
 
             #part of check to see if docker is installed and running
+            remote = "-H localhost:%s" % dockerdport
             cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
             vvprint (cmd)
-            out = run(cmd)
-            vvprint("PS returns -->%s|%s<--" % out)
-
-            #prepare to build docker container
-            vprint ("Removing topmost layer")        #to avoid running stale image
-            cmd = ["docker", "{0}".format(remote), "rmi", "--no-prune", DEFAULT_IMAGE]
-            vvprint (cmd)
             out, err = run(cmd)
-            vvprint (out)
+            vvprint("PS returns:", out)
+            running = len([x for x in out.strip().split("\n") if x])
+            if running:
+                raise Exception("docker process already running -- burst does not support multiple processes")
+
+            if not sync_only:
+                #prepare to build docker container
+                vprint ("Removing topmost layer")        #to avoid running stale image
+                cmd = ["docker", "{0}".format(remote), "rmi", "--no-prune", DEFAULT_IMAGE]
+                vvprint (cmd)
+                out, err = run(cmd)
+                vvprint (out)
+
             size, image = fix_size_and_image(size, image)
             if size and size != get_server_size(node):                      #FIXME
-                raise Exception("Cannot change size (instance type) -- need to re-launch")
+                raise Exception("Cannot change size (instance type) or gpu status -- need to re-launch")
 
             # get_server_image is broken, need to prompt better here
             # if image and image != get_server_image(node):
@@ -202,16 +217,17 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                     f.write(s)
                     f.close()
 
-            #sync local working data to host
             rsync_ignore_path = os.path.abspath("./.burstignore")
-            if not os.path.exists(rsync_ignore_path):
-                vprint("creating empty .burstignore")
-                os.system("touch .burstignore")
-            cmd = 'rsync -rltzu{4} --exclude-from {5} -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/. {3}@{1}:{2}/'.format(locpath,
-                                        url, path, sshuser, get_rsync_v(), rsync_ignore_path)
-            vprint ("Synchronizing project folders")
-            vvprint (cmd)
-            os.system(cmd)
+            if not sync_only:       #sync_only means from remote to local
+                #sync local working data to host
+                if not os.path.exists(rsync_ignore_path):
+                    vprint("creating empty .burstignore")
+                    os.system("touch .burstignore")
+                cmd = 'rsync -rltzu{4} --exclude-from {5} -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/. {3}@{1}:{2}/'.format(locpath,
+                                            url, path, sshuser, get_rsync_v(), rsync_ignore_path)
+                vprint ("Synchronizing project folders")
+                vvprint (cmd)
+                os.system(cmd)
 
             if get_config().provider == 'GCE':
                 # sync service acct creds (for shutdown)
@@ -221,7 +237,14 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 vvprint (cmd)
                 os.system(cmd)
 
-            #if restarted (including fresh launch), start monitor (screen, detached)
+            #if fresh launch, clone burst locally for monitor
+            if fresh:
+                vprint ("Installing burst on server")
+                vvprint("Delay for apt-get to settle")
+                time.sleep(30)      #trust me this helps
+                vvprint("Delay done")
+                do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh)       #notable quoteables
+
             if restart:
                 vprint ("Starting monitor process for shutdown++")
                 #run monitor (in detached screen) to check if user's burst OR rsync is still running
@@ -236,42 +259,59 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                       f" --secret={secret} --region {conf.region} {proj}'"
                 vvprint (cmd)
                 do_ssh(f"{sshuser}@{url}", '"%s"' % cmd)
-                # exit()
 
         else:
             vprint ("burst: running locally")
             remote = ""
             path = os.path.abspath('.')
 
-        #actually build container -- for reals
-        vprint ("Building docker container")
-        cmd = "docker {1} build . --file {2} -t {0} {3}".format(DEFAULT_IMAGE, remote, dockerfile, get_piper())
-        vvprint (cmd)
-        os.system(cmd)
+        if not sync_only:
+            #actually build container -- for reals
+            vprint ("Building docker container")
+            cmd = "docker {1} build . --file {2} -t {0} {3}".format(DEFAULT_IMAGE, remote, dockerfile, get_piper())
+            vvprint (cmd)
+            os.system(cmd)
 
-        args = " ".join(args)
-        gpu_args = "--gpus "+gpus if gpus else ""
+            #build argument list
+            args = " ".join(args)
 
-        #if mounting storage, add arguments & insert commands before (to mount) and after (to unmount) user-specified args
-        cloud_args = ""
-        if cloudmap:
-            cloud, host = cloudmap.split(":")
-            args = f"bash -c 'mkdir -p {host}; rclone mount --vfs-cache-mode writes --vfs-write-back 0 --config .rclone.conf {cloud}: {host} & sleep 3; {args}; umount {host}'"
-            cloud_args = " --privileged"
+            #gpus logic: None means use cache; 'none' means no gpu otherwise list or 'all'
+            if gpus == None:
+                if os.path.exists(".burst_gpus"):
+                    gpus = open(".burst_gpus").read().strip()
+                else:
+                    raise Exception("missing .burst_gpus -- terminate & re-launch")
+            if gpus.lower()=='none':
+                gpu_args = ""
+            else:
+                gpu_args = "--gpus " + gpus
 
-        vprint ("Running docker container")
-        cmd = "docker {3} run {4} {5} --rm -ti --label ai.burstable.shutdown={7} -v {2}:/home/burst/work {6} {0} {1}".format(DEFAULT_IMAGE,
-                          args, path, remote, gpu_args, docker_port_args, cloud_args, stop)
+            #if mounting storage, add arguments & insert commands before (to mount) and after (to unmount) user-specified args
+            cloud_args = ""
+            if cloudmap:
+                cloud, host = cloudmap.split(":")
+                args = f"bash -c 'mkdir -p {host}; rclone mount --vfs-cache-mode writes --vfs-write-back 0 --config .rclone.conf {cloud}: {host} & sleep 3; {args}; umount {host}'"
+                cloud_args = " --privileged"
 
-        #run user-specified args
-        vvprint (cmd)
-        vprint ("")
-        v0print ("---------------------OUTPUT-----------------------")
-        sys.stdout.flush()
-        os.system(cmd)
-        sys.stdout.flush()
-        v0print ("----------------------END-------------------------")
-        sys.stdout.flush()
+            vprint ("Running docker container")
+            background_args = "-td" if bgd else "-ti"
+            cmd = f"docker {remote} run {gpu_args} {docker_port_args} --rm {background_args} --label ai.burstable.shutdown={stop} " \
+                  f"-v {path}:/home/burst/work {cloud_args} {DEFAULT_IMAGE} {args}"
+
+            #run main task
+            vvprint (cmd)
+            vprint ("")
+            v0print ("---------------------OUTPUT-----------------------")
+            sys.stdout.flush()
+            if bgd:
+                cmd = cmd.split()
+                docker_container, err = run(cmd)
+                print ("Running in background mode. Container =", docker_container[:11])
+            else:
+                os.system(cmd)
+            sys.stdout.flush()
+            v0print ("----------------------END-------------------------")
+            sys.stdout.flush()
 
         #sync data on host back to local
         if url:
@@ -282,53 +322,67 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             os.system(cmd)
 
     except Exception as ex:
-        if get_verbosity() >= 256:
+        if get_verbosity() & 64:
             v0print ("--------------------------------")
             traceback.print_exc()
             v0print ("--------------------------------")
         else:
             print ()
         print (ex)
-
+        error = "Exception"
     if tunnel:
         tunnel.kill()
-
+    return error
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
     parser.add_argument("command", nargs='?',                   help="Command to run on remote server")
-    parser.add_argument("--configure", action="store_true",     help="Interactive configuration")
-    parser.add_argument("--configfile",                         help="override default config.yml")
+    parser.add_argument("--access", metavar="KEY",              help="libcloud username (aws: ACCESS_KEY)")
+    parser.add_argument("--attach", action="store_true",        help="Attach to running process")
+    parser.add_argument("--background", "-b", action="store_true", help="Run task in background mode")
     parser.add_argument("--build", action="store_true",         help="Download and build environment")
-    parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
-    parser.add_argument("--local", action="store_true",         help="run on local device")
+    parser.add_argument("--burst_user", metavar="NAME",         help="Burst user name (defaults to local username; "
+                                                                "different usernames launch new machine instances)")
+    parser.add_argument("--cloudmap", type=str, default="",
+                                      metavar="STORAGE:MOUNT",  help="map (mount) burst storage service to local folder")
+    parser.add_argument("--compute-config", metavar="COMPUTE_SERVICE",
+                                                                help="override default compute configuration")
+    parser.add_argument("--configfile", metavar="FILE",         help="override default config.yml")
+    parser.add_argument("--configure", action="store_true",     help="Interactive configuration")
+    parser.add_argument("--delay", type=int, default=0, metavar="SECONDS",
+                                                                help="delay command by N seconds")
+    parser.add_argument("--dockerdport", type=int, default=2376,
+                                         metavar="PORT",        help="local port to map to remote host docker daemon"
+                                                                "(default: 2376)")
+    parser.add_argument("--dockerfile", type=str, default="Dockerfile",
+                                        metavar="FILE",         help="Docker file (defaults to ./Dockerfile)")
+    parser.add_argument("--gpus",                               help="'all', 'none', list of gpus, or prompt if not specified")
+    parser.add_argument("--help", action="store_true",          help="Print usage info")
+    parser.add_argument("--image",                              help="libcloud image (aws: ami image_id)")
+    parser.add_argument("--kill", action="store_true",          help="Terminate Docker process")
     parser.add_argument("--list-servers", action="store_true",  help="List all associated remote servers")
-    parser.add_argument("--terminate-servers", action="store_true",     help="Terminate associated remote servers")
-    parser.add_argument("--version", action="store_true",       help="Print version # & exit")
-    parser.add_argument("--storage-config",                     help="override default storage configuration")
-    parser.add_argument("--compute-config",                     help="override default compute configuration")
-    parser.add_argument("--url",                                help="run on remote server specified by url")
-    parser.add_argument("--uuid",                               help="run on remote server specified by libcloud uuid")
-    parser.add_argument("--burst_user",                         help="Burst user name; defaults to local username")
-    parser.add_argument("--gpus", default='all',                help="defaults to 'all'; can be set to specific gpu or 'none'")
-    parser.add_argument("--portmap", "-p", action="append",     help="port mapping; example: -p 8080 or -p 8080:8080")
-    parser.add_argument("--access",                             help="libcloud username (aws: ACCESS_KEY)")
-    parser.add_argument("--secret",                             help="libcloud password (aws: SECRET)")
-    parser.add_argument("--region",                             help="libcloud location (aws: region)")
+    parser.add_argument("--local", action="store_true",         help="run on local device")
+    parser.add_argument("--portmap", "-p", action="append", metavar="LOCAL[:REMOTE]",
+                                                                help="port mapping; example: -p 8080 or -p 8081:8080")
     parser.add_argument("--project",                            help="GCE project ID")
     parser.add_argument("--provider", default='EC2',            help="GCE, EC2 etc.")
-    parser.add_argument("--image",                              help="libcloud image (aws: ami image_id")
-    parser.add_argument("--size",                               help="libcloud size (aws: instance_type")
     parser.add_argument("--pubkey",                             help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
-    parser.add_argument("--delay", type=int, default=0,         help="delay command by N seconds")
-    parser.add_argument("--verbosity", type=int, default=0,     help="-1: just task output 0: status 1-127: more verbose")
-    parser.add_argument("--shutdown", type=int, default=900, nargs='?',   help="seconds before server is stopped (default 900)"
-                                                                               " 0 means no shutdown; no argument prompts for forced shutdown")
-    # parser.add_argument("--stop_instance_by_url",               help="internal use")
-    parser.add_argument("--cloudmap", type=str, default="",     help="map cloud storage to local mount point")
-    parser.add_argument("--dockerfile", type=str, default="Dockerfile",    help="Docker file to build the container with if not ./Dockerfile")
-    parser.add_argument("--dockerdport", type=int, default=2376, help="local port to map to remote host docker daemon")
-    parser.add_argument("--help", action="store_true",          help="Print usage info")
+    parser.add_argument("--region",                             help="libcloud location (aws: region)")
+    parser.add_argument("--secret",                             help="libcloud password (aws: SECRET)")
+    parser.add_argument("--shutdown", type=int, default=900, nargs='?', metavar="SECONDS",
+                                                                help="seconds before server is stopped (default 900) "
+                                                                "0 means no shutdown; no argument prompts for forced shutdown")
+    parser.add_argument("--size",                               help="libcloud size (aws: instance_type; gce: size)")
+    parser.add_argument("--sync", action="store_true",          help="Synchronize local workspace to remote")
+    parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
+    parser.add_argument("--status", action="store_true",        help="Info on running docker process")
+    parser.add_argument("--storage-config", metavar="STORAGE_SERVICE", help="override default storage configuration")
+    parser.add_argument("--terminate-servers", action="store_true", help="Terminate associated remote servers")
+    parser.add_argument("--url",                                help="run on remote server specified by url")
+    parser.add_argument("--uuid",                               help="run on remote server specified by libcloud uuid")
+    parser.add_argument("--verbosity", type=int, default=0,     help="-1: just task output 0: status 1-127: more verbose"
+                                                                     "(default: -1)")
+    parser.add_argument("--version", action="store_true",       help="Print version # & exit")
 
     if len(sys.argv) < 2:
         parser.print_help()
@@ -342,7 +396,7 @@ if __name__ == "__main__":
     args, unknown = parser.parse_known_args(argv)
 
     if args.build and args.verbosity < 1:
-        set_verbosity(1)
+        set_verbosity(9)
     else:
         set_verbosity(args.verbosity)
 
@@ -353,19 +407,16 @@ if __name__ == "__main__":
     else:
         i = len(argv)
 
-    rexargs = argv[:i]
-    vvprint ("REXARGS:", rexargs)
+    burst_args = argv[:i]
+    vvprint ("BURST ARGS:", burst_args)
     cmdargs = argv[i:]
-    vvprint ("CMDARGS:", cmdargs)
-    args = parser.parse_args(rexargs)
-    vvprint ("ARGS:", args)
+    vvprint ("TASK ARGS:", cmdargs)
+    args = parser.parse_args(burst_args)
+    vvprint ("PARSED BURST ARGS:", args)
 
     if args.help:
         parser.print_help()
         sys.exit(1)
-
-    if args.gpus.lower() == 'none':
-        args.gpus = None
 
     #override config credentials on command line: --access implies all must be provided
     if args.access:
@@ -443,6 +494,128 @@ if __name__ == "__main__":
             print ("no servers to terminate")
         v0print ("-------------------------------------------------------------")
 
+    elif args.attach:
+        tunnel = None
+        init(burst_conf)
+        cconf = get_config()['compute_config']
+        url = None
+        for node, s in list_servers(args.burst_user, burst_conf):
+            vvprint (node, s)
+            if node.state.upper() == 'RUNNING':
+                if url:
+                    raise Exception("multiple docker processes running, this is not supported")
+                url = node.public_ips[0]
+                break
+        if not url:
+            print ("No process running")
+        else:
+            vvprint (f"Attaching to docker process on {url}")
+            tunnel, _ = ssh_tunnel(url, args.sshuser, args.portmap, args.dockerdport)
+            vvprint ("Tunnel:", tunnel)
+            cmd = ["docker", "-H localhost:%s" % args.dockerdport, "ps", "--format", '{{json .}}']
+            vvprint (cmd)
+            out, err = run(cmd)
+            vvprint("PS returns:", out)
+            if not out:
+                print ("\nNo Docker process found")
+            else:
+                try:
+                    did = json.loads(out)
+                    v0print ("Attaching to docker process", did['ID'])
+                    cmd = f"docker -H localhost:{args.dockerdport} attach --sig-proxy=false {did['ID']}"
+                    vvprint (cmd)
+                    vprint("ctrl-C only detaches; --kill to stop")
+                    v0print ("---------------------OUTPUT-----------------------")
+                    os.system(cmd)
+                    v0print ("----------------------END-------------------------")
+                except:
+                    print ("\nFailed to attach:", out)
+                    sys.stdout.flush()
+        if tunnel:
+            tunnel.kill()
+
+    elif args.kill:
+        tunnel = None
+        init(burst_conf)
+        cconf = get_config()['compute_config']
+        url = None
+        for node, s in list_servers(args.burst_user, burst_conf):
+            vvprint (node, s)
+            if node.state.upper() == 'RUNNING':
+                if url:
+                    raise Exception("multiple docker processes running, this is not supported")
+                url = node.public_ips[0]
+                break
+        if not url:
+            print ("No process running")
+        else:
+            vvprint (f"Terminating Docker process on {url}")
+            tunnel, _ = ssh_tunnel(url, args.sshuser, args.portmap, args.dockerdport)
+            vvprint ("Tunnel:", tunnel)
+            cmd = ["docker", "-H localhost:%s" % args.dockerdport, "ps", "--format", '{{json .}}']
+            vvprint (cmd)
+            out, err = run(cmd)
+            vvprint("PS returns:", out)
+            if not out:
+                print ("\nNo Docker process found")
+            else:
+                try:
+                    did = json.loads(out)
+                    yes = input(f"Terminating Docker process {did['ID']}, are you sure? (y/n)")
+                    if yes == 'y':
+                        cmd = f"docker -H localhost:{args.dockerdport} stop {did['ID']}"
+                        vvprint (cmd)
+                        os.system(cmd)
+                        print ("Process terminated")
+                    else:
+                        print("Aborted")
+                except:
+                    print ("\nError:", out)
+                    sys.stdout.flush()
+        if tunnel:
+            tunnel.kill()
+
+    elif args.status:
+        tunnel = None
+        init(burst_conf)
+        cconf = get_config()['compute_config']
+        url = None
+        for node, s in list_servers(args.burst_user, burst_conf):
+            vvprint (node, s)
+            if node.state.upper() == 'RUNNING':
+                if url:
+                    raise Exception("multiple docker processes running, this is not supported")
+                url = node.public_ips[0]
+                break
+        if not url:
+            v0print("-------------------------------------------------------------")
+            print ("No remote host running")
+            v0print("-------------------------------------------------------------")
+        else:
+            vvprint (f"Looking for docker process on {url}")
+            tunnel, _ = ssh_tunnel(url, args.sshuser, args.portmap, args.dockerdport)
+            vvprint ("Tunnel:", tunnel)
+            cmd = ["docker", "-H localhost:%s" % args.dockerdport, "ps", "--no-trunc", "--format", '{{json .}}']
+            vvprint (cmd)
+            out, err = run(cmd)
+            vvprint("PS returns:", out)
+            if not out:
+                print ("\nNo Docker process found")
+            else:
+                try:
+                    did = json.loads(out)
+                    v0print("-------------------------------------------------------------")
+                    print (f"Docker process ID: {did['ID'][:12]}\n"
+                           f"Status: {did['Status']}\n"
+                           f"Command: {did['Command']}")
+                           # f"Mounts: {did['Mounts']}")
+                    v0print("-------------------------------------------------------------")
+                except:
+                    print ("\nError:", out)
+                    sys.stdout.flush()
+        if tunnel:
+            tunnel.kill()
+
     elif args.version:
         print ("VERSION:", version)
 
@@ -465,7 +638,14 @@ if __name__ == "__main__":
                     f.close()
                 except:
                     print ("Public key not found in usual place; please specify --pubkey")
-        if args.gpus:
+
+        args_gpus = args.gpus
+        if args.gpus == None:
+            if os.path.exists(".burst_gpus"):
+                args_gpus = open(".burst_gpus").read().strip()
+            else:
+                raise Exception("no .burst_gpus; specify --gpus")
+        if args_gpus.lower() != 'none':
             if args.size == None:
                 size = 'DEFAULT_GPU_SIZE'
             else:
@@ -488,14 +668,17 @@ if __name__ == "__main__":
             cmdargs = ['echo', 'Build phase 1 success']
 
         #let's do this thing
-        burst(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
+        error = burst(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
               burst_user=args.burst_user, gpus=args.gpus, ports=args.portmap, stop=args.shutdown,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
-              dockerdport=args.dockerdport, conf = burst_conf)
+              dockerdport=args.dockerdport, bgd = args.background, sync_only = args.sync, conf = burst_conf)
 
-        if args.build:
+        if error:
+            v0print ("Build failed")
+        else:
+            if args.build:
+                v0print()
+                print ("Build phase 2 success")
+
+            vprint ("DONE")
             v0print()
-            print ("Build phase 2 success")
-
-        vprint ("DONE")
-        v0print()
