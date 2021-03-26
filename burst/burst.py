@@ -314,7 +314,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             sys.stdout.flush()
 
         #sync data on host back to local
-        if url:
+        if url and not bgd:
             vprint ("Synchronizing folders")
             cmd = "rsync -rltzu{4} --exclude-from {5} -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error' '{3}@{1}:{2}/.' {0}/".format(locpath,
                                         url, path, sshuser, get_rsync_v(), rsync_ignore_path)
