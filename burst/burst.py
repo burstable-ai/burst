@@ -165,17 +165,17 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             locpath = os.path.abspath('.')
             path = "/home/{0}{1}".format(sshuser, relpath)
 
-            #part of check to see if docker is installed and running
-            remote = "-H localhost:%s" % dockerdport
-            cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
-            vvprint (cmd)
-            out, err = run(cmd)
-            vvprint("PS returns:", out)
-            running = len([x for x in out.strip().split("\n") if x])
-            if running:
-                raise Exception("docker process already running -- burst does not support multiple processes")
-
             if not sync_only:
+                # part of check to see if docker is installed and running
+                remote = "-H localhost:%s" % dockerdport
+                cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
+                vvprint(cmd)
+                out, err = run(cmd)
+                vvprint("PS returns:", out)
+                running = len([x for x in out.strip().split("\n") if x])
+                if running:
+                    raise Exception("docker process already running -- burst does not support multiple processes")
+
                 #prepare to build docker container
                 vprint ("Removing topmost layer")        #to avoid running stale image
                 cmd = ["docker", "{0}".format(remote), "rmi", "--no-prune", DEFAULT_IMAGE]
