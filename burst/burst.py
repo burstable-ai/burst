@@ -460,8 +460,12 @@ if __name__ == "__main__":
         # pprint(get_config())
         cconf = get_config()['compute_config']
         v0print ("-------------------------------------------------------------\nSessions with config %s & user %s:" % (cconf, args.burst_user))
-        for _, s in list_servers(args.burst_user, burst_conf):
+        for n, s in list_servers(args.burst_user, burst_conf):
+            # print ("DBG:", n.public_ips[0])
             print (s)
+            if n.state.lower()=='running':
+                cmd = f"ssh ubuntu@{n.public_ips[0]} 'screen -r -md -X hardcopy .burst_monitor.log; tail -n 2 .burst_monitor.log'"
+                os.system(cmd)
         v0print ("-------------------------------------------------------------")
 
     elif args.shutdown == None:
