@@ -143,6 +143,8 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             else:
                 raise Exception("Error: node not found")
 
+        docker_port_args = ""
+
         #we have a url unless running --local:
         if url:
 
