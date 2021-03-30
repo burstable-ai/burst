@@ -82,7 +82,7 @@ while True:
         shuttime = now + datetime.timedelta(seconds=delay)
 
     remain = (shuttime-now).total_seconds()
-    print ("time now:", now, "shutoff time:", shuttime, "remaining:", remain)
+    print ("Time:", now.strftime("%Y/%M/%d %H:%M:%S utc"), "Stop:", shuttime.strftime("%Y/%M/%d %H:%M:%S utc"), "in %d sec" % remain)
     sys.stdout.flush()
     if remain < 0:
         print ("Proceeding to shutdown {0}".format(args.ip))
