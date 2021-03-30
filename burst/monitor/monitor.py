@@ -33,7 +33,8 @@ parser.add_argument("--region",     required=True)
 parser.add_argument("--project",    default="")
 args = parser.parse_args()
 
-delay = 3600  # if not specified by burst
+delay = 3600        # if not specified by burst
+print ("\n" * 40)   #if you have to ask
 shuttime = datetime.datetime.utcnow() + datetime.timedelta(seconds = delay) #default if no process running
 while True:
     busy = False
