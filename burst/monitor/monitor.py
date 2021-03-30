@@ -33,7 +33,8 @@ parser.add_argument("--region",     required=True)
 parser.add_argument("--project",    default="")
 args = parser.parse_args()
 
-delay = 3600  # if not specified by burst
+delay = 3600        # if not specified by burst
+print ("\n" * 40)   #if you have to ask
 shuttime = datetime.datetime.utcnow() + datetime.timedelta(seconds = delay) #default if no process running
 while True:
     busy = False
@@ -82,7 +83,7 @@ while True:
         shuttime = now + datetime.timedelta(seconds=delay)
 
     remain = (shuttime-now).total_seconds()
-    print ("time now:", now, "shutoff time:", shuttime, "remaining:", remain)
+    print ("Time:", now.strftime("%Y/%m/%d %H:%M:%S utc"), "Stop:", shuttime.strftime("%Y/%m/%d %H:%M:%S utc"), "in %d sec" % remain)
     sys.stdout.flush()
     if remain < 0:
         print ("Proceeding to shutdown {0}".format(args.ip))
