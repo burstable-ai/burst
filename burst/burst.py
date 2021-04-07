@@ -19,6 +19,8 @@ from burst.verbos import set_verbosity, get_verbosity, vprint, vvprint, v0print,
 
 os.chdir(opath)
 
+print ("DANBUG 2", opath)
+
 DEFAULT_IMAGE = "burst_image" #FIXME: should be unique to folder structure
 
 install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock*" \
