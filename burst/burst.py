@@ -7,7 +7,7 @@ import os, sys, argparse, subprocess, time, traceback, json, getpass
 #so absolute imports work in script mode, we need to import from the parent folder
 opath = os.path.abspath(".")
 abspath = os.path.abspath(__file__)
-# print ("PATHS:", opath, abspath)
+# print ("BURST PATHS:", opath, abspath)
 abspath = abspath[:abspath.rfind('/') + 1]
 os.chdir(abspath)
 abspath = os.path.abspath("..")
