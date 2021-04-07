@@ -1,4 +1,5 @@
 FROM burstableai/burst_base:latest
+WORKDIR /home/burst/work
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends wget nginx
 
