@@ -100,7 +100,8 @@ if __name__ == "__main__":
     if args.command != None:
         i = argv.index(args.command)
     else:
-        i = len(argv)
+        # i = len(argv)
+        raise Exception("Must specify a subcommand. Try 'burst help'")
 
     burst_args = argv[:i]
     vvprint ("BURST ARGS:", burst_args)
