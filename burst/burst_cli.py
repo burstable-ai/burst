@@ -17,6 +17,18 @@ os.chdir(opath)
 
 from burst.burst import *
 
+#
+# typing reduction act
+#
+def complete(x, a):
+    num = 0
+    match = []
+    for k in a:
+        if k[:len(x)] == x:
+            num += 1
+            match.append(k)
+    return match, num
+
 verbs = {
     # None,
     'build',
@@ -36,6 +48,8 @@ verbs = {
 #
 def switch(verb, *args):
     # print ("SWITCH:", verb, args, verbs, verb in verbs)
+    if verb == None:
+        return False
     if verb not in verbs:
         raise Exception("Unknown subcommand: %s  try: 'burst help'" % verb)
     for a in args:
@@ -106,7 +120,14 @@ if __name__ == "__main__":
     args, task_args = parser.parse_known_args(argv)
     set_verbosity(args.verbosity)
 
-    verb = args.command
+    verb, matches = complete(args.command, verbs)
+    if matches > 1:
+        raise Exception(f"Ambiguous subcommand: {args.command} could be one of: {', '.join(verb)}")
+    elif matches == 0:
+        verb = args.command
+    else:
+        verb = verb[0]
+        vvprint (f"Expanding subcommand: {args.command} --> {verb}")
 
     vvprint ("ARGV:", argv)
     vvprint ("BURST:")
@@ -394,4 +415,4 @@ if __name__ == "__main__":
             v0print()
     else:
         vprint()
-        print ("Unknown subcommand:", verb)
+        print (" subcommand:", verb)
