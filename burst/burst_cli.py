@@ -18,15 +18,17 @@ os.chdir(opath)
 from burst.burst import *
 
 verbs = {
-    None,
+    # None,
     'build',
     'run',
     'help',
-    'list',
+    'list-servers',
     'status',
-    'stop',
-    'terminate',
+    'stop-server',
+    'terminate-server',
     'attach',
+    'sync',
+    'kill'
 }
 
 #
@@ -44,7 +46,7 @@ def switch(verb, *args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
-    parser.add_argument("command", nargs='?',                   help="Command to run on remote server")
+    parser.add_argument("command", nargs='?',                   help="Command to run on remote server: %s" % ", ".join(verbs))
     parser.add_argument("--access", metavar="KEY",              help="libcloud username (aws: ACCESS_KEY)")
     # parser.add_argument("--attach", action="store_true",        help="Attach to running process")
     parser.add_argument("--background", "-b", action="store_true", help="Run task in background mode")
@@ -67,7 +69,7 @@ if __name__ == "__main__":
     parser.add_argument("--gpus",                               help="'all', 'none', list of gpus, or prompt if not specified")
     parser.add_argument("--help", action="store_true",          help="Print usage info")
     parser.add_argument("--image",                              help="libcloud image (aws: ami image_id)")
-    parser.add_argument("--kill", action="store_true",          help="Terminate Docker process")
+    # parser.add_argument("--kill", action="store_true",          help="Terminate Docker process")
     # parser.add_argument("--list-servers", action="store_true",  help="List all associated remote servers")
     parser.add_argument("--local", action="store_true",         help="run on local device")
     parser.add_argument("--portmap", "-p", action="append", metavar="LOCAL[:REMOTE]",
@@ -81,9 +83,9 @@ if __name__ == "__main__":
     parser.add_argument("--stop", type=int, default=900, metavar="SECONDS",
                                                                 help="seconds before server is stopped (default 900) "
                                                                 "0 means never. Use subcommad 'stop' to force stop")
-    parser.add_argument("--sync", action="store_true",          help="Synchronize local workspace to remote")
+    # parser.add_argument("--sync", action="store_true",          help="Synchronize local workspace to remote")
     parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
-    parser.add_argument("--status", action="store_true",        help="Info on running docker process")
+    # parser.add_argument("--status", action="store_true",        help="Info on running docker process")
     parser.add_argument("--storage-config", metavar="STORAGE_SERVICE", help="override default storage configuration")
     # parser.add_argument("--terminate-servers", action="store_true", help="Terminate associated remote servers")
     parser.add_argument("--url",                                help="run on remote server specified by url")
@@ -159,7 +161,7 @@ if __name__ == "__main__":
         vprint ("Session: %s" % args.burst_user)
 
     # #master switch clause. First, stand-alone options
-    if switch(verb, 'list'):
+    if switch(verb, 'list-servers'):
         init(burst_conf)
         # pprint(get_config())
         cconf = get_config()['compute_config']
@@ -172,7 +174,7 @@ if __name__ == "__main__":
                 os.system(cmd)
         v0print ("-------------------------------------------------------------")
 
-    elif switch(verb, 'stop'):
+    elif switch(verb, 'stop-server'):
         v0print ("-------------------------------------------------------------")
         count = 0
         for node, s in list_servers(args.burst_user, burst_conf):
@@ -188,7 +190,7 @@ if __name__ == "__main__":
             print ("no servers to shut down")
         v0print ("-------------------------------------------------------------")
 
-    elif switch(verb, 'terminate'):
+    elif switch(verb, 'terminate-server'):
         v0print ("-------------------------------------------------------------")
         count = 0
         for node, s in list_servers(args.burst_user, burst_conf, terminated=False):
@@ -242,7 +244,7 @@ if __name__ == "__main__":
         if tunnel:
             tunnel.kill()
 
-    elif args.kill:
+    elif switch(verb, 'kill'):
         tunnel = None
         init(burst_conf)
         cconf = get_config()['compute_config']
@@ -327,14 +329,14 @@ if __name__ == "__main__":
     elif args.version:
         print ("VERSION:", version)
 
-    elif args.configure:
+    elif switch(verb, 'configure'):
         if args.configfile:
             yam = args.configfile
         else:
             yam = os.environ['HOME'] + "/.burst/config.yml"
         os.system("burst-config --config_path %s" % yam)
 
-    elif switch(verb, 'build', 'run'):
+    elif switch(verb, 'build', 'run', 'sync'):
         #no stand-alone options; do burst for reals
         if args.local:
             pubkey = None
@@ -379,7 +381,7 @@ if __name__ == "__main__":
         error = burst(task_args, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
               burst_user=args.burst_user, gpus=args.gpus, ports=args.portmap, stop=args.stop,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
-              dockerdport=args.dockerdport, bgd = args.background, sync_only = args.sync, conf = burst_conf)
+              dockerdport=args.dockerdport, bgd = args.background, sync_only = verb=='sync', conf = burst_conf)
 
         if error:
             v0print ("Build failed")
