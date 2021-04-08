@@ -18,9 +18,12 @@ os.chdir(opath)
 from burst.burst import *
 
 verbs = [
+    None,
     'build',
     'run',
-    'help'
+    'help',
+    'list',
+    'status'
 ]
 
 #
@@ -29,7 +32,7 @@ verbs = [
 def switch(verb, *args):
     # print ("SWITCH:", verb, args)
     if verb not in verbs:
-        raise Exception("unprotected subcommand: %s" % verb)
+        raise Exception("Unknown subcommand: %s try 'burst help'" % verb)
     for a in args:
         if a == verb:
             return True
@@ -277,7 +280,7 @@ if __name__ == "__main__":
         if tunnel:
             tunnel.kill()
 
-    elif args.status:
+    elif switch(verb, 'status'):
         tunnel = None
         init(burst_conf)
         cconf = get_config()['compute_config']
