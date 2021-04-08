@@ -24,7 +24,7 @@ if __name__ == "__main__":
     parser.add_argument("--access", metavar="KEY",              help="libcloud username (aws: ACCESS_KEY)")
     parser.add_argument("--attach", action="store_true",        help="Attach to running process")
     parser.add_argument("--background", "-b", action="store_true", help="Run task in background mode")
-    parser.add_argument("--build", action="store_true",         help="Download and build environment")
+    # parser.add_argument("--build", action="store_true",         help="Download and build environment")
     parser.add_argument("--burst_user", metavar="NAME",         help="Burst user name (defaults to local username; "
                                                                 "different usernames launch new machine instances)")
     parser.add_argument("--cloudmap", type=str, default="",
@@ -90,7 +90,7 @@ if __name__ == "__main__":
         print (" ", k)
     # exit()
 
-    if args.build and args.verbosity < 1:
+    if verb == 'build' and args.verbosity < 1:
         set_verbosity(9)
     else:
         set_verbosity(args.verbosity)
@@ -363,7 +363,7 @@ if __name__ == "__main__":
             else:
                 image = args.image
 
-        if args.build:
+        if verb == 'build':
             cmdargs = ['echo', 'Build phase 1 success']
 
         #let's do this thing
@@ -375,7 +375,7 @@ if __name__ == "__main__":
         if error:
             v0print ("Build failed")
         else:
-            if args.build:
+            if verb == 'build':
                 v0print()
                 print ("Build phase 2 success")
 

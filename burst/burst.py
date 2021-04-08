@@ -70,6 +70,8 @@ def ssh_tunnel(url, sshuser, ports, dockerdport):
 def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpus = None, ports=None, stop=False,
           image=None, size=None, pubkey=None, dockerfile="Dockerfile",
           cloudmap="", dockerdport=2376, bgd=False, sync_only=False, conf=None):
+    # print ("DEBUG GPUS:", gpus)
+    # return
     error = None
     tunnel = None
     try:
