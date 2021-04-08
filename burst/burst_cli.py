@@ -25,6 +25,7 @@ verbs = [
     'list',
     'status',
     'stop',
+    'terminate',
 ]
 
 #
@@ -83,7 +84,7 @@ if __name__ == "__main__":
     parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
     parser.add_argument("--status", action="store_true",        help="Info on running docker process")
     parser.add_argument("--storage-config", metavar="STORAGE_SERVICE", help="override default storage configuration")
-    parser.add_argument("--terminate-servers", action="store_true", help="Terminate associated remote servers")
+    # parser.add_argument("--terminate-servers", action="store_true", help="Terminate associated remote servers")
     parser.add_argument("--url",                                help="run on remote server specified by url")
     parser.add_argument("--uuid",                               help="run on remote server specified by libcloud uuid")
     parser.add_argument("--verbosity", type=int, default=0,     help="-1: just task output 0: status 1-127: more verbose"
@@ -186,7 +187,7 @@ if __name__ == "__main__":
             print ("no servers to shut down")
         v0print ("-------------------------------------------------------------")
 
-    elif args.terminate_servers:
+    elif switch(verb, 'terminate'):
         v0print ("-------------------------------------------------------------")
         count = 0
         for node, s in list_servers(args.burst_user, burst_conf, terminated=False):
