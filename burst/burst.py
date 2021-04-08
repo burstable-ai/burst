@@ -143,6 +143,8 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             else:
                 raise Exception("Error: node not found")
 
+        docker_port_args = ""
+
         #we have a url unless running --local:
         if url:
 
@@ -165,17 +167,17 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             locpath = os.path.abspath('.')
             path = "/home/{0}{1}".format(sshuser, relpath)
 
-            #part of check to see if docker is installed and running
-            remote = "-H localhost:%s" % dockerdport
-            cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
-            vvprint (cmd)
-            out, err = run(cmd)
-            vvprint("PS returns:", out)
-            running = len([x for x in out.strip().split("\n") if x])
-            if running:
-                raise Exception("docker process already running -- burst does not support multiple processes")
-
             if not sync_only:
+                # part of check to see if docker is installed and running
+                remote = "-H localhost:%s" % dockerdport
+                cmd = ["docker", "{0}".format(remote), "ps", "--format", '{{json .}}']
+                vvprint(cmd)
+                out, err = run(cmd)
+                vvprint("PS returns:", out)
+                running = len([x for x in out.strip().split("\n") if x])
+                if running:
+                    raise Exception("docker process already running -- burst does not support multiple processes")
+
                 #prepare to build docker container
                 vprint ("Removing topmost layer")        #to avoid running stale image
                 cmd = ["docker", "{0}".format(remote), "rmi", "--no-prune", DEFAULT_IMAGE]
@@ -314,7 +316,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             sys.stdout.flush()
 
         #sync data on host back to local
-        if url:
+        if url and not bgd:
             vprint ("Synchronizing folders")
             cmd = "rsync -rltzu{4} --exclude-from {5} -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error' '{3}@{1}:{2}/.' {0}/".format(locpath,
                                         url, path, sshuser, get_rsync_v(), rsync_ignore_path)
@@ -460,8 +462,12 @@ if __name__ == "__main__":
         # pprint(get_config())
         cconf = get_config()['compute_config']
         v0print ("-------------------------------------------------------------\nSessions with config %s & user %s:" % (cconf, args.burst_user))
-        for _, s in list_servers(args.burst_user, burst_conf):
+        for n, s in list_servers(args.burst_user, burst_conf):
+            # print ("DBG:", n.public_ips[0])
             print (s)
+            if n.state.lower()=='running':
+                cmd = f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error ubuntu@{n.public_ips[0]} 'screen -r -md -X hardcopy .burst_monitor.log; tail -n 2 .burst_monitor.log'"
+                os.system(cmd)
         v0print ("-------------------------------------------------------------")
 
     elif args.shutdown == None:
