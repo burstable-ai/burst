@@ -79,13 +79,15 @@ if __name__ == "__main__":
     argv = sys.argv[1:]
     args, unknown = parser.parse_known_args(argv)
 
-    # print ("KNOWN:")
-    # for k, v in args.__dict__.items():
-    #     if v:
-    #         print (f"  {k}=={v}")
-    # print ("UNKNOWN:")
-    # for k in unknown:
-    #     print (" ", k)
+    verb = args.command
+
+    print ("KNOWN:")
+    for k, v in args.__dict__.items():
+        if v:
+            print (f"  {k}=={v}")
+    print ("UNKNOWN:")
+    for k in unknown:
+        print (" ", k)
     # exit()
 
     if args.build and args.verbosity < 1:
@@ -107,7 +109,7 @@ if __name__ == "__main__":
     args = parser.parse_args(burst_args)
     vvprint ("PARSED BURST ARGS:", args)
 
-    if args.help:
+    if args.help or verb == 'help':
         parser.print_help()
         sys.exit(1)
 
