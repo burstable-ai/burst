@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, argparse, subprocess, time, traceback, json, getpass
+import os, sys, argparse, time, json, getpass
 #
 # the BDFL does not admire scripts which are also importable modules
 # well, frack him -- this is how we roll
@@ -33,8 +33,8 @@ if __name__ == "__main__":
                                                                 help="override default compute configuration")
     parser.add_argument("--configfile", metavar="FILE",         help="override default config.yml")
     parser.add_argument("--configure", action="store_true",     help="Interactive configuration")
-    parser.add_argument("--delay", type=int, default=0, metavar="SECONDS",
-                                                                help="delay command by N seconds")
+    # parser.add_argument("--delay", type=int, default=0, metavar="SECONDS",
+    #                                                             help="delay command by N seconds")
     parser.add_argument("--dockerdport", type=int, default=2376,
                                          metavar="PORT",        help="local port to map to remote host docker daemon"
                                                                 "(default: 2376)")
@@ -94,9 +94,6 @@ if __name__ == "__main__":
     if verb == 'build' and args.verbosity < 1:
         set_verbosity(9)
 
-    if args.command == None:
-        raise Exception("Must specify a subcommand. Try 'burst help'")
-
     if args.help or verb == 'help':
         parser.print_help()
         sys.exit(1)
@@ -126,10 +123,10 @@ if __name__ == "__main__":
         vprint (args)
         parser.error("when specifying --local, do not set --sshuser, --burst_user, --uuid, or --url")
         exit()
-    t0 = time.time()
-    while time.time()-t0 < args.delay:
-        vprint ("%d seconds till action" % (args.delay+.5+t0-time.time()))
-        time.sleep(5)
+    # t0 = time.time()
+    # while time.time()-t0 < args.delay:
+    #     vprint ("%d seconds till action" % (args.delay+.5+t0-time.time()))
+    #     time.sleep(5)
 
     #set default burst_user if necessary:
     if not (args.burst_user or args.uuid or args.url or args.local or args.version):
@@ -313,7 +310,7 @@ if __name__ == "__main__":
             yam = os.environ['HOME'] + "/.burst/config.yml"
         os.system("burst-config --config_path %s" % yam)
 
-    else:
+    elif verb in ['build', 'run']:
         #no stand-alone options; do burst for reals
         if args.local:
             pubkey = None
@@ -369,3 +366,6 @@ if __name__ == "__main__":
 
             vprint ("DONE")
             v0print()
+    else:
+        vprint()
+        print ("Unknown subcommand:", verb)
