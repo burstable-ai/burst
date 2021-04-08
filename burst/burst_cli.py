@@ -79,6 +79,15 @@ if __name__ == "__main__":
     argv = sys.argv[1:]
     args, unknown = parser.parse_known_args(argv)
 
+    # print ("KNOWN:")
+    # for k, v in args.__dict__.items():
+    #     if v:
+    #         print (f"  {k}=={v}")
+    # print ("UNKNOWN:")
+    # for k in unknown:
+    #     print (" ", k)
+    # exit()
+
     if args.build and args.verbosity < 1:
         set_verbosity(9)
     else:
