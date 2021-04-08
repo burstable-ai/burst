@@ -1,11 +1,13 @@
 # burst
-## Command-line tool to remotely execute code in the cloud
+## A command-line tool to remotely execute code in the cloud
 
 ## Introduction
 
 `burst` lets you run your software remotely - on any sized virtual machine - without any change to your existing development process, as long as you have a working Dockerfile.
 
 We currently support Amazon cloud services and will be adding more.
+
+Detailed installation instructions and usage examples can be found here: https://www.burstable.ai/
 
 ## Dependencies
 
@@ -25,17 +27,17 @@ Make sure you are running the necessary versions of python and Docker (need Pyth
 
 _Note: if you want to contribute or just follow bleeding-edge development, install as described [here](https://github.com/burstable-ai/burst/wiki/Contributing-To-Burst) instead._
 
-### ssh keys:
+### SSH keys:
 You must have a public/private ssh key pair, stored as ~/.ssh/id_rsa.pub and ~/.ssh/id_rsa.  If you do not already have ssh keys, run ssh-keygen to generate them.
 
     ssh-keygen -t rsa -b 4096
 
-### recommended: 
+### Recommended: set up a Python virtual environment
 set up a virtual environment 
 
 https://realpython.com/python-virtual-environments-a-primer/
 
-### Install command-line tool:
+### Install the command-line tool:
 
     pip install burstable
 
@@ -53,7 +55,7 @@ https://realpython.com/python-virtual-environments-a-primer/
 ### Make sure Docker is running
 The Docker daemon must be running in the background to use burst.
 
-### build burst environment:
+### Build the environment for this project:
 
     burst --build
 
@@ -72,7 +74,7 @@ you should see this:
     DONE
 
  
- ### run a command on the remote server:
+ ### Run a command on the remote server:
  
      burst python3 hello_burst.py
  
@@ -85,13 +87,14 @@ Response should look like this:
     ----------------------END-------------------------
     burst: DONE 
 
+## Use burst to run Python project on a remote GPU:
 
- ### run a machine learning example
+### Run a machine learning example
  
-The `examples/` folder contains pre-built machine learning examples to help you get started.  
+There are several `burst` examples posted here: https://burstable.ai/examples  
 
-We recommend walking through the CIFAR-10 example, which uses Pytorch to implement a Convolutional Neural Net (CNN) for image classification on the benchmark CIFAR-10 dataset.  This example also illustrates how to use `burst` to run a Jupyter notebook on a remote GPU, for real-time model building and manipulation on a GPU.
+We recommend walking through the CIFAR-10 example, which uses Pytorch to implement a Convolutional Neural Net (CNN) for image classification on the benchmark CIFAR-10 dataset.  This example also illustrates how to use `burst` to run the CNN using a Jupyter notebook on a remote GPU, for real-time model building and manipulation.
 
-The instructions for running this CNN example are [here.](examples/cifar10/README.md)
+### Run your own Python project
 
-The instructions for setting up your own Python project to run through `burst` are [here.](examples/your_project/README.md)
+The examples page also includes instructions and template files for setting up your own Python project to run through `burst`, and/or for using `burst` to run a Jupyter notebook on a remote GPU.
