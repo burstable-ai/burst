@@ -17,7 +17,7 @@ os.chdir(opath)
 
 from burst.burst import *
 
-verbs = [
+verbs = {
     None,
     'build',
     'run',
@@ -26,7 +26,8 @@ verbs = [
     'status',
     'stop',
     'terminate',
-]
+    'attach',
+}
 
 #
 # This hack ensures we do not collect new, undocumented 'verbs' (subcommands)
@@ -45,7 +46,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
     parser.add_argument("command", nargs='?',                   help="Command to run on remote server")
     parser.add_argument("--access", metavar="KEY",              help="libcloud username (aws: ACCESS_KEY)")
-    parser.add_argument("--attach", action="store_true",        help="Attach to running process")
+    # parser.add_argument("--attach", action="store_true",        help="Attach to running process")
     parser.add_argument("--background", "-b", action="store_true", help="Run task in background mode")
     # parser.add_argument("--build", action="store_true",         help="Download and build environment")
     parser.add_argument("--burst_user", metavar="NAME",         help="Burst user name (defaults to local username; "
@@ -76,10 +77,10 @@ if __name__ == "__main__":
     parser.add_argument("--pubkey",                             help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
     parser.add_argument("--region",                             help="libcloud location (aws: region)")
     parser.add_argument("--secret",                             help="libcloud password (aws: SECRET)")
+    parser.add_argument("--size",                               help="libcloud size (aws: instance_type; gce: size)")
     parser.add_argument("--stop", type=int, default=900, metavar="SECONDS",
                                                                 help="seconds before server is stopped (default 900) "
                                                                 "0 means never. Use subcommad 'stop' to force stop")
-    parser.add_argument("--size",                               help="libcloud size (aws: instance_type; gce: size)")
     parser.add_argument("--sync", action="store_true",          help="Synchronize local workspace to remote")
     parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
     parser.add_argument("--status", action="store_true",        help="Info on running docker process")
@@ -201,7 +202,7 @@ if __name__ == "__main__":
             print ("no servers to terminate")
         v0print ("-------------------------------------------------------------")
 
-    elif args.attach:
+    elif switch(verb, 'attach'):
         tunnel = None
         init(burst_conf)
         cconf = get_config()['compute_config']
