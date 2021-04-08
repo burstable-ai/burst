@@ -77,38 +77,25 @@ if __name__ == "__main__":
     # and pass all args AFTER the main command to the command when it runs remotely
     #
     argv = sys.argv[1:]
-    args, unknown = parser.parse_known_args(argv)
+    args, task_args = parser.parse_known_args(argv)
+    set_verbosity(args.verbosity)
 
     verb = args.command
 
-    print ("KNOWN:")
+    vvprint ("ARGV:", argv)
+    vvprint ("BURST:")
     for k, v in args.__dict__.items():
         if v:
-            print (f"  {k}=={v}")
-    print ("UNKNOWN:")
-    for k in unknown:
-        print (" ", k)
-    # exit()
+            vvprint (f"  {k}=={v}")
+    vvprint ("TASK:")
+    for k in task_args:
+        vvprint (" ", k)
 
     if verb == 'build' and args.verbosity < 1:
         set_verbosity(9)
-    else:
-        set_verbosity(args.verbosity)
 
-    vvprint ("ARGV:", argv)
-
-    if args.command != None:
-        i = argv.index(args.command)
-    else:
-        # i = len(argv)
+    if args.command == None:
         raise Exception("Must specify a subcommand. Try 'burst help'")
-
-    burst_args = argv[:i]
-    vvprint ("BURST ARGS:", burst_args)
-    cmdargs = argv[i:]
-    vvprint ("TASK ARGS:", cmdargs)
-    args = parser.parse_args(burst_args)
-    vvprint ("PARSED BURST ARGS:", args)
 
     if args.help or verb == 'help':
         parser.print_help()
@@ -365,10 +352,10 @@ if __name__ == "__main__":
                 image = args.image
 
         if verb == 'build':
-            cmdargs = ['echo', 'Build phase 1 success']
+            task_args = ['echo', 'Build phase 1 success']
 
         #let's do this thing
-        error = burst(cmdargs, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
+        error = burst(task_args, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
               burst_user=args.burst_user, gpus=args.gpus, ports=args.portmap, stop=args.shutdown,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               dockerdport=args.dockerdport, bgd = args.background, sync_only = args.sync, conf = burst_conf)
