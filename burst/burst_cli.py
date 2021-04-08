@@ -17,6 +17,24 @@ os.chdir(opath)
 
 from burst.burst import *
 
+verbs = [
+    'build',
+    'run',
+    'help'
+]
+
+#
+# This hack ensures we do not collect new, undocumented 'verbs' (subcommands)
+#
+def switch(verb, *args):
+    # print ("SWITCH:", verb, args)
+    if verb not in verbs:
+        raise Exception("unprotected subcommand: %s" % verb)
+    for a in args:
+        if a == verb:
+            return True
+    return False
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
@@ -44,7 +62,7 @@ if __name__ == "__main__":
     parser.add_argument("--help", action="store_true",          help="Print usage info")
     parser.add_argument("--image",                              help="libcloud image (aws: ami image_id)")
     parser.add_argument("--kill", action="store_true",          help="Terminate Docker process")
-    parser.add_argument("--list-servers", action="store_true",  help="List all associated remote servers")
+    # parser.add_argument("--list-servers", action="store_true",  help="List all associated remote servers")
     parser.add_argument("--local", action="store_true",         help="run on local device")
     parser.add_argument("--portmap", "-p", action="append", metavar="LOCAL[:REMOTE]",
                                                                 help="port mapping; example: -p 8080 or -p 8081:8080")
@@ -94,7 +112,7 @@ if __name__ == "__main__":
     if verb == 'build' and args.verbosity < 1:
         set_verbosity(9)
 
-    if args.help or verb == 'help':
+    if args.help or switch(verb, 'help'):
         parser.print_help()
         sys.exit(1)
 
@@ -135,7 +153,7 @@ if __name__ == "__main__":
         vprint ("Session: %s" % args.burst_user)
 
     # #master switch clause. First, stand-alone options
-    if args.list_servers:
+    if switch(verb, 'list'):
         init(burst_conf)
         # pprint(get_config())
         cconf = get_config()['compute_config']
@@ -310,7 +328,7 @@ if __name__ == "__main__":
             yam = os.environ['HOME'] + "/.burst/config.yml"
         os.system("burst-config --config_path %s" % yam)
 
-    elif verb in ['build', 'run']:
+    elif switch(verb, 'build', 'run'):
         #no stand-alone options; do burst for reals
         if args.local:
             pubkey = None
