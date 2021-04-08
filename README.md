@@ -3,7 +3,7 @@
 
 ## Introduction
 
-`burst` lets you run your software remotely - on any sized virtual machine - without any change to your existing development process, as long as you have a working Dockerfile.
+`burst` lets you run your software remotely---on any sized virtual machine---without any change to your existing development process, as long as you have a working Dockerfile.
 
 We currently support Amazon cloud services and will be adding more.
 
