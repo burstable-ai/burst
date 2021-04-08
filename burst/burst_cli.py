@@ -23,16 +23,17 @@ verbs = [
     'run',
     'help',
     'list',
-    'status'
+    'status',
+    'stop',
 ]
 
 #
 # This hack ensures we do not collect new, undocumented 'verbs' (subcommands)
 #
 def switch(verb, *args):
-    # print ("SWITCH:", verb, args)
+    # print ("SWITCH:", verb, args, verbs, verb in verbs)
     if verb not in verbs:
-        raise Exception("Unknown subcommand: %s try 'burst help'" % verb)
+        raise Exception("Unknown subcommand: %s  try: 'burst help'" % verb)
     for a in args:
         if a == verb:
             return True
@@ -74,9 +75,9 @@ if __name__ == "__main__":
     parser.add_argument("--pubkey",                             help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
     parser.add_argument("--region",                             help="libcloud location (aws: region)")
     parser.add_argument("--secret",                             help="libcloud password (aws: SECRET)")
-    parser.add_argument("--shutdown", type=int, default=900, nargs='?', metavar="SECONDS",
+    parser.add_argument("--stop", type=int, default=900, metavar="SECONDS",
                                                                 help="seconds before server is stopped (default 900) "
-                                                                "0 means no shutdown; no argument prompts for forced shutdown")
+                                                                "0 means never. Use subcommad 'stop' to force stop")
     parser.add_argument("--size",                               help="libcloud size (aws: instance_type; gce: size)")
     parser.add_argument("--sync", action="store_true",          help="Synchronize local workspace to remote")
     parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
@@ -169,7 +170,7 @@ if __name__ == "__main__":
                 os.system(cmd)
         v0print ("-------------------------------------------------------------")
 
-    elif args.shutdown == None:
+    elif switch(verb, 'stop'):
         v0print ("-------------------------------------------------------------")
         count = 0
         for node, s in list_servers(args.burst_user, burst_conf):
@@ -374,7 +375,7 @@ if __name__ == "__main__":
 
         #let's do this thing
         error = burst(task_args, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
-              burst_user=args.burst_user, gpus=args.gpus, ports=args.portmap, stop=args.shutdown,
+              burst_user=args.burst_user, gpus=args.gpus, ports=args.portmap, stop=args.stop,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               dockerdport=args.dockerdport, bgd = args.background, sync_only = args.sync, conf = burst_conf)
 
