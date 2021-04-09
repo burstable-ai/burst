@@ -25,39 +25,53 @@ Make sure you are running the necessary versions of python and Docker (need Pyth
 
 ## Installation 
 
-_Note: if you want to contribute or just follow bleeding-edge development, install as described [here](https://github.com/burstable-ai/burst/wiki/Contributing-To-Burst) instead._
+_Note: if you want to contribute to the burst OSS project or just follow bleeding-edge development, install through gitHub as described [here](https://github.com/burstable-ai/burst/wiki/Contributing-To-Burst) instead._
 
 ### SSH keys:
-You must have a public/private ssh key pair, stored as ~/.ssh/id_rsa.pub and ~/.ssh/id_rsa.  If you do not already have ssh keys, run ssh-keygen to generate them.
+You must have a public/private ssh key pair, stored as `~/.ssh/id_rsa.pub` and `~/.ssh/id_rsa` by default.  
+
+If you do not already have ssh keys, run `ssh-keygen` to generate them:
 
     ssh-keygen -t rsa -b 4096
 
 ### Recommended: set up a Python virtual environment
-set up a virtual environment 
 
-https://realpython.com/python-virtual-environments-a-primer/
+Follow the instructions here: [python-virtual-environments-a-primer](https://realpython.com/python-virtual-environments-a-primer/)
+
+Launch the virtual environment and do the remainder of your installation and set-up _inside_ the virtual environment.
 
 ### Install the command-line tool:
 
     pip install burstable
 
-## Interactive configuration setup:
+### Run the interactive configuration setup:
 
-    burst --configure
+    burst configure
+
+Enter your configuration information as prompted to set up a remote compute service.
 
 ## Build & test a simple burst environment
 
-### check out source code:
+### Download test examples
 
-    git clone https://github.com/burstable-ai/burst
-    cd burst/tests
+Download the tarball of examples from https://burstable.ai/examples
 
-### Make sure Docker is running
-The Docker daemon must be running in the background to use burst.
+Unpack the examples tarball and `cd` into the `hello_burst/` directory.  You should see a file called `hello_burst.py`.
 
-### Build the environment for this project:
+### Make sure Docker is running:
 
-    burst --build
+The Docker daemon must be running in the background to use `burst`.
+Test to make sure it is running and that you have the correct version:
+
+    docker --version
+
+It should return something like:
+
+    Docker version 19.03.12, build 48a66213fe
+
+### Build the burst environment:
+
+    burst build
 
 This may take several minutes; be patient. After some output, 
 you should see this: 
@@ -69,25 +83,23 @@ you should see this:
     receiving incremental file list
     Scheduling shutdown of VM at 52.27.54.55 for 900 seconds from now
     
-    
     Build phase 2 success
     DONE
+ 
+### Run a command on the remote server:
+ 
+     burst run python3 hello_burst.py
+ 
+The response should look like this:
 
- 
- ### Run a command on the remote server:
- 
-     burst python3 hello_burst.py
- 
-Response should look like this:
- 
-     ---------------------OUTPUT-----------------------                                                         
+    ---------------------OUTPUT-----------------------
     Welcome burst-utioners! You're running a virtual machine with 4 cpus
     The following GPU's are available:
     Tesla T4
     ----------------------END-------------------------
-    burst: DONE 
-
-## Use burst to run Python project on a remote GPU:
+    burst: DONE
+    
+## Use burst to run a Python project on a remote GPU:
 
 ### Run a machine learning example
  
