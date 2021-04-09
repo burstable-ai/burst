@@ -23,7 +23,7 @@ to do its thing. The end of the output should look like this:
 
 Now you can run code in the cloud:
 
-    burst python3 hello_burst.py
+    burst run python3 hello_burst.py
 
 The output should look something like this:
 
