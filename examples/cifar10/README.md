@@ -22,7 +22,9 @@ First, set up a virtual environment (instructions are [here](https://realpython.
 
     pip install -r requirements.txt
 
-to ensure that you have the correct versions of all necessary Python packages.
+to ensure that you have the correct versions of all necessary Python packages.  
+
+If it recommends that you upgrade your version of pip, do so, and then run `pip install -r requirements.txt` again.  This will circumvent some problems with accessing the required versions of various python packages.
 
 Then, run the command line examples with 
 
@@ -81,22 +83,22 @@ If you run the Jupyter notebook, these same visualizations appear in the noteboo
 
 First, make sure your burst build is working and ready to use, by running
 
-    burst --build
+    burst build
     
 inside your project directory.  If you encounter problems, try ramping up the verbosity for more granular feedback, e.g. 
 
-	burst --build --verbosity 127
+	burst build --verbose 127
 	
 (Note: 127 is maximum verbosity).
 
 Once the burst build is working, run the command line examples using burst:
 
-    burst python3 trainCNN_CIFAR10.py --nepochs 40
+    burst run python3 trainCNN_CIFAR10.py --nepochs 40
 
 The output should look something like this:
 
 ```
-graves@pescadero ~/g/v/s/b/e/cifar10> burst python3 trainCNN_CIFAR10.py --nepochs 40
+graves@pescadero ~/g/v/s/b/e/cifar10> burst run python3 trainCNN_CIFAR10.py --nepochs 40
 burst: Session: burst-graves                                                                             
 burst: Starting server                                                                                   
 burst: server state:pending                                                                              
@@ -153,7 +155,7 @@ graves@pescadero ~/g/v/s/b/e/cifar10>
 
 ```
 
-The first time you run burst, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will take some time to rebuild itself on the next `burst` run.
+The first time you run `burst`, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will take some time to rebuild itself on the next `burst` run.
 
 When `burst` has finished running training and running your model, it will automatically transfer the output and any modified files back to your local directory and close the connection.  Once a `burst` connection has been closed for > 15 minutes, it will stop the remote server so that you will not be paying for it.
 
@@ -165,7 +167,7 @@ Sometimes it is useful to be able to have an entire Jupyter notebook running on 
 
 To run a remote Jupyter server through `burst`, use
 
-    burst -p 8888 jupyter lab --ip 0.0.0.0 --allow-root
+    burst run -p 8888 jupyter lab --ip 0.0.0.0 --allow-root
     
 The screen will then display a URL, which will look something like
 
