@@ -1,7 +1,7 @@
 # burst example: Setting up your own Python project
 =======
 
-# Required files
+## Required files
 
 Every Python `burst` project requires the following files:
 
@@ -12,7 +12,7 @@ Every Python `burst` project requires the following files:
 
 Template versions of all of these files are included in this example directory.  For most pure python projects, the `Dockerfile`, `.dockerignore`, and `.burstignore` files included here will work out of the box.  The only file you will need to modify is the `requirements.txt`.
 
-# Setting up your `requirements.txt` file
+## Setting up your requirements.txt file
 
 This file needs to specify the correct version of each python package you need to install in order to run your project.  These will typically be the packages that you import at the top of your python script or Jupyter notebook.
 
@@ -22,32 +22,32 @@ If you used `pip` to install packages, either in a virtual environment or direct
 
 at the command line.  Specify these versions in your `requirements.txt` file, following the example format included in the template `requirements.txt` here.  
 
-If you use `conda` to manage your python packages, you may need to look elsewhere in your system to find the correct version numbers for your packages (please update this README with instructions on how to find `conda` package versioning info!)
+If you use `conda` to manage your python packages, you may need to look elsewhere in your system to find the correct version numbers for your packages (contributors: please update this README with instructions on how to find `conda` package versioning info!)
 
-# Setting up your project
+## Setting up your project
 
 Make sure you have all supporting data files and *.py files in the directory with your project.  `burst` will transfer all files in the directory from which it is called (except for those specified in the `.burstignore`!).
 
 Then, make sure your burst build is working and ready to use, by running
 
-	burst --build
+	burst build
 
 inside your project directory.  If you encounter problems, try ramping up the verbosity for more granular feedback, e.g. 
 
-	burst --build --verbosity 127
+	burst build --verbose 127
 	
 (Note: 127 is maximum verbosity).
 
-# Running command line examples using burst
+## Running command line examples using burst
 
 To run the command line example using burst, use
 
-    burst python3 template.py --verbosity 1
+    burst run python3 template.py --verbose 1
 
 The output should look something like this:
 
 ```
-graves@pescadero ~/g/v/s/b/e/your_project> burst python3 template.py --verbosity 1
+graves@pescadero ~/g/v/s/b/e/your_python_project> burst run python3 template.py --verbose 1
 Session: burst-graves
 Waiting for sshd
 Connecting through ssh
@@ -86,10 +86,10 @@ total size is 31518  speedup is 64.32
 Scheduling shutdown of VM at 34.222.154.210 for 900 seconds from now
 DONE
 
-graves@pescadero ~/g/v/s/b/e/your_project> 
+graves@pescadero ~/g/v/s/b/e/your_python_project> 
 ```
 
-You can suppress most of the `burst` information by not specifying a `verbosity`, e.g., `burst python3 template.py`.  You can get maximum verbosity with `--verbosity 127`.
+You can suppress most of the `burst` information by not specifying `verbose`, e.g., `burst run python3 template.py`.  You can get maximum verbosity with `--verbose 127`.
 
 The first time you run `burst`, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will take some time to rebuild itself on the next `burst` run.
 
@@ -97,13 +97,13 @@ When `burst` has finished running your project, it will automatically transfer a
 
 You can inspect the output files that have been transferred back to your local machine.
 
-# Running examples in Jupyter using burst
+## Running examples in Jupyter using burst
 
 Sometimes it is useful to be able to have an entire Jupyter notebook running on a GPU, while you are experimenting with a new model, so that the run time is fast while you are developing.  `burst` can support remote Jupyter notebooks for real-time model experimentation on a GPU.  
 
 To run a remote Jupyter server through `burst`, use
 
-    burst -p 8899 jupyter lab --ip 0.0.0.0 --port 8899 --allow-root
+    burst run -p 8899 jupyter lab --ip 0.0.0.0 --port 8899 --allow-root
     
 Make sure you use a port number that is not already in use (if the port is in use, you will get a non-transparent error message!)  The screen will then display a URL, which will look something like
 

@@ -1,4 +1,4 @@
-# burst example: minimal Hello World
+# burst example: minimal Hello Burst
 
 If you copy this folder, make sure to also copy these hidden files:
 
@@ -7,11 +7,8 @@ If you copy this folder, make sure to also copy these hidden files:
 
 Launch a VM and build the dockerfile:
 
-    burst --build --gpus none
+    burst build --gpu
     
-(note: if you plan to be using gpu acceleration later, specify `--gpus all`)
-
-
 If this is the first time you ran `burst` on this machine, it will take a few minutes
 to do its thing. The end of the output should look like this:
 
@@ -26,7 +23,7 @@ to do its thing. The end of the output should look like this:
 
 Now you can run code in the cloud:
 
-    burst python3 hello_burst.py
+    burst run python3 hello_burst.py
 
 The output should look something like this:
 
