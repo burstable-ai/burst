@@ -86,7 +86,7 @@ if __name__ == "__main__":
     add("--vm-type",            dest='size',                                                help="aws: instance_type; gce: size)")
     add("--stop",               type=int, default=900, metavar="SECONDS",                   help="seconds before server is stopped (default 900) "
                                                                                                  "0 means never. Use subcommad 'stop' to force stop")
-    add("--vm-username",        default="ubuntu",                                           help="remote server username for login")
+    add("--vm-username",        dest='sshuser', default="ubuntu",                           help="remote server username for login")
     add("--storage-config",     metavar="STORAGE_SERVICE",                                  help="override default storage configuration")
     add("--verbose", "-v",      dest='verbosity', type=int, default=0,                      help="-1: just task output 0: status 1-127: more verbose"
                                                                                                  "(default: -1)")
@@ -383,7 +383,7 @@ if __name__ == "__main__":
             task_args = ['echo', 'Build phase 1 success']
 
         #let's do this thing
-        error = burst(task_args, sshuser=args.sshuser, url=args.url,
+        error = burst(task_args, sshuser=args.sshuser,
               burst_user=args.burst_user, gpus=args.gpus, ports=args.portmap, stop=args.stop,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               dockerdport=args.dockerdport, bgd = args.background, sync_only = verb=='sync', conf = burst_conf)
