@@ -150,9 +150,9 @@ if __name__ == "__main__":
         if args.configfile:
             burst_conf['configfile'] = args.configfile
 
-    if args.local and (args.uuid or args.url):
+    if args.local:
         vprint (args)
-        parser.error("when specifying --local, do not set --sshuser, --burst_user, --uuid, or --url")
+        parser.error("when specifying --local, do not set --vm-username or --session-name")
         exit()
     # t0 = time.time()
     # while time.time()-t0 < args.delay:
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     #     time.sleep(5)
 
     #set default burst_user if necessary:
-    if not (args.burst_user or args.uuid or args.url or args.local or args.version):
+    if not (args.burst_user or args.local or args.version):
         burst_user = getpass.getuser()
         args.burst_user = "burst-" + burst_user
         vprint ("Session: %s" % args.burst_user)
@@ -383,7 +383,7 @@ if __name__ == "__main__":
             task_args = ['echo', 'Build phase 1 success']
 
         #let's do this thing
-        error = burst(task_args, sshuser=args.sshuser, url=args.url, uuid=args.uuid,
+        error = burst(task_args, sshuser=args.sshuser, url=args.url,
               burst_user=args.burst_user, gpus=args.gpus, ports=args.portmap, stop=args.stop,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               dockerdport=args.dockerdport, bgd = args.background, sync_only = verb=='sync', conf = burst_conf)
