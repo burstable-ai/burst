@@ -47,7 +47,7 @@ To run the command line example using burst, use
 The output should look something like this:
 
 ```
-graves@pescadero ~/g/v/s/b/e/your_project> burst run python3 template.py --verbose 1
+graves@pescadero ~/g/v/s/b/e/your_python_project> burst run python3 template.py --verbose 1
 Session: burst-graves
 Waiting for sshd
 Connecting through ssh
@@ -86,7 +86,7 @@ total size is 31518  speedup is 64.32
 Scheduling shutdown of VM at 34.222.154.210 for 900 seconds from now
 DONE
 
-graves@pescadero ~/g/v/s/b/e/your_project> 
+graves@pescadero ~/g/v/s/b/e/your_python_project> 
 ```
 
 You can suppress most of the `burst` information by not specifying `verbose`, e.g., `burst run python3 template.py`.  You can get maximum verbosity with `--verbose 127`.
