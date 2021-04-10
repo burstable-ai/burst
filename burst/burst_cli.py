@@ -29,31 +29,35 @@ def complete(x, a):
             match.append(k)
     return match, num
 
-verbs = {
+actions = {
     # None,
-    'build',
-    'run',
-    'help',
-    'list-servers',
-    'status',
-    'stop-server',
-    'terminate-server',
-    'attach',
-    'sync',
-    'kill'
+    'build':            "burst build                                    |build project",
+    'run':              "burst run <command>                            |run <command> on remote server",
+    'help':             "burst help                                     |print helpful information",
+    'list-servers':     "burst list-servers                             |list available servers; display time till automatic stop",
+    'status':           "burst status                                   |show status of remote task (if running)",
+    'stop-server':      "burst stop-server                              |force-stop server (prompts for confirmation)",
+    'terminate-server': "burst termimate-server                         |terminate (delete) remote server (prompts for confirmation)",
+    'attach':           "burst attach                                   |attach stdin, stdout, stderr to background process. ctl-C detaches",
+    'sync':             "burst sync                                     |synchronize local directory to remote",
+    'kill':             "burst kill                                     |stop docker process on remote",
+    'actions':          "burst actions                                  |list available actions",
 }
 
+actions_keys_sorted = list(actions)
+actions_keys_sorted.sort()
+
 #
-# This hack ensures we do not collect new, undocumented 'verbs' (subcommands)
+# This hack ensures we do not collect new, undocumented 'actions' (subcommands)
 #
-def switch(verb, *args):
-    # print ("SWITCH:", verb, args, verbs, verb in verbs)
-    if verb == None:
+def switch(action, *args):
+    # print ("SWITCH:", action, args, actions, action in actions)
+    if action == None:
         return False
-    if verb not in verbs:
-        raise Exception("Unknown subcommand: %s  try: 'burst help'" % verb)
+    if action not in actions:
+        raise Exception("Unknown action: %s  try: 'burst help'" % action)
     for a in args:
-        if a == verb:
+        if a == action:
             return True
     return False
 
@@ -61,37 +65,37 @@ def switch(verb, *args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
     add = parser.add_argument
-    add("command", nargs='?',                                                               help="Command to run on remote server: %s" % ", ".join(verbs))
-    add("--compute-access",     metavar="KEY", dest='access',                               help="libcloud username (aws: ACCESS_KEY)")
+    add("action", nargs='?',                                                                help="type 'burst actions' to list available actions")
     add("--background", "-b",   action="store_true",                                        help="Run task in background mode")
-    add("--session-name",       metavar="NAME", dest='burst_user',                          help="Burst session name (defaults to burst-username; "
-                                                                                                 "different sessions launch new machine instances)")
     add("--cloudmap",           type=str, default="",  metavar="STORAGE:MOUNT",             help="map (mount) burst storage service to local folder")
-    add("--compute-service",    dest='compute_config',metavar="COMPUTE_SERVICE",            help="override default compute configuration service")
-    add("--config-file",        metavar="FILE", dest='configfile',                          help="override default config.yml")
-    add("--docker-port",        dest='dockerdport', type=int, default=2377, metavar="PORT", help="local port to map to remote host docker daemon"
-                                                                                                 "(default: 2377)")
-    add("--docker-file",        dest='dockerfile', type=str, default="Dockerfile", metavar="FILE",
-                                                                                            help="Docker file (defaults to ./Dockerfile)")
-    add("--gpu",                action="store_true",                                        help="Build with gpu")
-    add("--no-gpu",             action="store_true",                                        help="Build without gpu")
-    add("--help",               action="store_true",                                        help="Print usage info")
-    add("--vm-image",           dest='image',                                               help="libcloud image (aws: ami image_id)")
-    add("--local",              action="store_true",                                        help="run on local device")
-    add("--tunnel-port", "-p",  dest='portmap', action="append", metavar="LOCAL[:REMOTE]",  help="port mapping; example: -p 8080 or -p 8081:8080")
-    add("--gcs-project",        dest='project',                                             help="Google Cloud project ID")
+    add("--compute-access",     metavar="KEY", dest='access',                               help="libcloud username (aws: ACCESS_KEY)")
     add("--compute-provider",   dest='provider',default='EC2',                              help="GCE, EC2 etc.")
-    add("--pubkey-file",        dest='pubkey',                                              help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
     add("--compute-region",     dest='region',                                              help="libcloud location (aws: region)")
     add("--compute-secret",     dest='secret',                                              help="libcloud password (aws: SECRET)")
-    add("--vm-type",            dest='size',                                                help="aws: instance_type; gce: size)")
+    add("--compute-service",    dest='compute_config',metavar="COMPUTE_SERVICE",            help="override default compute configuration service")
+    add("--config-file",        metavar="FILE", dest='configfile',                          help="override default config.yml")
+    add("--docker-file",        dest='dockerfile', type=str, default="Dockerfile", metavar="FILE",
+                                                                                            help="Docker file (defaults to ./Dockerfile)")
+    add("--docker-port",        dest='dockerdport', type=int, default=2377, metavar="PORT", help="local port to map to remote host docker daemon"
+                                                                                                 "(default: 2377)")
+    add("--gcs-project",        dest='project',                                             help="Google Cloud project ID")
+    add("--gpu",                action="store_true",                                        help="Build with gpu")
+    add("--help",               action="store_true",                                        help="Print usage info")
+    add("--local",              action="store_true",                                        help="run on local device")
+    add("--no-gpu",             action="store_true",                                        help="Build without gpu")
+    add("--pubkey-file",        dest='pubkey',                                              help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
+    add("--session-name",       metavar="NAME", dest='burst_user',                          help="Burst session name (defaults to burst-username; "
+                                                                                                 "different sessions launch new machine instances)")
     add("--stop",               type=int, default=900, metavar="SECONDS",                   help="seconds before server is stopped (default 900) "
-                                                                                                 "0 means never. Use subcommad 'stop' to force stop")
-    add("--vm-username",        dest='sshuser', default="ubuntu",                           help="remote server username for login")
+                                                                                                 "0 means never. Use action 'stop' to force stop")
     add("--storage-config",     metavar="STORAGE_SERVICE",                                  help="override default storage configuration")
+    add("--tunnel-port", "-p",  dest='portmap', action="append", metavar="LOCAL[:REMOTE]",  help="port mapping; example: -p 8080 or -p 8081:8080")
     add("--verbose", "-v",      dest='verbosity', type=int, default=0,                      help="-1: just task output 0: status 1-127: more verbose"
                                                                                                  "(default: -1)")
     add("--version",            action="store_true",                                        help="Print version # & exit")
+    add("--vm-image",           dest='image',                                               help="libcloud image (aws: ami image_id)")
+    add("--vm-type",            dest='size',                                                help="aws: instance_type; gce: size)")
+    add("--vm-username",        dest='sshuser', default="ubuntu",                           help="remote server username for login")
 
     if len(sys.argv) < 2:
         parser.print_help()
@@ -105,14 +109,17 @@ if __name__ == "__main__":
     args, task_args = parser.parse_known_args(argv)
     set_verbosity(args.verbosity)
 
-    verb, matches = complete(args.command, verbs)
-    if matches > 1:
-        raise Exception(f"Ambiguous subcommand: {args.command} could be one of: {', '.join(verb)}")
-    elif matches == 0:
-        verb = args.command
+    if args.action == None:
+        action = None
     else:
-        verb = verb[0]
-        vvprint (f"Expanding subcommand: {args.command} --> {verb}")
+        action, matches = complete(args.action, actions)
+        if matches > 1:
+            raise Exception(f"Ambiguous action: {args.action} could be one of: {', '.join(action)}")
+        elif matches == 0:
+            raise Exception("Unknown action '%s'; try: 'burst --help'" % args.action)
+        else:
+            action = action[0]
+            vvprint (f"Expanding action: {args.action} --> {action}")
 
     vvprint ("ARGV:", argv)
     vvprint ("BURST:")
@@ -123,10 +130,10 @@ if __name__ == "__main__":
     for k in task_args:
         vvprint (" ", k)
 
-    if verb == 'build' and args.verbosity < 1:
+    if action == 'build' and args.verbosity < 1:
         set_verbosity(9)
 
-    if args.help or switch(verb, 'help'):
+    if args.help:
         parser.print_help()
         sys.exit(1)
 
@@ -166,8 +173,22 @@ if __name__ == "__main__":
         args.burst_user = "burst-" + burst_user
         vprint ("Session: %s" % args.burst_user)
 
+############################################################################
     # #master switch clause. First, stand-alone options
-    if switch(verb, 'list-servers'):
+    if switch(action, 'help'):
+        # print ("DBG:", action, args.action, argv)
+        print ("type 'burst --help' for help, 'burst actions' for documentation on available actions")
+        exit()
+
+    elif switch(action, 'actions'):
+        # print ("DBG:", action, args.action, argv)
+        print (" " * 80 + "\r")
+        print ("Available actions (note you can abbreviate if unambiguous, 'burst act'):")
+        for act in actions_keys_sorted:
+            print (f"  {actions[act]}")
+        exit()
+
+    elif switch(action, 'list-servers'):
         init(burst_conf)
         # pprint(get_config())
         cconf = get_config()['compute_config']
@@ -180,7 +201,7 @@ if __name__ == "__main__":
                 os.system(cmd)
         v0print ("-------------------------------------------------------------")
 
-    elif switch(verb, 'stop-server'):
+    elif switch(action, 'stop-server'):
         v0print ("-------------------------------------------------------------")
         count = 0
         for node, s in list_servers(args.burst_user, burst_conf):
@@ -196,7 +217,7 @@ if __name__ == "__main__":
             print ("no servers to shut down")
         v0print ("-------------------------------------------------------------")
 
-    elif switch(verb, 'terminate-server'):
+    elif switch(action, 'terminate-server'):
         v0print ("-------------------------------------------------------------")
         count = 0
         for node, s in list_servers(args.burst_user, burst_conf, terminated=False):
@@ -211,7 +232,7 @@ if __name__ == "__main__":
             print ("no servers to terminate")
         v0print ("-------------------------------------------------------------")
 
-    elif switch(verb, 'attach'):
+    elif switch(action, 'attach'):
         tunnel = None
         init(burst_conf)
         cconf = get_config()['compute_config']
@@ -251,7 +272,7 @@ if __name__ == "__main__":
         if tunnel:
             tunnel.kill()
 
-    elif switch(verb, 'kill'):
+    elif switch(action, 'kill'):
         tunnel = None
         init(burst_conf)
         cconf = get_config()['compute_config']
@@ -292,7 +313,7 @@ if __name__ == "__main__":
         if tunnel:
             tunnel.kill()
 
-    elif switch(verb, 'status'):
+    elif switch(action, 'status'):
         tunnel = None
         init(burst_conf)
         cconf = get_config()['compute_config']
@@ -336,14 +357,14 @@ if __name__ == "__main__":
     elif args.version:
         print ("VERSION:", version)
 
-    elif switch(verb, 'configure'):
+    elif switch(action, 'configure'):
         if args.configfile:
             yam = args.configfile
         else:
             yam = os.environ['HOME'] + "/.burst/config.yml"
         os.system("burst-config --config_path %s" % yam)
 
-    elif switch(verb, 'build', 'run', 'sync'):
+    elif switch(action, 'build', 'run', 'sync'):
         #no stand-alone options; do burst for reals
         if args.local:
             pubkey = None
@@ -416,19 +437,19 @@ if __name__ == "__main__":
             else:
                 image = args.image
 
-        if verb == 'build':
+        if action == 'build':
             task_args = ['echo', 'Build phase 1 success']
 
         #let's do this thing
         error = burst(task_args, sshuser=args.sshuser,
               burst_user=args.burst_user, gpu=gpu, ports=args.portmap, stop=args.stop,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
-              dockerdport=args.dockerdport, bgd = args.background, sync_only = verb=='sync', conf = burst_conf)
+              dockerdport=args.dockerdport, bgd = args.background, sync_only = action=='sync', conf = burst_conf)
 
         if error:
             v0print ("Build failed")
         else:
-            if verb == 'build':
+            if action == 'build':
                 v0print()
                 print ("Build phase 2 success")
 
@@ -436,4 +457,4 @@ if __name__ == "__main__":
             v0print()
     else:
         vprint()
-        print (" subcommand:", verb)
+        print ("Unknown action:", action)
