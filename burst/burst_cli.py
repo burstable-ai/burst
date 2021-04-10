@@ -33,14 +33,15 @@ actions = {
     # None,
     'build':            "burst build                                    |build project",
     'run':              "burst run <command>                            |run <command> on remote server",
-    'help':             "burst, burst help, burst --help                |print this help screen",
-    'list-servers':     "",
-    'status': "",
-    'stop-server': "",
-    'terminate-server': "",
-    'attach': "",
-    'sync': "",
-    'kill': "",
+    'help':             "burst help                                     |print helpful information",
+    'list-servers':     "burst list-servers                             |list available servers; display time till automatic stop",
+    'status':           "burst status                                   |show status of remote task (if running)",
+    'stop-server':      "burst stop-server                              |force-stop server (prompts for confirmation)",
+    'terminate-server': "burst termimate-server                         |terminate (delete) remote server (prompts for confirmation)",
+    'attach':           "burst attach                                   |attach stdin, stdout, stderr to background process. ctl-C detaches",
+    'sync':             "burst sync                                     |synchronize local directory to remote",
+    'kill':             "burst kill                                     |stop docker process on remote",
+    'actions':          "burst actions                                  |list available actions",
 }
 
 actions_keys_sorted = list(actions)
@@ -64,7 +65,7 @@ def switch(action, *args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
     add = parser.add_argument
-    add("action", nargs='?',                                                            help="'burst actions' to list available actions")
+    add("action", nargs='?',                                                                help="type 'burst actions' to list available actions")
     add("--background", "-b",   action="store_true",                                        help="Run task in background mode")
     add("--cloudmap",           type=str, default="",  metavar="STORAGE:MOUNT",             help="map (mount) burst storage service to local folder")
     add("--compute-access",     metavar="KEY", dest='access',                               help="libcloud username (aws: ACCESS_KEY)")
@@ -115,7 +116,7 @@ if __name__ == "__main__":
         if matches > 1:
             raise Exception(f"Ambiguous action: {args.action} could be one of: {', '.join(action)}")
         elif matches == 0:
-            raise Exception("Unknown action %s; try: 'burst help'" % args.action)
+            raise Exception("Unknown action '%s'; try: 'burst --help'" % args.action)
         else:
             action = action[0]
             vvprint (f"Expanding action: {args.action} --> {action}")
@@ -172,12 +173,19 @@ if __name__ == "__main__":
         args.burst_user = "burst-" + burst_user
         vprint ("Session: %s" % args.burst_user)
 
+############################################################################
     # #master switch clause. First, stand-alone options
     if switch(action, 'help'):
         # print ("DBG:", action, args.action, argv)
-        subc = sys.argv[-1]
-        print(" " * 80 + "\r")
-        print (f"burst {subc}: {actions[subc]}")
+        print ("type 'burst --help' for help, 'burst actions' for documentation on available actions")
+        exit()
+
+    elif switch(action, 'actions'):
+        # print ("DBG:", action, args.action, argv)
+        print (" " * 80 + "\r")
+        print ("Available actions (note you can abbreviate if unambiguous, 'burst act'):")
+        for act in actions_keys_sorted:
+            print (f"  {actions[act]}")
         exit()
 
     elif switch(action, 'list-servers'):
