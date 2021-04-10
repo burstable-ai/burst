@@ -173,6 +173,9 @@ if __name__ == "__main__":
         args.burst_user = "burst-" + burst_user
         vprint ("Session: %s" % args.burst_user)
 
+    if action not in ['build', 'run', 'sync'] and len(task_args) > 0:
+        raise Exception(f"Unknown arguments: {task_args}")
+
 ############################################################################
     # #master switch clause. First, stand-alone options
     if switch(action, 'help'):
