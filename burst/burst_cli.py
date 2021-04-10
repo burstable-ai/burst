@@ -31,16 +31,16 @@ def complete(x, a):
 
 verbs = {
     # None,
-    'build',
-    'run',
-    'help',
-    'list-servers',
-    'status',
-    'stop-server',
-    'terminate-server',
-    'attach',
-    'sync',
-    'kill'
+    'build':            "burst build                                    |build project",
+    'run':              "burst run <command>                            |run <command> on remote server",
+    'help':             "burst, burst help, burst --help                |print this help screen",
+    'list-servers':     "",
+    'status': "",
+    'stop-server': "",
+    'terminate-server': "",
+    'attach': "",
+    'sync': "",
+    'kill': "",
 }
 
 #
@@ -62,36 +62,36 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
     add = parser.add_argument
     add("command", nargs='?',                                                               help="Command to run on remote server: %s" % ", ".join(verbs))
-    add("--compute-access",     metavar="KEY", dest='access',                               help="libcloud username (aws: ACCESS_KEY)")
     add("--background", "-b",   action="store_true",                                        help="Run task in background mode")
-    add("--session-name",       metavar="NAME", dest='burst_user',                          help="Burst session name (defaults to burst-username; "
-                                                                                                 "different sessions launch new machine instances)")
     add("--cloudmap",           type=str, default="",  metavar="STORAGE:MOUNT",             help="map (mount) burst storage service to local folder")
-    add("--compute-service",    dest='compute_config',metavar="COMPUTE_SERVICE",            help="override default compute configuration service")
-    add("--config-file",        metavar="FILE", dest='configfile',                          help="override default config.yml")
-    add("--docker-port",        dest='dockerdport', type=int, default=2377, metavar="PORT", help="local port to map to remote host docker daemon"
-                                                                                                 "(default: 2377)")
-    add("--docker-file",        dest='dockerfile', type=str, default="Dockerfile", metavar="FILE",
-                                                                                            help="Docker file (defaults to ./Dockerfile)")
-    add("--gpu",                action="store_true",                                        help="Build with gpu")
-    add("--no-gpu",             action="store_true",                                        help="Build without gpu")
-    add("--help",               action="store_true",                                        help="Print usage info")
-    add("--vm-image",           dest='image',                                               help="libcloud image (aws: ami image_id)")
-    add("--local",              action="store_true",                                        help="run on local device")
-    add("--tunnel-port", "-p",  dest='portmap', action="append", metavar="LOCAL[:REMOTE]",  help="port mapping; example: -p 8080 or -p 8081:8080")
-    add("--gcs-project",        dest='project',                                             help="Google Cloud project ID")
+    add("--compute-access",     metavar="KEY", dest='access',                               help="libcloud username (aws: ACCESS_KEY)")
     add("--compute-provider",   dest='provider',default='EC2',                              help="GCE, EC2 etc.")
-    add("--pubkey-file",        dest='pubkey',                                              help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
     add("--compute-region",     dest='region',                                              help="libcloud location (aws: region)")
     add("--compute-secret",     dest='secret',                                              help="libcloud password (aws: SECRET)")
-    add("--vm-type",            dest='size',                                                help="aws: instance_type; gce: size)")
+    add("--compute-service",    dest='compute_config',metavar="COMPUTE_SERVICE",            help="override default compute configuration service")
+    add("--config-file",        metavar="FILE", dest='configfile',                          help="override default config.yml")
+    add("--docker-file",        dest='dockerfile', type=str, default="Dockerfile", metavar="FILE",
+                                                                                            help="Docker file (defaults to ./Dockerfile)")
+    add("--docker-port",        dest='dockerdport', type=int, default=2377, metavar="PORT", help="local port to map to remote host docker daemon"
+                                                                                                 "(default: 2377)")
+    add("--gcs-project",        dest='project',                                             help="Google Cloud project ID")
+    add("--gpu",                action="store_true",                                        help="Build with gpu")
+    add("--help",               action="store_true",                                        help="Print usage info")
+    add("--local",              action="store_true",                                        help="run on local device")
+    add("--no-gpu",             action="store_true",                                        help="Build without gpu")
+    add("--pubkey-file",        dest='pubkey',                                              help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
+    add("--session-name",       metavar="NAME", dest='burst_user',                          help="Burst session name (defaults to burst-username; "
+                                                                                                 "different sessions launch new machine instances)")
     add("--stop",               type=int, default=900, metavar="SECONDS",                   help="seconds before server is stopped (default 900) "
                                                                                                  "0 means never. Use subcommad 'stop' to force stop")
-    add("--vm-username",        dest='sshuser', default="ubuntu",                           help="remote server username for login")
     add("--storage-config",     metavar="STORAGE_SERVICE",                                  help="override default storage configuration")
+    add("--tunnel-port", "-p",  dest='portmap', action="append", metavar="LOCAL[:REMOTE]",  help="port mapping; example: -p 8080 or -p 8081:8080")
     add("--verbose", "-v",      dest='verbosity', type=int, default=0,                      help="-1: just task output 0: status 1-127: more verbose"
                                                                                                  "(default: -1)")
     add("--version",            action="store_true",                                        help="Print version # & exit")
+    add("--vm-image",           dest='image',                                               help="libcloud image (aws: ami image_id)")
+    add("--vm-type",            dest='size',                                                help="aws: instance_type; gce: size)")
+    add("--vm-username",        dest='sshuser', default="ubuntu",                           help="remote server username for login")
 
     if len(sys.argv) < 2:
         parser.print_help()
@@ -105,14 +105,17 @@ if __name__ == "__main__":
     args, task_args = parser.parse_known_args(argv)
     set_verbosity(args.verbosity)
 
-    verb, matches = complete(args.command, verbs)
-    if matches > 1:
-        raise Exception(f"Ambiguous subcommand: {args.command} could be one of: {', '.join(verb)}")
-    elif matches == 0:
-        verb = args.command
+    if args.command == None:
+        verb = None
     else:
-        verb = verb[0]
-        vvprint (f"Expanding subcommand: {args.command} --> {verb}")
+        verb, matches = complete(args.command, verbs)
+        if matches > 1:
+            raise Exception(f"Ambiguous subcommand: {args.command} could be one of: {', '.join(verb)}")
+        elif matches == 0:
+            raise Exception("Unknown subcommand %s; try: 'burst help'" % args.command)
+        else:
+            verb = verb[0]
+            vvprint (f"Expanding subcommand: {args.command} --> {verb}")
 
     vvprint ("ARGV:", argv)
     vvprint ("BURST:")
