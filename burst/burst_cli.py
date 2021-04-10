@@ -73,7 +73,8 @@ if __name__ == "__main__":
                                                                                                  "(default: 2377)")
     add("--docker-file",        dest='dockerfile', type=str, default="Dockerfile", metavar="FILE",
                                                                                             help="Docker file (defaults to ./Dockerfile)")
-    add("--gpus",                                                                           help="'all', 'none', list of gpus, or prompt if not specified")
+    add("--gpu",                action="store_true",                                        help="Build with gpu")
+    add("--no-gpu",             action="store_true",                                        help="Build without gpu")
     add("--help",               action="store_true",                                        help="Print usage info")
     add("--vm-image",           dest='image',                                               help="libcloud image (aws: ami image_id)")
     add("--local",              action="store_true",                                        help="run on local device")
@@ -202,6 +203,7 @@ if __name__ == "__main__":
             count += 1
             yes = input("Terminating %s, are you sure? (y/n)" % s)
             if yes=='y':
+                os.system("rm .burst-gpu")
                 terminate_server(node)
             else:
                 print ("Aborted")
@@ -354,13 +356,48 @@ if __name__ == "__main__":
                 except:
                     print ("Public key not found in usual place; please specify --pubkey")
 
-        args_gpus = args.gpus
-        if args.gpus == None:
-            if os.path.exists(".burst_gpus"):
-                args_gpus = open(".burst_gpus").read().strip()
-            else:
-                raise Exception("no .burst_gpus; specify --gpus")
-        if args_gpus.lower() != 'none':
+        # args_gpus = args.gpus
+        # if args.gpus == None:
+        #     if os.path.exists(".burst_gpus"):
+        #         args_gpus = open(".burst_gpus").read().strip()
+        #     else:
+        #         raise Exception("no .burst_gpus; specify --gpus")
+        # if args_gpus.lower() != 'none':
+        #     if args.size == None:
+        #         size = 'DEFAULT_GPU_SIZE'
+        #     else:
+        #         size = args.size
+        #     if args.image == None:
+        #         image = 'DEFAULT_GPU_IMAGE'
+        #     else:
+        #         image = args.image
+        # else:
+        #     if args.size == None:
+        #         size = 'DEFAULT_SIZE'
+        #     else:
+        #         size = args.size
+        #     if args.image == None:
+        #         image = 'DEFAULT_IMAGE'
+        #     else:
+        #         image = args.image
+
+        #if we are launching, need to know gpu
+        if not os.path.exists(".burst_gpu"):
+            if not (args.gpu or args.no_gpu):
+                raise Exception("Must specify --gpu or --no-gpu for initial build")
+            f = open(".burst-gpu", 'w')
+            f.write(f"{args.gpu}")
+            f.close()
+        f = open(".burst-gpu")
+        gpu = f.read().strip().lower()=='true'
+        f.close()
+
+        #sanity clause
+        if (gpu and args.no_gpu) or ((not gpu) and args.gpu):
+            raise Exception("Gpu status can only be changed with fresh launch (terminate & rebuild)")
+
+        #blech
+        if gpu:
             if args.size == None:
                 size = 'DEFAULT_GPU_SIZE'
             else:
@@ -384,7 +421,7 @@ if __name__ == "__main__":
 
         #let's do this thing
         error = burst(task_args, sshuser=args.sshuser,
-              burst_user=args.burst_user, gpus=args.gpus, ports=args.portmap, stop=args.stop,
+              burst_user=args.burst_user, gpu=gpu, ports=args.portmap, stop=args.stop,
               image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               dockerdport=args.dockerdport, bgd = args.background, sync_only = verb=='sync', conf = burst_conf)
 

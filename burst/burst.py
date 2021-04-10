@@ -67,7 +67,7 @@ def ssh_tunnel(url, sshuser, ports, dockerdport):
     return tunnel, docker_port_args
 
 
-def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpus = None, ports=None, stop=False,
+def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpu=False, ports=None, stop=False,
           image=None, size=None, pubkey=None, dockerfile="Dockerfile",
           cloudmap="", dockerdport=2376, bgd=False, sync_only=False, conf=None):
     error = None
@@ -106,12 +106,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             restart = False
             node = get_server(url=url, uuid=uuid, name=burst_user, conf=conf)
             if burst_user and not node:
-                if not gpus:
-                    raise Exception("Must specify --gpus on launch: 'all', 'none', or list of gpu types")
-                f = open(".burst_gpus", 'w')
-                f.write(gpus)
-                f.close()
-                node = launch_server(burst_user, pubkey=pubkey, size=size, image=image, conf=conf, user=sshuser, gpus=gpus)
+                node = launch_server(burst_user, pubkey=pubkey, size=size, image=image, conf=conf, user=sshuser, gpu=gpu)
                 fresh = True
                 restart = True
             if node:
@@ -278,16 +273,10 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             #build argument list
             args = " ".join(args)
 
-            #gpus logic: None means use cache; 'none' means no gpu otherwise list or 'all'
-            if gpus == None:
-                if os.path.exists(".burst_gpus"):
-                    gpus = open(".burst_gpus").read().strip()
-                else:
-                    raise Exception("missing .burst_gpus -- terminate & re-launch")
-            if gpus.lower()=='none':
-                gpu_args = ""
+            if gpu:
+                gpu_args = "--gpus all"
             else:
-                gpu_args = "--gpus " + gpus
+                gpu_args = ""
 
             #if mounting storage, add arguments & insert commands before (to mount) and after (to unmount) user-specified args
             cloud_args = ""

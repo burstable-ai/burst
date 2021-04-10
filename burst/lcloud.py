@@ -164,7 +164,7 @@ def fix_size_and_image(size, image):
         size = config.default_gpu_size
     return size, image
 
-def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=None, gpus=None):
+def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=None, gpu=False):
     init(conf)
     size, image = fix_size_and_image(size, image)
     image_full_path = image
@@ -196,7 +196,7 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
     if pubkey:
         if config.provider == 'EC2':                #Everybody makes it up
             auth = NodeAuthSSHKey(pubkey)
-            if gpus:
+            if gpu:
                 node = config.driver.create_node(name, size, image, auth=auth)
             else:
                 node = config.driver.create_node(name, size, image, auth=auth, ex_blockdevicemappings=[ #So sue me
@@ -210,7 +210,7 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
                     }
                 ]
             }
-            if gpus:
+            if gpu:
                 vprint ("Launching with GPU")
                 node = config.driver.create_node(name, size, image, ex_metadata=meta, ex_accelerator_type=config.default_gpu,
                                              ex_accelerator_count=1, ex_on_host_maintenance="TERMINATE")
