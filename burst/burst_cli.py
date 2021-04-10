@@ -59,9 +59,13 @@ def switch(verb, *args):
 
 
 if __name__ == "__main__":
+    subcommand_help = "Command to run on remote server"
+    for sub in verbs:
+        subcommand_help += f"\n{sub}"
+
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
     add = parser.add_argument
-    add("command", nargs='?',                                                               help="Command to run on remote server: %s" % ", ".join(verbs))
+    add("command", nargs='?',                                                               help=subcommand_help)
     add("--background", "-b",   action="store_true",                                        help="Run task in background mode")
     add("--cloudmap",           type=str, default="",  metavar="STORAGE:MOUNT",             help="map (mount) burst storage service to local folder")
     add("--compute-access",     metavar="KEY", dest='access',                               help="libcloud username (aws: ACCESS_KEY)")
@@ -83,7 +87,7 @@ if __name__ == "__main__":
     add("--session-name",       metavar="NAME", dest='burst_user',                          help="Burst session name (defaults to burst-username; "
                                                                                                  "different sessions launch new machine instances)")
     add("--stop",               type=int, default=900, metavar="SECONDS",                   help="seconds before server is stopped (default 900) "
-                                                                                                 "0 means never. Use subcommad 'stop' to force stop")
+                                                                                                 "0 means never. Use subcommand 'stop' to force stop")
     add("--storage-config",     metavar="STORAGE_SERVICE",                                  help="override default storage configuration")
     add("--tunnel-port", "-p",  dest='portmap', action="append", metavar="LOCAL[:REMOTE]",  help="port mapping; example: -p 8080 or -p 8081:8080")
     add("--verbose", "-v",      dest='verbosity', type=int, default=0,                      help="-1: just task output 0: status 1-127: more verbose"
@@ -129,7 +133,7 @@ if __name__ == "__main__":
     if verb == 'build' and args.verbosity < 1:
         set_verbosity(9)
 
-    if args.help or switch(verb, 'help'):
+    if args.help:
         parser.print_help()
         sys.exit(1)
 
@@ -170,7 +174,14 @@ if __name__ == "__main__":
         vprint ("Session: %s" % args.burst_user)
 
     # #master switch clause. First, stand-alone options
-    if switch(verb, 'list-servers'):
+    if switch(verb, 'help'):
+        # print ("DBG:", verb, args.command, argv)
+        subc = sys.argv[-1]
+        print(" " * 80 + "\r")
+        print (f"burst {subc}: {verbs[subc]}")
+        exit()
+
+    elif switch(verb, 'list-servers'):
         init(burst_conf)
         # pprint(get_config())
         cconf = get_config()['compute_config']
