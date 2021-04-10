@@ -382,7 +382,7 @@ if __name__ == "__main__":
         #         image = args.image
 
         #if we are launching, need to know gpu
-        if not os.path.exists(".burst_gpu"):
+        if not os.path.exists(".burst-gpu"):
             if not (args.gpu or args.no_gpu):
                 raise Exception("Must specify --gpu or --no-gpu for initial build")
             f = open(".burst-gpu", 'w')
