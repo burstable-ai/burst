@@ -255,7 +255,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                     secret = conf.secret
                 proj = ('--project ' + conf.project) if conf.project else ''
                 cmd = f"screen -md bash -c 'cd {path}; /usr/bin/python3 ~/burst/burst/monitor/monitor.py" \
-                      f" --ip {url} --access {conf.access} --provider {conf.provider} {get_piper()}" \
+                      f" --ip {url} --access {conf.access} --provider {conf.provider}" \
                       f" --secret={secret} --region {conf.region} {proj}'"
                 vvprint (cmd)
                 do_ssh(f"{sshuser}@{url}", '"%s"' % cmd)

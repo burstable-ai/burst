@@ -39,7 +39,7 @@ def vvprint(*args, **kw):
 
 #docker verbosity
 def get_piper():
-    if VERBOSITY < 0:
+    if VERBOSITY < 3:
         return ">/dev/null 2>/dev/null"
     elif VERBOSITY & 8:
         return ""
