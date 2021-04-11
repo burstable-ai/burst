@@ -106,7 +106,12 @@ if __name__ == "__main__":
     # and pass all args AFTER the main command to the command when it runs remotely
     #
     argv = sys.argv[1:]
-    args, task_args = parser.parse_known_args(argv)
+    try:
+        args, task_args = parser.parse_known_args(argv)
+    except SystemExit:
+        traceback.print_exc()
+        print ("There was an error parsing arguments. If there is an argument conflict, try 'run -- yourcommands'")
+        exit()
     set_verbosity(args.verbosity)
 
     if args.action == None:
