@@ -179,6 +179,8 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                 cmd = ["docker", "{0}".format(remote), "rmi", "--no-prune", DEFAULT_IMAGE]
                 vvprint (cmd)
                 out, err = run(cmd)
+                if "no such image" in out.lower():
+                    out = "Creating new burst_image"
                 vvprint (out)
 
             size, image = fix_size_and_image(size, image)
