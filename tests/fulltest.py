@@ -5,9 +5,9 @@ parser.add_argument("--storage-mount", required=True, help="as passed to burst")
 parser.add_argument("--testpath", required=True, help="bucket or root directory for tests")
 parser.add_argument("--storage-config")
 parser.add_argument("--compute-config")
-parser.add_argument("--shutdown-test", action="store_true",)
+parser.add_argument("--stop-test", dest="shutdown_test", action="store_true",)
 parser.add_argument("--gpus")
-parser.add_argument("--verbose", type=int, default=1)
+parser.add_argument("--verbose", "-v", type=int, default=1)
 args = parser.parse_args()
 
 out1 = "----------------------END-------------------------"
