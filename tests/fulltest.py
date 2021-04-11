@@ -20,17 +20,17 @@ os.system("rm fulltest.log fulltest.foo fulltest.ports fulltest.shut")
 
 os.system("python3 fulltest_ports.py &")
 
-opts = "--verbosity={0} --cloudmap={1}".format(args.verbosity, args.cloudmap)
+opts = "-v {0} -p {1}".format(args.verbosity, args.cloudmap)
 if args.storage_config:
-    opts += " --storage-config={0}".format(args.storage_config)
+    opts += " --storage-service={0}".format(args.storage_config)
 if args.compute_config:
-    opts += " --compute-config={0}".format(args.compute_config)
+    opts += " --compute-service={0}".format(args.compute_config)
 
 root = args.cloudmap.split(':')[1]
-shutopt = "--shutdown 10" if args.shutdown_test else ""
+shutopt = "--stop 10" if args.shutdown_test else ""
 
 args_gpus = "--gpus " + args.gpus if args.gpus else ""
-cmd = "burst {3} {4} -p 6789:80 {0} 'python3 -u fulltest_command.py --testpath={1}/{2}' 2>&1 | tee fulltest.log".format(opts,
+cmd = "burst run {3} {4} -p 6789:80 {0} 'python3 -u fulltest_command.py --testpath={1}/{2}' 2>&1 | tee fulltest.log".format(opts,
                                                                         root, args.testpath, shutopt, args_gpus)
 print (cmd)
 sys.stdout.flush()
