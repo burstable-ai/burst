@@ -130,7 +130,7 @@ and files that are referred to (such as requirements.txt) to the build daemon.
                     if ret[0].strip()[-15:]=='sshd responding':
                         good = True
                         break
-                    vprint ("sshd not responding; %d attempts left" % z)
+                    vprint ("still waiting on sshd (this can take a while) -- will try %d more times" % z)
                     if z:
                         time.sleep(5)
                 if not good:
