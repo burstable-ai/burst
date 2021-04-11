@@ -1,13 +1,13 @@
 import os, sys, argparse, time
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("--cloudmap", required=True, help="as passed to burst")
+parser.add_argument("--storage-mount", required=True, help="as passed to burst")
 parser.add_argument("--testpath", required=True, help="bucket or root directory for tests")
 parser.add_argument("--storage-config")
 parser.add_argument("--compute-config")
-parser.add_argument("--shutdown-test", action="store_true",)
+parser.add_argument("--stop-test", dest="shutdown_test", action="store_true",)
 parser.add_argument("--gpus")
-parser.add_argument("--verbosity", type=int, default=1)
+parser.add_argument("--verbose", "-v", type=int, default=1)
 args = parser.parse_args()
 
 out1 = "----------------------END-------------------------"
@@ -20,24 +20,24 @@ os.system("rm fulltest.log fulltest.foo fulltest.ports fulltest.shut")
 
 os.system("python3 fulltest_ports.py &")
 
-opts = "--verbosity={0} --cloudmap={1}".format(args.verbosity, args.cloudmap)
+opts = "-v {0} --storage-mount {1}".format(args.verbose, args.storage_mount)
 if args.storage_config:
-    opts += " --storage-config={0}".format(args.storage_config)
+    opts += " --storage-service={0}".format(args.storage_config)
 if args.compute_config:
-    opts += " --compute-config={0}".format(args.compute_config)
+    opts += " --compute-service={0}".format(args.compute_config)
 
-root = args.cloudmap.split(':')[1]
-shutopt = "--shutdown 10" if args.shutdown_test else ""
+root = args.storage_mount.split(':')[1]
+shutopt = "--stop 10" if args.shutdown_test else ""
 
 args_gpus = "--gpus " + args.gpus if args.gpus else ""
-cmd = "burst {3} {4} -p 6789:80 {0} 'python3 -u fulltest_command.py --testpath={1}/{2}' 2>&1 | tee fulltest.log".format(opts,
+cmd = "burst run {3} {4} -p 6789:80 {0} 'python3 -u fulltest_command.py --testpath={1}/{2}' 2>&1 | tee fulltest.log".format(opts,
                                                                         root, args.testpath, shutopt, args_gpus)
 print (cmd)
 sys.stdout.flush()
 os.system(cmd)
 
 if args.shutdown_test:
-    print ("Waiting for shutdown")
+    print ("Waiting for VM to stop")
     sys.stdout.flush()
     time.sleep(16)
 
@@ -73,19 +73,19 @@ else:
     print ("FAILED main test")
 
 if out2 == foo:
-    print ("PASSED cloudmap test")
+    print ("PASSED storage test")
 else:
-    print ("FAILED cloudmap test")
+    print ("FAILED storage test")
 
 if ports.find(out3)==0:
-    print ("PASSED portmap test")
+    print ("PASSED tunnel test")
 else:
-    print ("FAILED portmap test")
+    print ("FAILED tunnel test")
 
 if args.shutdown_test:
     if shut.find("running")==-1:
-        print ("PASSED shutdown test")
+        print ("PASSED stop test")
     else:
-        print ("FAILED shutdown test")
+        print ("FAILED stop test")
 
 sys.stdout.flush()
