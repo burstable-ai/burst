@@ -67,7 +67,6 @@ if __name__ == "__main__":
     add = parser.add_argument
     add("action", nargs='?',                                                                help="type 'burst actions' to list available actions")
     add("--background", "-b",   action="store_true",                                        help="Run task in background mode")
-    add("--cloudmap",           type=str, default="",  metavar="STORAGE:MOUNT",             help="map (mount) burst storage service to local folder")
     add("--compute-access",     metavar="KEY", dest='access',                               help="libcloud username (aws: ACCESS_KEY)")
     add("--compute-provider",   dest='provider',default='EC2',                              help="GCE, EC2 etc.")
     add("--compute-region",     dest='region',                                              help="libcloud location (aws: region)")
@@ -89,6 +88,8 @@ if __name__ == "__main__":
     add("--stop",               type=int, default=900, metavar="SECONDS",                   help="seconds before server is stopped (default 900) "
                                                                                                  "0 means never. Use action 'stop' to force stop")
     add("--storage-config",     metavar="STORAGE_SERVICE",                                  help="override default storage configuration")
+    add("--storage-mount",      dest="cloudmap", type=str, default="",  metavar="STORAGE:MOUNT",
+                                                                                            help="map (mount) burst storage service to local folder")
     add("--tunnel-port", "-p",  dest='portmap', action="append", metavar="LOCAL[:REMOTE]",  help="port mapping; example: -p 8080 or -p 8081:8080")
     add("--verbose", "-v",      dest='verbosity', type=int, default=0,                      help="-1: just task output 0: status 1-127: more verbose"
                                                                                                  "(default: -1)")
