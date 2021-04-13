@@ -42,6 +42,7 @@ actions = {
     'sync':             "burst sync                                     |synchronize local directory to remote",
     'kill':             "burst kill                                     |stop docker process on remote",
     'actions':          "burst actions                                  |list available actions",
+    'configure':        "burst actions                                  |Interactive configuration",
 }
 
 actions_keys_sorted = list(actions)
