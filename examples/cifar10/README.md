@@ -16,7 +16,9 @@ The example is implemented two ways:
 
 `burst` can support both types of model training.
 
-# Running the example on a local machine
+# Run the example on a local machine
+
+NOTE: this can take a while to run, first because you have to download the ~200Mb CIFAR-10 image dataset, and then because most local machines will not be set up to use the GPU.  Feel free to skip this step and go straight to **Run from the command line using burst** below.
 
 First, set up a virtual environment (instructions are [here](https://realpython.com/python-virtual-environments-a-primer/)).  In the virtual environment, run 
 
@@ -79,7 +81,7 @@ The command line code will create an `output/` file and store the following visu
 
 If you run the Jupyter notebook, these same visualizations appear in the notebook, rather than being saved as output files.
 
-# Running command line examples using burst
+# Run from the command line using burst
 
 First, make sure your burst build is working and ready to use, by running
 
