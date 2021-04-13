@@ -226,9 +226,9 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
     while len(node.public_ips)==0:
         # node = config.driver.list_nodes(ex_node_ids=[node.id])[0] #refresh node -- is this really necessary
         node = get_server(uuid=node.uuid)       #seems necessary to refresh to update state
-        vprint("Public IP's:", node.public_ips)
+        vprint("Public IPs:", node.public_ips)
         time.sleep(5)
-    vprint("Public IP's:", node.public_ips)
+    vprint("Public IPs:", node.public_ips)
     return node
 
 def stop_server(srv):
@@ -271,7 +271,7 @@ def list_servers(name, conf = None, terminated=True):
                 img += " (default_image)"
             elif img == config.default_gpu_image:
                 img += " (default_gpu_image)"
-            s = "IMAGE: %s STATE: %s IP's: %s ID: %s/%s" %(img, x.state, x.public_ips, config.provider, x.id)
+            s = "IMAGE: %s STATE: %s IPs: %s ID: %s/%s" %(img, x.state, x.public_ips, config.provider, x.id)
             ret[-1].append(s)
     return ret
 
