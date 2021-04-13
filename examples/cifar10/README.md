@@ -85,11 +85,11 @@ If you run the Jupyter notebook, these same visualizations appear in the noteboo
 
 First, make sure your burst build is working and ready to use, by running
 
-    burst build
+    burst build --gpu
     
 inside your project directory.  If you encounter problems, try ramping up the verbosity for more granular feedback, e.g. 
 
-	burst build --verbose 127
+	burst build --gpu --verbose 127
 	
 (Note: 127 is maximum verbosity).
 
