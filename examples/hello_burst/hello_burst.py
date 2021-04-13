@@ -6,10 +6,10 @@ print ("Welcome burstables! You're running a virtual machine with %i cpus" % (mu
 try:
     gpus = GPUtil.getGPUs()
     if len(gpus):
-        print ("The following GPU's are available:")
+        print ("The following GPUs are available:")
         for gpu in gpus:
             print (gpu.name)
     else:
-        print ("GPU drivers are installed but no GPU's are available")
+        print ("GPU drivers are installed but no GPUs are available")
 except:
     print ("No GPU drivers available")
