@@ -9,8 +9,6 @@ Launch a VM and build the dockerfile:
 
     burst build --gpu
     
-Note: specifying the `--gpu` flag tells `burst` to use a GPU if it is available and to fall back on the CPU only if the GPU is not available. If you instead build with `--no-gpu`, `burst` will run on the CPU, whether or not a GPU exists.
-
 If this is the first time you ran `burst` on this machine, it will take a few minutes
 to do its thing. The end of the output should look like this:
 
