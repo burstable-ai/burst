@@ -1,3 +1,43 @@
+Release notes for burst 1.0.0
+
+Changes in CLI:
+
+This release represents a major overhaul of the Command Line Interface (CLI). A number of options were recast as 'actions', or
+top-level commands that then support various options. These commands are positional arguments, meaning they are not
+preceded by a dash '-' or double-dash '--'.
+
+'burst --help' has been expanded to document all the available options.
+
+The actions and their usage can be seen by typing 'burst actions'.
+
+For existing users, here is a cheat sheet to support migration to the new syntax:
+
+old                                                       new
+-----------------------------------------------------------------------------------------------
+burst --build                                             burst build --gpu | --no-gpu
+burst python3 myprog.py                                   burst run python3 myprog.py
+burst --shutdown [seconds]                                burst stop-server | burst --stop-server seconds
+burst --verbosity ...                                     burst --verbose | -v ...
+burst --background ...                                    burst --background | -b ...
+burst --gpus [none|all]                                   burst --gpu | --no-gpu
+burst --list                                              burst list-servers
+burst --status                                            burst status
+burst --attach                                            burst attach
+
+similar options that are now actions: kill, sync, configure, terminate-server
+
+Note both actions and options can be abbreviated:
+
+burst --verb 1 list
+
+options can come before or after the main action, but the task to run must come last:
+
+burst --verb 1 run --stop 300 python3 myprog.py
+
+As presently implemented, all options are valid for all actions, although they may not be applicable.
+This behavior is not guaranteed to remain forever.
+========================================================================================================
+
 Release notes for burst 0.2.18
 
 (includes previous releases)
@@ -23,4 +63,3 @@ Attach stdio, stdout, stderr to background task. ctrl-c detaches (does not kill)
 --kill
 
 Prompts user to kill running task
-
