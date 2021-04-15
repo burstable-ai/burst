@@ -73,8 +73,6 @@ It should return something like:
 
     burst build --gpu
 
-Note: specifying the `--gpu` flag tells `burst` to use a GPU if it is available and to fall back on the CPU only if the GPU is not available. If you instead build with `--no-gpu`, `burst` will run on the CPU, whether or not a GPU exists.
-
 This may take several minutes; be patient. After some output, 
 you should see this: 
 
