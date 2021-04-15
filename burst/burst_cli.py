@@ -272,7 +272,7 @@ if __name__ == "__main__":
                     v0print ("Attaching to docker process", did['ID'])
                     cmd = f"docker -H localhost:{args.dockerdport} attach --sig-proxy=false {did['ID']}"
                     vvprint (cmd)
-                    vprint("ctrl-C only detaches; --kill to stop")
+                    vprint("ctrl-C only detaches;  'burst kill' to stop")
                     v0print ("---------------------OUTPUT-----------------------")
                     os.system(cmd)
                     v0print ("----------------------END-------------------------")
