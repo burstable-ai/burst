@@ -272,8 +272,21 @@ and files that are referred to (such as requirements.txt) to the build daemon.
             vvprint (cmd)
             os.system(cmd)
 
-            #build argument list
-            args = " ".join(args)
+            #build argument list -- re-quote if whitespace
+            # args = " ".join(args)
+            s = ""
+            for a in args:
+                a = a.strip()
+                if " " in a:
+                    if '"' in a:
+                        s += f"'{a}' "
+                    else:
+                        s += f'"{a}" '
+                else:
+                    s += f"{a} "
+            args = s.rstrip()
+            # print ("FINAL args:", args)
+            # exit()
 
             if gpu:
                 gpu_args = "--gpus all"
