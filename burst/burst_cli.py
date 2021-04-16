@@ -297,7 +297,7 @@ if __name__ == "__main__":
         if not url:
             print ("No process running")
         else:
-            vvprint (f"Terminating Docker process on {url}")
+            vvprint (f"Killing Docker process on {url}")
             tunnel, _ = ssh_tunnel(url, args.sshuser, args.portmap, args.dockerdport)
             vvprint ("Tunnel:", tunnel)
             cmd = ["docker", "-H localhost:%s" % args.dockerdport, "ps", "--format", '{{json .}}']
@@ -309,12 +309,12 @@ if __name__ == "__main__":
             else:
                 try:
                     did = json.loads(out)
-                    yes = input(f"Terminating Docker process {did['ID']}, are you sure? (y/n)")
+                    yes = input(f"Killing Docker process {did['ID']}, are you sure? (y/n)")
                     if yes == 'y':
                         cmd = f"docker -H localhost:{args.dockerdport} stop {did['ID']}"
                         vvprint (cmd)
                         os.system(cmd)
-                        print ("Process terminated")
+                        print ("Process killed")
                     else:
                         print("Aborted")
                 except:
