@@ -387,31 +387,8 @@ if __name__ == "__main__":
                 except:
                     print ("Public key not found in usual place; please specify --pubkey")
 
-        # args_gpus = args.gpus
-        # if args.gpus == None:
-        #     if os.path.exists(".burst_gpus"):
-        #         args_gpus = open(".burst_gpus").read().strip()
-        #     else:
-        #         raise Exception("no .burst_gpus; specify --gpus")
-        # if args_gpus.lower() != 'none':
-        #     if args.size == None:
-        #         size = 'DEFAULT_GPU_SIZE'
-        #     else:
-        #         size = args.size
-        #     if args.image == None:
-        #         image = 'DEFAULT_GPU_IMAGE'
-        #     else:
-        #         image = args.image
-        # else:
-        #     if args.size == None:
-        #         size = 'DEFAULT_SIZE'
-        #     else:
-        #         size = args.size
-        #     if args.image == None:
-        #         image = 'DEFAULT_IMAGE'
-        #     else:
-        #         image = args.image
-
+        if not os.path.exists(args.dockerfile):
+            raise Exception("No Dockerfile found")
         #if we are launching, need to know gpu
         if not os.path.exists(".burst-gpu"):
             if not (args.gpu or args.no_gpu):
