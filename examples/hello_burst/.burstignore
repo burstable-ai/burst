@@ -1,2 +1,3 @@
-.burst_gpus
 venv
+.*
+__pycache__
