@@ -1,7 +1,4 @@
-fulltest.ports
-fulltest.log
-fulltest.shut
-.burst_gpus
+.*
 venv
-.git
-
+__pycache__
+fulltest.*

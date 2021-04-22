@@ -90,6 +90,17 @@ and files that are referred to (such as requirements.txt) to the build daemon.
 !requirements.txt
 """)
 
+        if not os.path.exists(".burstignore"):
+            raise Exception("""
+
+.burstignore file not found. Burst requires a .burstignore to avoid synchronizing irrelevant data (such as
+hidden files) with the remote server. Here is a template, copy this to .burstignore in your project directory:
+
+.*
+venv
+__pycache__
+""")
+
         #if url specified, split into user & IP
         if url:
             if not sshuser:
