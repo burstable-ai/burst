@@ -68,6 +68,12 @@ def init(conf = None):
         else:
             config[param] = yconf.get(param, None)
 
+    if config.default_vmtype == None or config.default_gpu_vmtype == None:
+        raise Exception("""config.yml syntax has changed:
+rename default_size --> default_vmtype
+default_gpu_size-->default_gpu_vmtype""")
+
+
     cls = get_driver(Provider[config.provider])
 
     if config.provider == 'EC2':
