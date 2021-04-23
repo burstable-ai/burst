@@ -1,4 +1,6 @@
 .*
 venv
 __pycache__
-fulltest.*
+fulltest.ports
+fulltest.log
+fulltest.shut
