@@ -198,6 +198,10 @@ def launch_server(name, vmtype=None, image=None, pubkey=None, conf = None, user=
     if not vmtypes:
         raise Exception("Instance vmtype %s not found" % vmtype)
     vmtype = vmtypes[0]
+
+    if 'disksize' not in config or config.disksize==None:
+        raise Exception("Need to add disksize to config or specify --disksize")
+
     vprint ("Launching instance image=%s, id=%s, session=%s, type=%s ram=%s disk=%s" % (image_full_path, image.id, name, vmtype.id, vmtype.ram, config.disksize))
 
     if pubkey:
