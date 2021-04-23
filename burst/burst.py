@@ -68,7 +68,7 @@ def ssh_tunnel(url, sshuser, ports, dockerdport):
 
 
 def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpu=False, ports=None, stop=False,
-          image=None, size=None, pubkey=None, dockerfile="Dockerfile",
+          image=None, vmtype=None, pubkey=None, dockerfile="Dockerfile",
           cloudmap="", dockerdport=2376, bgd=False, sync_only=False, conf=None):
     error = None
     tunnel = None
@@ -117,7 +117,7 @@ __pycache__
             restart = False
             node = get_server(url=url, uuid=uuid, name=burst_user, conf=conf)
             if burst_user and not node:
-                node = launch_server(burst_user, pubkey=pubkey, size=size, image=image, conf=conf, user=sshuser, gpu=gpu)
+                node = launch_server(burst_user, pubkey=pubkey, vmtype=vmtype, image=image, conf=conf, user=sshuser, gpu=gpu)
                 fresh = True
                 restart = True
             if node:
@@ -194,16 +194,16 @@ __pycache__
                     out = "Creating new burst_image"
                 vvprint (out)
 
-            size, image = fix_size_and_image(size, image)
-            if size and size != get_server_size(node):                      #FIXME
-                raise Exception("Cannot change size (instance type) or gpu status -- need to re-launch")
+            vmtype, image = fix_vmtype_and_image(vmtype, image)
+            if vmtype and vmtype != get_server_vmtype(node):                      #FIXME
+                raise Exception("Cannot change vmtype (instance type) or gpu status -- need to re-launch")
 
             # get_server_image is broken, need to prompt better here
             # if image and image != get_server_image(node):
             # if image and image != get_server_image(node):
             #     raise Exception("FIXME: cannot change host image -- need to terminate & re-launch server")
 
-            vprint ("burst: name %s size %s image %s url %s" % (node.name, size, image, url))
+            vprint ("burst: name %s vmtype %s image %s url %s" % (node.name, vmtype, image, url))
 
             #if using cloud storage (s3 etc), set up config & auth for rclone
             if cloudmap:

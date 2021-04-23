@@ -96,7 +96,7 @@ if __name__ == "__main__":
                                                                                                  "(default: -1)")
     add("--version",            action="store_true",                                        help="Print version # & exit")
     add("--vm-image",           dest='image',                                               help="libcloud image (aws: ami image_id)")
-    add("--vm-type",            dest='size', metavar="TYPE",                                help="aws: instance_type; gce: size)")
+    add("--vm-type",            metavar="TYPE",                                             help="aws: instance_type; gce: size)")
     add("--vm-username",        dest='sshuser', default="ubuntu",                           help="remote server username for login")
 
     if len(sys.argv) < 2:
@@ -406,19 +406,19 @@ if __name__ == "__main__":
 
         #blech
         if gpu:
-            if args.size == None:
-                size = 'DEFAULT_GPU_SIZE'
+            if args.vm_type == None:
+                vmtype = 'DEFAULT_GPU_VMTYPE'
             else:
-                size = args.size
+                vmtype = args.vmtype
             if args.image == None:
                 image = 'DEFAULT_GPU_IMAGE'
             else:
                 image = args.image
         else:
-            if args.size == None:
-                size = 'DEFAULT_SIZE'
+            if args.vm_type == None:
+                vmtype = 'DEFAULT_VMTYPE'
             else:
-                size = args.size
+                vmtype = args.vmtype
             if args.image == None:
                 image = 'DEFAULT_IMAGE'
             else:
@@ -430,7 +430,7 @@ if __name__ == "__main__":
         #let's do this thing
         error = burst(task_args, sshuser=args.sshuser,
               burst_user=args.burst_user, gpu=gpu, ports=args.portmap, stop=args.stop,
-              image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
+              image=image, vmtype=vmtype, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               dockerdport=args.dockerdport, bgd = args.background, sync_only = action=='sync', conf = burst_conf)
 
         if error:
