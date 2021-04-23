@@ -73,7 +73,6 @@ def init(conf = None):
 rename default_size --> default_vmtype
 default_gpu_size-->default_gpu_vmtype""")
 
-
     cls = get_driver(Provider[config.provider])
 
     if config.provider == 'EC2':
@@ -170,7 +169,7 @@ def fix_vmtype_and_image(vmtype, image):
         vmtype = config.default_gpu_vmtype
     return vmtype, image
 
-def launch_server(name, vmtype=None, image=None, pubkey=None, conf = None, user=None, gpu=False):
+def launch_server(name, vmtype=None, image=None, pubkey=None, conf = None, user=None, gpu=False, disksize=125):
     init(conf)
     vmtype, image = fix_vmtype_and_image(vmtype, image)
     image_full_path = image
@@ -197,14 +196,13 @@ def launch_server(name, vmtype=None, image=None, pubkey=None, conf = None, user=
     if not vmtypes:
         raise Exception("Instance vmtype %s not found" % vmtype)
     vmtype = vmtypes[0]
-    vprint ("Launching instance image=%s, id=%s, session=%s, type=%s ram=%s disk=%s" % (image_full_path, image.id, name, vmtype.id, vmtype.ram, vmtype.disk))
+    vprint ("Launching instance image=%s, id=%s, session=%s, type=%s ram=%s disk=%s" % (image_full_path, image.id, name, vmtype.id, vmtype.ram, disksize))
 
     if pubkey:
         if config.provider == 'EC2':                #Everybody makes it up
             auth = NodeAuthSSHKey(pubkey)
-            gb = 350 if gpu else 150
             node = config.driver.create_node(name, vmtype, image, auth=auth, ex_blockdevicemappings=[ #So sue me
-                    {'Ebs.VolumeSize': gb, 'DeviceName': '/dev/sda1'}])
+                    {'Ebs.VolumeSize': disksize, 'DeviceName': '/dev/sda1'}])
         elif config.provider == 'GCE':
             meta = {
                 'items': [

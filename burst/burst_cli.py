@@ -74,6 +74,7 @@ if __name__ == "__main__":
     add("--compute-secret",     dest='secret',                                              help="libcloud password (aws: SECRET)")
     add("--compute-service",    dest='compute_config',metavar="COMPUTE_SERVICE",            help="override default compute configuration service")
     add("--config-file",        metavar="FILE", dest='configfile',                          help="override default config.yml")
+    add("--disksize",           type=int, default=175, metavar="GIGABYTES",                 help="disk size in gigabytes")
     add("--docker-file",        dest='dockerfile', type=str, default="Dockerfile", metavar="FILE",
                                                                                             help="Docker file (defaults to ./Dockerfile)")
     add("--docker-port",        dest='dockerdport', type=int, default=2377, metavar="PORT", help="local port to map to remote host docker daemon"
@@ -431,7 +432,8 @@ if __name__ == "__main__":
         error = burst(task_args, sshuser=args.sshuser,
               burst_user=args.burst_user, gpu=gpu, ports=args.portmap, stop=args.stop,
               image=image, vmtype=vmtype, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
-              dockerdport=args.dockerdport, bgd = args.background, sync_only = action=='sync', conf = burst_conf)
+              dockerdport=args.dockerdport, bgd = args.background, sync_only = action=='sync',
+              disksize = args.disksize, conf = burst_conf)
 
         if error:
             v0print ("Build failed")
