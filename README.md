@@ -40,6 +40,15 @@ Follow the instructions here: [python-virtual-environments-a-primer](https://rea
 
 Launch the virtual environment and do the remainder of your installation and set-up _inside_ the virtual environment.
 
+_Note that for development and testing on a local machine (ie your laptop), your local 
+environment should be using the same version of Python as the Dockerfile for your 
+project. Presently (as of release 1.1), the Dockerfiles in our examples use Ubuntu 20.04, 
+which provides Python3.8. Differing Python versions may occasionally work, but specific 
+package versions are not available for all versions of Python. This can lead to situations 
+where a single requirements.txt file with pinned package versions will not work for both 
+local development and burst. We strongly recommend setting up a virtualenv with the same 
+Python version as provided by the base image in your Dockerfile._
+
 ### Install the command-line tool:
 
     pip install burstable
