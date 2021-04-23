@@ -96,7 +96,7 @@ if __name__ == "__main__":
                                                                                                  "(default: -1)")
     add("--version",            action="store_true",                                        help="Print version # & exit")
     add("--vm-image",           dest='image',                                               help="libcloud image (aws: ami image_id)")
-    add("--vm-type",            dest='size',                                                help="aws: instance_type; gce: size)")
+    add("--vm-type",            dest='size', metavar="TYPE",                                help="aws: instance_type; gce: size)")
     add("--vm-username",        dest='sshuser', default="ubuntu",                           help="remote server username for login")
 
     if len(sys.argv) < 2:
