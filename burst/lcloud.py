@@ -29,6 +29,7 @@ def init(conf = None):
         f = open(yam)
         yconf = yaml.load(f, Loader=yaml.FullLoader)
         f.close()
+        # print("DBBG 1", yconf['compute']['configurations']['Ec2Beta']['disksize'])
         if 'compute_config' in conf:
             compute_config = conf['compute_config']
         else:
@@ -44,6 +45,7 @@ def init(conf = None):
             storage = yconf['storage']['configurations'][storage_config]            #use it
             storage['config'] = storage_config                                      #and store the config name too
         yconf = yconf['compute']['configurations'][compute_config]
+        # print ("DBBG 2", yconf['disksize'])
         yconf.update(yconf['settings'])   #easier to deal with all attributes at top level
         yconf['compute_config']=compute_config
         if storage_config:                                                          #if specified,
@@ -62,7 +64,7 @@ def init(conf = None):
             raise Exception("Configuration file %s not available. Try running:\nburst --configure" % yam)
 
     for param in ['access', 'secret', 'region', 'project', 'default_image', 'default_vmtype', 'default_gpu_image',
-                  'default_gpu_vmtype', 'default_gpu', 'storage', 'compute_config']:
+                  'default_gpu_vmtype', 'default_gpu', 'storage', 'compute_config', 'disksize']:
         if param in conf:
             config[param] = conf[param]
         else:
@@ -169,7 +171,7 @@ def fix_vmtype_and_image(vmtype, image):
         vmtype = config.default_gpu_vmtype
     return vmtype, image
 
-def launch_server(name, vmtype=None, image=None, pubkey=None, conf = None, user=None, gpu=False, disksize=125):
+def launch_server(name, vmtype=None, image=None, pubkey=None, conf = None, user=None, gpu=False):
     init(conf)
     vmtype, image = fix_vmtype_and_image(vmtype, image)
     image_full_path = image
@@ -196,13 +198,13 @@ def launch_server(name, vmtype=None, image=None, pubkey=None, conf = None, user=
     if not vmtypes:
         raise Exception("Instance vmtype %s not found" % vmtype)
     vmtype = vmtypes[0]
-    vprint ("Launching instance image=%s, id=%s, session=%s, type=%s ram=%s disk=%s" % (image_full_path, image.id, name, vmtype.id, vmtype.ram, disksize))
+    vprint ("Launching instance image=%s, id=%s, session=%s, type=%s ram=%s disk=%s" % (image_full_path, image.id, name, vmtype.id, vmtype.ram, config.disksize))
 
     if pubkey:
         if config.provider == 'EC2':                #Everybody makes it up
             auth = NodeAuthSSHKey(pubkey)
             node = config.driver.create_node(name, vmtype, image, auth=auth, ex_blockdevicemappings=[ #So sue me
-                    {'Ebs.VolumeSize': disksize, 'DeviceName': '/dev/sda1'}])
+                    {'Ebs.VolumeSize': config.disksize, 'DeviceName': '/dev/sda1'}])
         elif config.provider == 'GCE':
             meta = {
                 'items': [
