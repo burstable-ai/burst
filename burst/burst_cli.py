@@ -74,6 +74,7 @@ if __name__ == "__main__":
     add("--compute-secret",     dest='secret',                                              help="libcloud password (aws: SECRET)")
     add("--compute-service",    dest='compute_config',metavar="COMPUTE_SERVICE",            help="override default compute configuration service")
     add("--config-file",        metavar="FILE", dest='configfile',                          help="override default config.yml")
+    add("--disksize",           type=int, metavar="GIGABYTES",                              help="disk size in gigabytes")
     add("--docker-file",        dest='dockerfile', type=str, default="Dockerfile", metavar="FILE",
                                                                                             help="Docker file (defaults to ./Dockerfile)")
     add("--docker-port",        dest='dockerdport', type=int, default=2377, metavar="PORT", help="local port to map to remote host docker daemon"
@@ -164,6 +165,9 @@ if __name__ == "__main__":
 
         if args.configfile:
             burst_conf['configfile'] = args.configfile
+
+        if args.disksize:
+            burst_conf['disksize'] = args.disksize
 
     if args.local:
         vprint (args)

@@ -12,6 +12,7 @@ compute:
       default_vmtype: t2.medium
       default_gpu_image: Deep Learning AMI (Ubuntu 18.04) Version 36.0
       default_gpu_vmtype: g4dn.xlarge
+      disksize: 175
       settings: # Everything AWS-specific goes here
         secret: U...F
 

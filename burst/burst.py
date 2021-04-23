@@ -117,6 +117,8 @@ __pycache__
             restart = False
             node = get_server(url=url, uuid=uuid, name=burst_user, conf=conf)
             if burst_user and not node:
+                if 'disksize' not in conf:
+                    raise Exception("Need to add disksize to config or specify --disksize")
                 node = launch_server(burst_user, pubkey=pubkey, vmtype=vmtype, image=image, conf=conf, user=sshuser, gpu=gpu)
                 fresh = True
                 restart = True
