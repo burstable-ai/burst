@@ -31,18 +31,18 @@ def complete(x, a):
 
 actions = {
     # None,
-    'build':            "burst build                                    |build project",
-    'run':              "burst run <command>                            |run <command> on remote server",
-    'help':             "burst help                                     |print helpful information",
-    'list-servers':     "burst list-servers                             |list available servers; display time till automatic stop",
-    'status':           "burst status                                   |show status of remote task (if running)",
-    'stop-server':      "burst stop-server                              |force-stop server (prompts for confirmation)",
-    'terminate-server': "burst termimate-server                         |terminate (delete) remote server (prompts for confirmation)",
-    'attach':           "burst attach                                   |attach stdin, stdout, stderr to background process. ctl-C detaches",
-    'sync':             "burst sync                                     |synchronize local directory to remote",
-    'kill':             "burst kill                                     |stop docker process on remote",
-    'actions':          "burst actions                                  |list available actions",
-    'configure':        "burst actions                                  |Interactive configuration",
+    'build':            "burst build                        |build project",
+    'run':              "burst run <command>                |run <command> on remote server",
+    'help':             "burst help                         |print helpful information",
+    'list-servers':     "burst list-servers                 |list available servers; display time till automatic stop",
+    'status':           "burst status                       |show status of remote task (if running)",
+    'stop-server':      "burst stop-server                  |force-stop server (prompts for confirmation)",
+    'terminate-server': "burst termimate-server             |terminate (delete) remote server (prompts for confirmation)",
+    'attach':           "burst attach                       |attach stdin, stdout, stderr to background process. ctl-C detaches",
+    'sync':             "burst sync                         |synchronize local directory to remote",
+    'kill':             "burst kill                         |stop docker process on remote",
+    'actions':          "burst actions                      |list available actions",
+    'configure':        "burst configure                    |Interactive configuration",
 }
 
 actions_keys_sorted = list(actions)
