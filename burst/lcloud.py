@@ -29,6 +29,7 @@ def init(conf = None):
         f = open(yam)
         yconf = yaml.load(f, Loader=yaml.FullLoader)
         f.close()
+        # print("DBBG 1", yconf['compute']['configurations']['Ec2Beta']['disksize'])
         if 'compute_config' in conf:
             compute_config = conf['compute_config']
         else:
@@ -44,6 +45,7 @@ def init(conf = None):
             storage = yconf['storage']['configurations'][storage_config]            #use it
             storage['config'] = storage_config                                      #and store the config name too
         yconf = yconf['compute']['configurations'][compute_config]
+        # print ("DBBG 2", yconf['disksize'])
         yconf.update(yconf['settings'])   #easier to deal with all attributes at top level
         yconf['compute_config']=compute_config
         if storage_config:                                                          #if specified,
@@ -61,12 +63,17 @@ def init(conf = None):
         else:
             raise Exception("Configuration file %s not available. Try running:\nburst --configure" % yam)
 
-    for param in ['access', 'secret', 'region', 'project', 'default_image', 'default_size', 'default_gpu_image',
-                  'default_gpu_size', 'default_gpu', 'storage', 'compute_config']:
+    for param in ['access', 'secret', 'region', 'project', 'default_image', 'default_vmtype', 'default_gpu_image',
+                  'default_gpu_vmtype', 'default_gpu', 'storage', 'compute_config', 'disksize']:
         if param in conf:
             config[param] = conf[param]
         else:
             config[param] = yconf.get(param, None)
+
+    if config.default_vmtype == None or config.default_gpu_vmtype == None:
+        raise Exception("""config.yml syntax has changed:
+rename default_size --> default_vmtype
+default_gpu_size-->default_gpu_vmtype""")
 
     cls = get_driver(Provider[config.provider])
 
@@ -112,7 +119,7 @@ def get_server_state(srv):
     vprint ("Cannot find server to determine state; assuming terminated")
     return 'terminated'
 
-def get_server_size(srv):
+def get_server_vmtype(srv):
     if config.provider=='EC2':
         return srv.extra['instance_type']
     elif config.provider=='GCE':
@@ -148,25 +155,25 @@ def start_server(srv):
     return srv
 
 #
-# fill in default values for size & image
+# fill in default values for vmtype & image
 #
-def fix_size_and_image(size, image):
+def fix_vmtype_and_image(vmtype, image):
     if image=="DEFAULT_IMAGE":
         image = config.default_image
 
-    if size=="DEFAULT_SIZE":
-        size = config.default_size
+    if vmtype=="DEFAULT_VMTYPE":
+        vmtype = config.default_vmtype
 
     if image=="DEFAULT_GPU_IMAGE":
         image = config.default_gpu_image
 
-    if size=="DEFAULT_GPU_SIZE":
-        size = config.default_gpu_size
-    return size, image
+    if vmtype=="DEFAULT_GPU_VMTYPE":
+        vmtype = config.default_gpu_vmtype
+    return vmtype, image
 
-def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=None, gpu=False):
+def launch_server(name, vmtype=None, image=None, pubkey=None, conf = None, user=None, gpu=False):
     init(conf)
-    size, image = fix_size_and_image(size, image)
+    vmtype, image = fix_vmtype_and_image(vmtype, image)
     image_full_path = image
     if config.provider=='EC2':
         images = config.driver.list_images(ex_filters={'name': image})
@@ -187,20 +194,21 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
         raise Exception("Image %s not found" % image)
     image = images[0]
 
-    sizes = [x for x in config.driver.list_sizes() if x.name == size]
-    if not sizes:
-        raise Exception("Instance size %s not found" % size)
-    size = sizes[0]
-    vprint ("Launching instance image=%s, id=%s, session=%s, type=%s ram=%s disk=%s" % (image_full_path, image.id, name, size.id, size.ram, size.disk))
+    vmtypes = [x for x in config.driver.list_sizes() if x.name == vmtype]
+    if not vmtypes:
+        raise Exception("Instance vmtype %s not found" % vmtype)
+    vmtype = vmtypes[0]
+
+    if 'disksize' not in config or config.disksize==None:
+        raise Exception("Need to add disksize to config or specify (in gigabytes, eg --disksize=150)")
+
+    vprint ("Launching instance image=%s, id=%s, session=%s, type=%s ram=%s disk=%s" % (image_full_path, image.id, name, vmtype.id, vmtype.ram, config.disksize))
 
     if pubkey:
         if config.provider == 'EC2':                #Everybody makes it up
             auth = NodeAuthSSHKey(pubkey)
-            if gpu:
-                node = config.driver.create_node(name, size, image, auth=auth)
-            else:
-                node = config.driver.create_node(name, size, image, auth=auth, ex_blockdevicemappings=[ #So sue me
-                    {'Ebs.VolumeSize': 60, 'DeviceName': '/dev/sda1'}])
+            node = config.driver.create_node(name, vmtype, image, auth=auth, ex_blockdevicemappings=[ #So sue me
+                    {'Ebs.VolumeSize': config.disksize, 'DeviceName': '/dev/sda1'}])
         elif config.provider == 'GCE':
             meta = {
                 'items': [
@@ -212,15 +220,15 @@ def launch_server(name, size=None, image=None, pubkey=None, conf = None, user=No
             }
             if gpu:
                 vprint ("Launching with GPU")
-                node = config.driver.create_node(name, size, image, ex_metadata=meta, ex_accelerator_type=config.default_gpu,
+                node = config.driver.create_node(name, vmtype, image, ex_metadata=meta, ex_accelerator_type=config.default_gpu,
                                              ex_accelerator_count=1, ex_on_host_maintenance="TERMINATE")
             else:
                 vprint ("Launching without GPU")
-                node = config.driver.create_node(name, size, image, ex_metadata=meta)
+                node = config.driver.create_node(name, vmtype, image, ex_metadata=meta)
         else:
             raise Exception("Unsupported clown provider: %s" % config.provider)
     else:
-        node = config.driver.create_node(name, size, image)
+        node = config.driver.create_node(name, vmtype, image)
     vprint ("Waiting for public IP address to be active")
     config.driver.wait_until_running([node])
     while len(node.public_ips)==0:

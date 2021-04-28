@@ -1,7 +1,6 @@
 venv
-.ipynb_checkpoints
+.*
 __pycache__
-.git
 cifar-10-batches-py
 cifar-10-python.tar.gz
 

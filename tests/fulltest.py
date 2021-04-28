@@ -30,7 +30,7 @@ root = args.storage_mount.split(':')[1]
 shutopt = "--stop 10" if args.shutdown_test else ""
 
 args_gpus = "--gpus " + args.gpus if args.gpus else ""
-cmd = "burst run {3} {4} -p 6789:80 {0} 'python3 -u fulltest_command.py --testpath={1}/{2}' 2>&1 | tee fulltest.log".format(opts,
+cmd = "burst run {3} {4} -p 6789:80 {0} python3 -u fulltest_command.py --testpath={1}/{2} 2>&1 | tee fulltest.log".format(opts,
                                                                         root, args.testpath, shutopt, args_gpus)
 print (cmd)
 sys.stdout.flush()
@@ -41,7 +41,7 @@ if args.shutdown_test:
     sys.stdout.flush()
     time.sleep(16)
 
-os.system("burst --list > fulltest.shut")
+os.system("burst list > fulltest.shut")
 
 f = open("fulltest.log")
 s = f.read()

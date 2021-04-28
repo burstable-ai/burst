@@ -31,18 +31,18 @@ def complete(x, a):
 
 actions = {
     # None,
-    'build':            "burst build                                    |build project",
-    'run':              "burst run <command>                            |run <command> on remote server",
-    'help':             "burst help                                     |print helpful information",
-    'list-servers':     "burst list-servers                             |list available servers; display time till automatic stop",
-    'status':           "burst status                                   |show status of remote task (if running)",
-    'stop-server':      "burst stop-server                              |force-stop server (prompts for confirmation)",
-    'terminate-server': "burst termimate-server                         |terminate (delete) remote server (prompts for confirmation)",
-    'attach':           "burst attach                                   |attach stdin, stdout, stderr to background process. ctl-C detaches",
-    'sync':             "burst sync                                     |synchronize local directory to remote",
-    'kill':             "burst kill                                     |stop docker process on remote",
-    'actions':          "burst actions                                  |list available actions",
-    'configure':        "burst actions                                  |Interactive configuration",
+    'build':            "burst build                        |build project",
+    'run':              "burst run <command>                |run <command> on remote server",
+    'help':             "burst help                         |print helpful information",
+    'list-servers':     "burst list-servers                 |list available servers; display time till automatic stop",
+    'status':           "burst status                       |show status of remote task (if running)",
+    'stop-server':      "burst stop-server                  |force-stop server (prompts for confirmation)",
+    'terminate-server': "burst termimate-server             |terminate (delete) remote server (prompts for confirmation)",
+    'attach':           "burst attach                       |attach stdin, stdout, stderr to background process. ctl-C detaches",
+    'sync':             "burst sync                         |synchronize local directory to remote",
+    'kill':             "burst kill                         |stop docker process on remote",
+    'actions':          "burst actions                      |list available actions",
+    'configure':        "burst configure                    |Interactive configuration",
 }
 
 actions_keys_sorted = list(actions)
@@ -74,6 +74,7 @@ if __name__ == "__main__":
     add("--compute-secret",     dest='secret',                                              help="libcloud password (aws: SECRET)")
     add("--compute-service",    dest='compute_config',metavar="COMPUTE_SERVICE",            help="override default compute configuration service")
     add("--config-file",        metavar="FILE", dest='configfile',                          help="override default config.yml")
+    add("--disksize",           type=int, metavar="GIGABYTES",                              help="disk size in gigabytes")
     add("--docker-file",        dest='dockerfile', type=str, default="Dockerfile", metavar="FILE",
                                                                                             help="Docker file (defaults to ./Dockerfile)")
     add("--docker-port",        dest='dockerdport', type=int, default=2377, metavar="PORT", help="local port to map to remote host docker daemon"
@@ -96,7 +97,7 @@ if __name__ == "__main__":
                                                                                                  "(default: -1)")
     add("--version",            action="store_true",                                        help="Print version # & exit")
     add("--vm-image",           dest='image',                                               help="libcloud image (aws: ami image_id)")
-    add("--vm-type",            dest='size',                                                help="aws: instance_type; gce: size)")
+    add("--vm-type",            metavar="TYPE",                                             help="aws: instance_type; gce: size)")
     add("--vm-username",        dest='sshuser', default="ubuntu",                           help="remote server username for login")
 
     if len(sys.argv) < 2:
@@ -164,6 +165,9 @@ if __name__ == "__main__":
 
         if args.configfile:
             burst_conf['configfile'] = args.configfile
+
+        if args.disksize:
+            burst_conf['disksize'] = args.disksize
 
     if args.local:
         vprint (args)
@@ -269,10 +273,10 @@ if __name__ == "__main__":
             else:
                 try:
                     did = json.loads(out)
-                    v0print ("Attaching to docker process", did['ID'])
+                    vprint ("Attaching to docker process", did['ID'])
                     cmd = f"docker -H localhost:{args.dockerdport} attach --sig-proxy=false {did['ID']}"
                     vvprint (cmd)
-                    vprint("ctrl-C only detaches;  'burst kill' to stop")
+                    v0print("ctrl-C only detaches;  'burst kill' to stop")
                     v0print ("---------------------OUTPUT-----------------------")
                     os.system(cmd)
                     v0print ("----------------------END-------------------------")
@@ -387,31 +391,8 @@ if __name__ == "__main__":
                 except:
                     print ("Public key not found in usual place; please specify --pubkey")
 
-        # args_gpus = args.gpus
-        # if args.gpus == None:
-        #     if os.path.exists(".burst_gpus"):
-        #         args_gpus = open(".burst_gpus").read().strip()
-        #     else:
-        #         raise Exception("no .burst_gpus; specify --gpus")
-        # if args_gpus.lower() != 'none':
-        #     if args.size == None:
-        #         size = 'DEFAULT_GPU_SIZE'
-        #     else:
-        #         size = args.size
-        #     if args.image == None:
-        #         image = 'DEFAULT_GPU_IMAGE'
-        #     else:
-        #         image = args.image
-        # else:
-        #     if args.size == None:
-        #         size = 'DEFAULT_SIZE'
-        #     else:
-        #         size = args.size
-        #     if args.image == None:
-        #         image = 'DEFAULT_IMAGE'
-        #     else:
-        #         image = args.image
-
+        if not os.path.exists(args.dockerfile):
+            raise Exception("No Dockerfile found")
         #if we are launching, need to know gpu
         if not os.path.exists(".burst-gpu"):
             if not (args.gpu or args.no_gpu):
@@ -429,19 +410,19 @@ if __name__ == "__main__":
 
         #blech
         if gpu:
-            if args.size == None:
-                size = 'DEFAULT_GPU_SIZE'
+            if args.vm_type == None:
+                vmtype = 'DEFAULT_GPU_VMTYPE'
             else:
-                size = args.size
+                vmtype = args.vmtype
             if args.image == None:
                 image = 'DEFAULT_GPU_IMAGE'
             else:
                 image = args.image
         else:
-            if args.size == None:
-                size = 'DEFAULT_SIZE'
+            if args.vm_type == None:
+                vmtype = 'DEFAULT_VMTYPE'
             else:
-                size = args.size
+                vmtype = args.vmtype
             if args.image == None:
                 image = 'DEFAULT_IMAGE'
             else:
@@ -453,7 +434,7 @@ if __name__ == "__main__":
         #let's do this thing
         error = burst(task_args, sshuser=args.sshuser,
               burst_user=args.burst_user, gpu=gpu, ports=args.portmap, stop=args.stop,
-              image=image, size=size, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
+              image=image, vmtype=vmtype, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               dockerdport=args.dockerdport, bgd = args.background, sync_only = action=='sync', conf = burst_conf)
 
         if error:

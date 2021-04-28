@@ -1,4 +1,4 @@
-Release notes for burst 1.0.0
+Release notes for burst 1.1.1
 
 Changes in CLI:
 
