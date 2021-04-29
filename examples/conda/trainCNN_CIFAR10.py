@@ -98,7 +98,7 @@ def main():
     model = CNN(len(label_dict))
 
     # Check to see if GPU is available and move model to GPU if it is
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0") #if torch.cuda.is_available() else "cpu")
     if args.verbose:
         print('GPU is available?: {}'.format(torch.cuda.is_available()))
         print('Using device: {}'.format(device))
