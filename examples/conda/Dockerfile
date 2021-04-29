@@ -6,7 +6,7 @@ RUN bash ~/miniconda.sh -b -p $HOME/miniconda
 ENV PATH "/root/miniconda/bin/:$PATH$"
 ENV PYTHONPATH "/home/burst/work"
 
-RUN conda install numpy matplotlib scikit-learn
-RUN conda install -c conda-forge pytorch torchvision pytorch-model-summary
+RUN conda install -c conda-forge numpy matplotlib scikit-learn pytorch torchvision
+RUN pip install torchsummary
 
 CMD ["/bin/bash"]
