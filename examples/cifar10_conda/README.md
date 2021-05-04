@@ -1,4 +1,4 @@
-# burst example: CIFAR-10 CNN model
+# burst example: CIFAR-10 CNN model using conda to manage packages
 =======
     
 # CIFAR-10
@@ -18,15 +18,11 @@ The example is implemented two ways:
 
 # Run the example on a local machine
 
-NOTE: this can take a while to run, first because you have to download the ~200Mb CIFAR-10 image dataset, and then because most local machines will not be set up to use the GPU.  Feel free to skip this step and go straight to **Run from the command line using burst** below.
+NOTE: this can take a while to run, first because you have to download the ~200Mb CIFAR-10 image dataset, and then because most local machines will not be set up to use the GPU.  Feel free to skip this step and go straight to **"Run from the command line using burst"** below.
 
-First, set up a virtual environment (instructions are [here](https://realpython.com/python-virtual-environments-a-primer/)).  In the virtual environment, run 
+First, launch a new conda environment and manually install the required packages:
 
-    pip install -r requirements.txt
-
-to ensure that you have the correct versions of all necessary Python packages.  
-
-If it recommends that you upgrade your version of pip, do so, and then run `pip install -r requirements.txt` again.  This will circumvent some problems with accessing the required versions of various python packages.
+    conda install -c conda-forge numpy matplotlib scikit-learn pytorch-gpu torchvision jupyterlab
 
 Then, run the command line examples with 
 
@@ -157,7 +153,7 @@ graves@pescadero ~/g/v/s/b/e/cifar10>
 
 ```
 
-The first time you run `burst`, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  If you change `requirements.txt` between runs, the Docker container will take some time to rebuild itself on the next `burst` run.
+The first time you run `burst`, it will spin up a new server.  This will take several minutes.  It takes several more minutes to build the Docker container, as it downloads and installs all the required software and python packages.  On subsequent runs, starting with a running server or a stopped server, this initial set-up time will be negligible.  
 
 When `burst` has finished running training and running your model, it will automatically transfer the output and any modified files back to your local directory and close the connection.  Once a `burst` connection has been closed for > 15 minutes, it will stop the remote server so that you will not be paying for it.
 
