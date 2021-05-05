@@ -26,6 +26,7 @@ Guide
    :maxdepth: 1
 	      
    installation
+   examples
    license
    help
 
