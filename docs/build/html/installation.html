@@ -1,0 +1,148 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Installation &#8212; Burst 1.1.1 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Apache License" href="license.html" />
+    <link rel="prev" title="Burst" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p><em>Note: If you want to contribute to the Burst OSS project or just follow bleeding-edge development, install through gitHub as described</em> <a class="reference external" href="https://github.com/burstable-ai/burst/wiki/Contributing-To-Burst">here</a> <em>instead.</em></p>
+<div class="section" id="ssh-keys">
+<h2>SSH keys:<a class="headerlink" href="#ssh-keys" title="Permalink to this headline">¶</a></h2>
+<p>You must have a public/private ssh key pair, stored as <code class="docutils literal notranslate"><span class="pre">~/.ssh/id_rsa.pub</span></code> and <code class="docutils literal notranslate"><span class="pre">~/.ssh/id_rsa</span></code> by default.</p>
+<p>If you do not already have ssh keys, run ssh-keygen to generate them:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span><span class="o">-</span><span class="n">keygen</span> <span class="o">-</span><span class="n">t</span> <span class="n">rsa</span> <span class="o">-</span><span class="n">b</span> <span class="mi">4096</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="recommended-set-up-a-python-virtual-environment">
+<h2>Recommended: set up a Python virtual environment<a class="headerlink" href="#recommended-set-up-a-python-virtual-environment" title="Permalink to this headline">¶</a></h2>
+<p>Follow the instructions here: <a class="reference external" href="https://realpython.com/python-virtual-environments-a-primer/">python-virtual-environments-a-primer.</a></p>
+<p>Launch the virtual environment and do the remainder of your installation and set-up inside the virtual environment.</p>
+</div>
+<div class="section" id="check-versions-of-python-and-docker-at-the-command-line">
+<h2>Check versions of Python and Docker at the command line<a class="headerlink" href="#check-versions-of-python-and-docker-at-the-command-line" title="Permalink to this headline">¶</a></h2>
+<p>Make sure you are running the necessary versions of python and Docker (you need Python 3, Docker &gt;= 19)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">--</span><span class="n">version</span>
+<span class="n">docker</span> <span class="o">--</span><span class="n">version</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-the-command-line-tool">
+<h2>Install the command-line tool:<a class="headerlink" href="#install-the-command-line-tool" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">burstable</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-the-interactive-configuration-setup">
+<h2>Run the interactive configuration setup:<a class="headerlink" href="#run-the-interactive-configuration-setup" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">burst</span> <span class="n">configure</span>
+</pre></div>
+</div>
+<p>Enter your configuration information as prompted to set up a remote compute service.</p>
+</div>
+<div class="section" id="test-the-installation">
+<h2>Test the installation:<a class="headerlink" href="#test-the-installation" title="Permalink to this headline">¶</a></h2>
+<p>Test your installation of Burst by running the test example provided <a class="reference external" href="https://burstable.ai/examples">here.</a></p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Burst</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">Apache License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="help.html">Help</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Burst</a></li>
+      <li>Next: <a href="license.html" title="next chapter">Apache License</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Burstable.AI.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/installation.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
