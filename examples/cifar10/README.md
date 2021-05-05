@@ -20,8 +20,13 @@ The example is implemented two ways:
 
 NOTE: this can take a while to run, first because you have to download the ~200Mb CIFAR-10 image dataset, and then because most local machines will not be set up to use the GPU.  Feel free to skip this step and go straight to **Run from the command line using burst** below.
 
-First, set up a virtual environment (instructions are [here](https://realpython.com/python-virtual-environments-a-primer/)).  In the virtual environment, run 
+First, we need to set up a virtual environment, activate it, and install the necessary package versions.
 
+`cd` into the `burst_examples/cifar10/` directory and do the following:
+
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install --upgrade pip
     pip install -r requirements.txt
 
 to ensure that you have the correct versions of all necessary Python packages.  
