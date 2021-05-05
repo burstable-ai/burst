@@ -63,21 +63,19 @@ The response should look like this:
     burst: DONE
 
 Train a CNN for Image Classification
-------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We recommend walking through the CIFAR-10 example, which uses Pytorch to train a Convolutional Neural Net (CNN) for image classification on the benchmark CIFAR-10 computer vision dataset. This example also illustrates how to use burst to run a Jupyter notebook on a remote GPU, for real-time model building and manipulation on a GPU.
 
 This example is in the ``burst_examples/cifar10/`` directory from the unpacked tarball.
 
+If you typically use ``conda`` to manage your virtual environment and package versioning, try ``burst_examples/cifar10_conda/`` instead.
+
+
+
 Run your own Python project
----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If your project is a pure Python project, you should be able to get it running through burst using some simple templates.
 
 These are in the ``burst_examples/your_python_project/`` directory from the unpacked tarball.
-
-
-Run your own Python project (conda)
------------------------------------
-
-If you use ``conda`` to manage your virtual environment and Python packages, use the ``burst_examples/your_
