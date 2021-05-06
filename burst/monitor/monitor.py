@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import os, sys, json, time, subprocess, datetime, argparse, traceback
+from dateutil.parser import parse as duparse
+import dateutil.tz as dutz
 
 #for absolute imports to work in script mode, we need to import from the root folder
 opath = os.path.abspath(".")
@@ -37,9 +39,11 @@ delay = 3600        # if not specified by burst
 print ("\n" * 40)   #if you have to ask
 shuttime = datetime.datetime.utcnow() + datetime.timedelta(seconds = delay) #default if no process running
 while True:
-    busy = False
-
+    now = datetime.datetime.now(dutz.tzutc())
+    recent = now - datetime.timedelta(seconds=15)
+    really_busy = None
     #check if rsync active
+    rsync_busy = False
     proc = subprocess.Popen(["ps", "ax"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     lines = proc.stdout.read().strip().split(b"\n")
     for out in lines:
@@ -48,33 +52,84 @@ while True:
             continue
         columns = out.split()
         if len(columns) > 4 and "rsync" in columns[4]:
-            busy = True
+            rsync_busy = True
+            print ("rsync in progress")
 
-    #check for running burst processes
-    proc = subprocess.Popen(["docker", "ps", "--format='{{json .}}'"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    lines = proc.stdout.read().strip().split(b"\n")
-    max_val = -1
-    for out in lines:
-        out = out.decode().strip()[1:-1] #seems a docker bug; returning single-quoted json blob
-        # print("OUT:", out)
-        if not out:
-            continue
-        j = json.loads(out)
-        for x in j['Labels'].split(','):
-            if 'burstable' in x:
-                key, val = x.split('=')
-                # print ("LABEL: %s = %s" % (key, val))
-                if key == 'ai.burstable.shutdown':
-                    busy = True
-                    val = int(val)
-                    if val == 0:
-                        val = 10000000000
-                    max_val = max(val, max_val)
-                elif key == 'ai.burstable.monitor':
-                    pass
-                else:
-                    print ("ERROR -- unknown docker label %s=%s" % (key, val))
-                    sys.stdout.flush()
+    if not rsync_busy:
+        #check for running burst processes
+        docker_busy = False
+        proc = subprocess.Popen(["docker", "ps", "--format='{{json .}}'"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        lines = proc.stdout.read().strip().split(b"\n")
+        max_val = -1
+        ids = []
+        for out in lines:
+            out = out.decode().strip()[1:-1] #seems a docker bug; returning single-quoted json blob
+            # print("OUT:", out)
+            if not out:
+                continue
+            j = json.loads(out)
+            ids.append(j['ID'])
+            # print ("ID:", j['ID'])
+            for x in j['Labels'].split(','):
+                if 'burstable' in x:
+                    key, val = x.split('=')
+                    # print ("LABEL: %s = %s" % (key, val))
+                    if key == 'ai.burstable.shutdown':
+                        docker_busy = True
+                        # print ("docker container running")
+                        val = int(val)
+                        if val == 0:
+                            val = 10000000000
+                        max_val = max(val, max_val)
+                    elif key == 'ai.burstable.monitor':
+                        pass
+                    else:
+                        print ("ERROR -- unknown docker label %s=%s" % (key, val))
+                        sys.stdout.flush()
+
+        if docker_busy:
+            really_busy = False
+            for ID in ids:
+                # check for root processes spawned inside container -- if none, busy=False
+                # print ("docker instance: %s PIDs:" % ID)
+                proc = subprocess.Popen([f"docker", "exec", "-ti", ID, "ps", "ax"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                lines = proc.stdout.read().strip().split(b"\n")
+                for out in lines:
+                    cmd = out.split()[4:]
+                    cmd = b" ".join(cmd)
+                    cmd = cmd.decode()
+                    # print (cmd)
+                    if cmd not in ["COMMAND", "ps ax", "bash"]:
+                        really_busy = True
+                        print ("active process")
+                        break
+                if really_busy:
+                    break
+
+                # check for tty activity
+                proc = subprocess.Popen([f"docker", "exec", "-ti", ID, "stat", "/dev/pts/0"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                lines = proc.stdout.read().strip().split(b"\n")
+                for out in lines:
+                    out = out.decode()
+                    columns = out.split()
+                    # print ("COLS:", columns)
+                    if len(columns) == 4 and columns[0] in ["Access:", "Modify:", "Change:"]:
+                        t = duparse(f"{columns[1]} {columns[2]} {columns[3]}")
+                        # print ("STAT:", t, recent)
+                        if t > recent:
+                            print("tty activity")
+                            really_busy = True
+                            break
+                if really_busy:
+                    break
+
+    if really_busy == None:
+        busy = rsync_busy
+    else:
+        busy = really_busy
+
+    # print ("BUSY:", busy)
+
     if max_val >= 0:
         delay = max_val
 
