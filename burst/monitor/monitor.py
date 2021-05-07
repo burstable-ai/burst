@@ -12,6 +12,8 @@ abspath = os.path.abspath("../..")
 sys.path.insert(0, abspath)
 
 from burst.lcloud import *
+from burst.verbos import set_verbosity
+set_verbosity(127)
 
 os.chdir(opath)
 print ("monitor.py pwd:", opath)
