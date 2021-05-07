@@ -338,7 +338,11 @@ __pycache__
             cmd = "rsync -rltzu{4} --exclude-from {5} -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error' '{3}@{1}:{2}/.' {0}/".format(locpath,
                                         url, path, sshuser, get_rsync_v(), rsync_ignore_path)
             vvprint (cmd)
-            os.system(cmd)
+            err = os.system(cmd + " " + get_piper())
+            # print ("RSYNC err:", err)
+            if err:
+                vvprint("rsync returns:", err)
+                vprint("Your session has timed out. Run 'burst sync' to synchronize data")
 
     except Exception as ex:
         if get_verbosity() & 64:
