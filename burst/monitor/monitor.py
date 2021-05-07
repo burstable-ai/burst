@@ -66,7 +66,7 @@ while True:
         ids = []
         for out in lines:
             out = out.decode().strip()[1:-1] #seems a docker bug; returning single-quoted json blob
-            # print("OUT:", out)
+            # print ("OUT:", out)
             if not out:
                 continue
             j = json.loads(out)
@@ -100,10 +100,10 @@ while True:
                     cmd = out.split()[4:]
                     cmd = b" ".join(cmd)
                     cmd = cmd.decode()
-                    # print (cmd)
-                    if cmd not in ["COMMAND", "ps ax", "bash"]:
+                    # pprint (cmd)
+                    if cmd.split()[0].lower() not in ["command", "ps", "bash", "fish", "/usr/bin/sh"] and 'jupyter-lab' not in cmd and 'ipykernel_launcher' not in cmd and "<defunct>" not in cmd:
                         really_busy = True
-                        print ("active process")
+                        print ("active process: %s" % cmd)
                         break
                 if really_busy:
                     break
