@@ -28,7 +28,7 @@ install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock*" \
                    "apt-get -y update; " \
                    "apt-get -y install python3-pip; " \
                    "python3 -m pip install --upgrade pip; " \
-                   "python3 -m pip install easydict apache-libcloud; python-dateutil " \
+                   "python3 -m pip install easydict apache-libcloud python-dateutil; " \
                    "rm -fr burst; " \
                    "git clone -b monitor_1.2 https://github.com/burstable-ai/burst'"      #for reals
 
