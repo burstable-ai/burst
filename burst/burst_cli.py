@@ -433,11 +433,9 @@ if __name__ == "__main__":
             task_args = ['echo', 'Build phase 1 success']
 
         elif action == 'jupyter':
-            if args.portmap:
-                port = args.portmap
-            else:
-                port = "8888"
-            task_args = ['jupyter', 'lab', "--no-browser", "--allow-root", "--NotebookApp.token=''", "--ip=0.0.0.0", f"-p={port}"]
+            if args.portmap == None:
+                args.portmap = ["8888"]
+            task_args = ['jupyter', 'lab', "--no-browser", "--allow-root", "--NotebookApp.token=''", "--ip=0.0.0.0"]
 
         #let's do this thing
         error = burst(task_args, sshuser=args.sshuser,
