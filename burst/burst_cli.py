@@ -43,6 +43,7 @@ actions = {
     'kill':             "burst kill                         |stop docker process on remote",
     'actions':          "burst actions                      |list available actions",
     'configure':        "burst configure                    |Interactive configuration",
+    'jupyter':          "burst jupyter                      |Run jupyter lab (respects idle timeout)",
 }
 
 actions_keys_sorted = list(actions)
@@ -378,7 +379,7 @@ if __name__ == "__main__":
             yam = os.environ['HOME'] + "/.burst/config.yml"
         os.system("burst-config --config_path %s" % yam)
 
-    elif switch(action, 'build', 'run', 'sync'):
+    elif switch(action, 'build', 'run', 'sync', 'jupyter'):
         #no stand-alone options; do burst for reals
         if args.local:
             pubkey = None
@@ -430,6 +431,13 @@ if __name__ == "__main__":
 
         if action == 'build':
             task_args = ['echo', 'Build phase 1 success']
+
+        elif action == 'jupyter':
+            if args.portmap:
+                port = args.portmap
+            else:
+                port = "8888"
+            task_args = ['jupyter', 'lab', "--no-browser", "--allow-root", "--NotebookApp.token=''", "--ip=0.0.0.0", f"-p={port}"]
 
         #let's do this thing
         error = burst(task_args, sshuser=args.sshuser,
