@@ -420,7 +420,7 @@ if __name__ == "__main__":
             if args.vm_type == None:
                 vmtype = 'DEFAULT_GPU_VMTYPE'
             else:
-                vmtype = args.vmtype
+                vmtype = args.vm_type
             if args.image == None:
                 image = 'DEFAULT_GPU_IMAGE'
             else:
@@ -429,7 +429,7 @@ if __name__ == "__main__":
             if args.vm_type == None:
                 vmtype = 'DEFAULT_VMTYPE'
             else:
-                vmtype = args.vmtype
+                vmtype = args.vm_type
             if args.image == None:
                 image = 'DEFAULT_IMAGE'
             else:
