@@ -164,6 +164,12 @@ if __name__ == "__main__":
         if args.storage_config:
             burst_conf['storage_config'] = args.storage_config
 
+        if args.project:
+            burst_conf['project'] = args.project
+
+        if args.region:
+            burst_conf['region'] = args.region
+
         if args.configfile:
             burst_conf['configfile'] = args.configfile
 
