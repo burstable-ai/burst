@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, json, time, subprocess, datetime, argparse, traceback
+import os, sys, json, time, subprocess, datetime, argparse, traceback, requests
 from dateutil.parser import parse as duparse
 import dateutil.tz as dutz
 
@@ -36,6 +36,28 @@ parser.add_argument("--secret",     required=True)
 parser.add_argument("--region",     required=True)
 parser.add_argument("--project",    default="")
 args = parser.parse_args()
+
+def check_jupyter():
+    now = datetime.datetime.utcnow().replace(tzinfo=dutz.tzutc())  # bah humbug
+    print("NOW:", now)
+    recent = datetime.datetime(2021, 1, 6, tzinfo=dutz.tzutc())
+
+    r = requests.get("http://127.0.0.1:8888/api/kernels")
+    if r.status_code == 200:
+        j = json.loads(r.content)
+        # pprint(j)
+        for k in j:
+            if k['execution_state'] == 'busy':
+                recent = now
+                break
+            last = duparse(k['last_activity'])
+            print("LAST:", last)
+            if last > recent:
+                recent = last
+        seconds = (now - recent).total_seconds()
+        print(f"last activity {seconds} seconds ago")
+    else:
+        print("Error:", r.status_code, r.content)
 
 delay = 3600        # if not specified by burst
 print ("\n" * 40)   #if you have to ask
