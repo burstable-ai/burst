@@ -89,6 +89,7 @@ while True:
         lines = proc.stdout.read().strip().split(b"\n")
         max_val = -1
         ids = []
+        juport = None
         for out in lines:
             out = out.decode().strip()[1:-1] #seems a docker bug; returning single-quoted json blob
             # print ("OUT:", out)
@@ -108,6 +109,8 @@ while True:
                         if val == 0:
                             val = 10000000000
                         max_val = max(val, max_val)
+                    elif key == 'ai.burstable.jupyter':
+                        juport = val
                     elif key == 'ai.burstable.monitor':
                         pass
                     else:
@@ -151,8 +154,8 @@ while True:
                     break
 
                 # check for jupyter activity
-                if args.jupyter_port:
-                    sec = check_jupyter(args.jupyter_port)
+                if juport:
+                    sec = check_jupyter(juport)
                     if sec != False and sec < 15:
                         print (f"jupyter activity {sec} seconds ago")
                         really_busy = True

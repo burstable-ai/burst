@@ -268,15 +268,9 @@ __pycache__
                     secret = conf.secret
 
                 proj = ('--project ' + conf.project) if conf.project else ''
-
-                if args[0] == 'jupyter':
-                    juport = f"--jupyter_port {args.portmap[0]}"               #FIXME: at least document -- first port is for jup
-                else:
-                    juport = ""
-
                 cmd = f"screen -md bash -c 'cd {path}; /usr/bin/python3 ~/burst/burst/monitor/monitor.py" \
                       f" --ip {url} --access {conf.access} --provider {conf.provider}" \
-                      f" --secret={secret} --region {conf.region} {proj} {juport}'"
+                      f" --secret={secret} --region {conf.region} {proj}'"
                 vvprint (cmd)
                 err = do_ssh(f"{sshuser}@{url}", '"%s"' % cmd)
                 if err:
@@ -293,6 +287,8 @@ __pycache__
             cmd = "docker {1} build . --file {2} -t {0} {3}".format(DEFAULT_IMAGE, remote, dockerfile, get_piper())
             vvprint (cmd)
             os.system(cmd)
+
+            jupyter = args[0] == 'jupyter'
 
             #build argument list -- re-quote if whitespace
             s = ""
@@ -323,8 +319,17 @@ __pycache__
 
             vprint ("Running docker container")
             background_args = "-td" if bgd else "-ti"
-            cmd = f"docker {remote} run {gpu_args} {docker_port_args} --rm {background_args} --label ai.burstable.shutdown={stop} " \
-                  f"-v {path}:/home/burst/work {cloud_args} {DEFAULT_IMAGE} {args}"
+
+            if jupyter:
+                if len(ports) == 0:
+                    raise Exception("jupyter requires -p (usually 8888)")
+                jupargs = f"--label ai.burstable.jupyter={ports[0]}" #FIXME: document that 1st port is jupyter
+            else:
+                jupargs = ""
+
+            cmd = f"docker {remote} run {gpu_args} {docker_port_args} --rm {background_args}" \
+                  f" --label ai.burstable.shutdown={stop} {jupargs}" \
+                  f" -v {path}:/home/burst/work {cloud_args} {DEFAULT_IMAGE} {args}"
 
             #run main task
             vvprint (cmd)
