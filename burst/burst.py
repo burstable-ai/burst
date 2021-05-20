@@ -265,10 +265,17 @@ __pycache__
                     secret = ".burst/" + conf.raw_secret
                 else:
                     secret = conf.secret
+
                 proj = ('--project ' + conf.project) if conf.project else ''
+
+                if args[0] == 'jupyter:'
+                    juport = f"--jupyter_port {args.portmap[0]}"               #FIXME: at least document -- first port is for jup
+                else:
+                    juport = ""
+
                 cmd = f"screen -md bash -c 'cd {path}; /usr/bin/python3 ~/burst/burst/monitor/monitor.py" \
                       f" --ip {url} --access {conf.access} --provider {conf.provider}" \
-                      f" --secret={secret} --region {conf.region} {proj}'"
+                      f" --secret={secret} --region {conf.region} {proj} {juport}'"
                 vvprint (cmd)
                 do_ssh(f"{sshuser}@{url}", '"%s"' % cmd)
 
@@ -285,7 +292,6 @@ __pycache__
             os.system(cmd)
 
             #build argument list -- re-quote if whitespace
-            # args = " ".join(args)
             s = ""
             for a in args:
                 a = a.strip()
