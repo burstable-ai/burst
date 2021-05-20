@@ -28,18 +28,9 @@ def stop_instance_by_url(url, conf):
         print ("shutting down node %s" % node)
         stop_server(node)
 
-parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("--ip",         required=True)
-parser.add_argument("--provider",   required=True)
-parser.add_argument("--access",     required=True)
-parser.add_argument("--secret",     required=True)
-parser.add_argument("--region",     required=True)
-parser.add_argument("--project",    default="")
-args = parser.parse_args()
-
 def check_jupyter():
     now = datetime.datetime.utcnow().replace(tzinfo=dutz.tzutc())  # bah humbug
-    print("NOW:", now)
+    # print("NOW:", now)
     recent = datetime.datetime(2021, 1, 6, tzinfo=dutz.tzutc())
 
     r = requests.get("http://127.0.0.1:8888/api/kernels")
@@ -51,13 +42,24 @@ def check_jupyter():
                 recent = now
                 break
             last = duparse(k['last_activity'])
-            print("LAST:", last)
+            # print("LAST:", last)
             if last > recent:
                 recent = last
         seconds = (now - recent).total_seconds()
-        print(f"last activity {seconds} seconds ago")
+        # print(f"last activity {seconds} seconds ago")
+        return seconds
     else:
         print("Error:", r.status_code, r.content)
+        return False
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--ip",         required=True)
+parser.add_argument("--provider",   required=True)
+parser.add_argument("--access",     required=True)
+parser.add_argument("--secret",     required=True)
+parser.add_argument("--region",     required=True)
+parser.add_argument("--project",    default="")
+args = parser.parse_args()
 
 delay = 3600        # if not specified by burst
 print ("\n" * 40)   #if you have to ask
@@ -146,6 +148,12 @@ while True:
                             break
                 if really_busy:
                     break
+
+                # check for jupyter activity
+                sec = check_jupyter()
+                if sec != False and sec < 15:
+                    print (f"jupyter activity {sec} seconds ago")
+                    really_busy = True
 
     if really_busy == None:
         busy = rsync_busy
