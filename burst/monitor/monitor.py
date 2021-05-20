@@ -28,12 +28,12 @@ def stop_instance_by_url(url, conf):
         print ("shutting down node %s" % node)
         stop_server(node)
 
-def check_jupyter():
+def check_jupyter(port = 8888):
     now = datetime.datetime.utcnow().replace(tzinfo=dutz.tzutc())  # bah humbug
     # print("NOW:", now)
     recent = datetime.datetime(2021, 1, 6, tzinfo=dutz.tzutc())
 
-    r = requests.get("http://127.0.0.1:8888/api/kernels")
+    r = requests.get(f"http://127.0.0.1:{port}/api/kernels")
     if r.status_code == 200:
         j = json.loads(r.content)
         # pprint(j)
@@ -59,6 +59,7 @@ parser.add_argument("--access",     required=True)
 parser.add_argument("--secret",     required=True)
 parser.add_argument("--region",     required=True)
 parser.add_argument("--project",    default="")
+parser.add_argument("--jupyter_port", type=int)
 args = parser.parse_args()
 
 delay = 3600        # if not specified by burst
@@ -143,17 +144,18 @@ while True:
                         t = duparse(f"{columns[1]} {columns[2]} {columns[3]}")
                         # print ("STAT:", t, recent)
                         if t > recent:
-                            print("tty activity")
+                            print(f"tty activity {now-t} seconds ago")
                             really_busy = True
                             break
                 if really_busy:
                     break
 
                 # check for jupyter activity
-                sec = check_jupyter()
-                if sec != False and sec < 15:
-                    print (f"jupyter activity {sec} seconds ago")
-                    really_busy = True
+                if args.jupyter_port:
+                    sec = check_jupyter(args.jupyter_port)
+                    if sec != False and sec < 15:
+                        print (f"jupyter activity {sec} seconds ago")
+                        really_busy = True
 
     if really_busy == None:
         busy = rsync_busy
