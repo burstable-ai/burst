@@ -30,9 +30,9 @@ install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock*" \
                    "python3 -m pip install --upgrade pip; " \
                    "python3 -m pip install easydict apache-libcloud python-dateutil; " \
                    "rm -fr burst; " \
-                   "git clone -b monitor_1.2 https://github.com/burstable-ai/burst'"      #for reals
+                   "git clone -b jup_idle_164 https://github.com/danx0r/burst'"  # for testing
 
-                # "git clone -b shutdown_39 https://github.com/danx0r/burst'"  # for testing
+# "git clone -b monitor_1.2 https://github.com/burstable-ai/burst'"      #for reals
 
 
 def do_ssh(url, cmd):

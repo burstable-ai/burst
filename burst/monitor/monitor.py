@@ -137,19 +137,27 @@ while True:
                     break
 
                 # check for tty activity
-                proc = subprocess.Popen([f"docker", "exec", "-ti", ID, "stat", "/dev/pts/0"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                lines = proc.stdout.read().strip().split(b"\n")
-                for out in lines:
-                    out = out.decode()
-                    columns = out.split()
-                    # print ("COLS:", columns)
-                    if len(columns) == 4 and columns[0] in ["Access:", "Modify:", "Change:"]:
-                        t = duparse(f"{columns[1]} {columns[2]} {columns[3]}")
-                        # print ("STAT:", t, recent)
-                        if t > recent:
-                            print(f"tty activity {now-t} seconds ago")
-                            really_busy = True
-                            break
+                proc = subprocess.Popen([f"docker", "exec", "-ti", ID, "ls", "/dev/pts"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                pts = proc.stdout.read().decode('utf8').strip().split()
+                pts = [x for x in pts if x[0].isdigit()]
+                # print ("PTS:", pts)
+                for pty in pts[:-1]:    #last tty is ours
+                    # print ("PTY:", pty)
+                    proc = subprocess.Popen(["docker", "exec", "-ti", ID, "stat", f"/dev/pts/{pty}"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                    lines = proc.stdout.read().strip().split(b"\n")
+                    for out in lines:
+                        out = out.decode()
+                        columns = out.split()
+                        # print ("COLS:", columns)
+                        if len(columns) == 4 and columns[0] in ["Access:", "Modify:", "Change:"]:
+                            t = duparse(f"{columns[1]} {columns[2]} {columns[3]}")
+                            # print ("STAT:", t, recent)
+                            if t > recent:
+                                print(f"tty activity {(now-t).total_seconds()} seconds ago")
+                                really_busy = True
+                                break
+                    if really_busy:
+                        break
                 if really_busy:
                     break
 
