@@ -32,14 +32,13 @@ install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock*" \
                    "rm -fr burst; " \
                    "git clone -b monitor_1.2 https://github.com/burstable-ai/burst'"      #for reals
 
-                # "git clone -b shutdown_39 https://github.com/danx0r/burst'"  # for testing
-
+                   # "git clone -b jup_idle_164 https://github.com/danx0r/burst'"  # for testing
 
 def do_ssh(url, cmd):
     ssh_cmd = f'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {url} ' \
           f'{cmd}'
     vvprint (ssh_cmd)
-    os.system(ssh_cmd)
+    return os.system(ssh_cmd)
 
 
 def ssh_tunnel(url, sshuser, ports, dockerdport):
@@ -255,8 +254,9 @@ __pycache__
                 vvprint("Delay for apt-get to settle")
                 time.sleep(30)      #trust me this helps
                 vvprint("Delay done")
-                do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh)       #notable quoteables
-
+                err = do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh)       #notable quoteables
+                if err:
+                    raise Exception("Failed to install burst on remote server")
             if restart:
                 vprint ("Starting monitor process for shutdown++")
                 #run monitor (in detached screen) to check if user's burst OR rsync is still running
@@ -265,12 +265,15 @@ __pycache__
                     secret = ".burst/" + conf.raw_secret
                 else:
                     secret = conf.secret
+
                 proj = ('--project ' + conf.project) if conf.project else ''
                 cmd = f"screen -md bash -c 'cd {path}; /usr/bin/python3 ~/burst/burst/monitor/monitor.py" \
                       f" --ip {url} --access {conf.access} --provider {conf.provider}" \
                       f" --secret={secret} --region {conf.region} {proj}'"
                 vvprint (cmd)
-                do_ssh(f"{sshuser}@{url}", '"%s"' % cmd)
+                err = do_ssh(f"{sshuser}@{url}", '"%s"' % cmd)
+                if err:
+                    raise Exception("Failed to initialize timeout monitor")
 
         else:
             vprint ("burst: running locally")
@@ -284,8 +287,9 @@ __pycache__
             vvprint (cmd)
             os.system(cmd)
 
+            jupyter = args[0] == 'jupyter'
+
             #build argument list -- re-quote if whitespace
-            # args = " ".join(args)
             s = ""
             for a in args:
                 a = a.strip()
@@ -314,8 +318,17 @@ __pycache__
 
             vprint ("Running docker container")
             background_args = "-td" if bgd else "-ti"
-            cmd = f"docker {remote} run {gpu_args} {docker_port_args} --rm {background_args} --label ai.burstable.shutdown={stop} " \
-                  f"-v {path}:/home/burst/work {cloud_args} {DEFAULT_IMAGE} {args}"
+
+            if jupyter:
+                if len(ports) == 0:
+                    raise Exception("jupyter requires -p (usually 8888)")
+                jupargs = f"--label ai.burstable.jupyter={ports[0]}" #FIXME: document that 1st port is jupyter
+            else:
+                jupargs = ""
+
+            cmd = f"docker {remote} run {gpu_args} {docker_port_args} --rm {background_args}" \
+                  f" --label ai.burstable.shutdown={stop} {jupargs}" \
+                  f" -v {path}:/home/burst/work {cloud_args} {DEFAULT_IMAGE} {args}"
 
             #run main task
             vvprint (cmd)

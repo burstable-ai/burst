@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, json, time, subprocess, datetime, argparse, traceback
+import os, sys, json, time, subprocess, datetime, argparse, traceback, requests
 from dateutil.parser import parse as duparse
 import dateutil.tz as dutz
 
@@ -28,6 +28,30 @@ def stop_instance_by_url(url, conf):
         print ("shutting down node %s" % node)
         stop_server(node)
 
+def check_jupyter(port = 8888):
+    now = datetime.datetime.utcnow().replace(tzinfo=dutz.tzutc())  # bah humbug
+    # print("NOW:", now)
+    recent = datetime.datetime(2021, 1, 6, tzinfo=dutz.tzutc())
+
+    r = requests.get(f"http://127.0.0.1:{port}/api/kernels")
+    if r.status_code == 200:
+        j = json.loads(r.content)
+        # pprint(j)
+        for k in j:
+            if k['execution_state'] == 'busy':
+                recent = now
+                break
+            last = duparse(k['last_activity'])
+            # print("LAST:", last)
+            if last > recent:
+                recent = last
+        seconds = (now - recent).total_seconds()
+        # print(f"last activity {seconds} seconds ago")
+        return seconds
+    else:
+        print("Error:", r.status_code, r.content)
+        return False
+
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--ip",         required=True)
 parser.add_argument("--provider",   required=True)
@@ -35,6 +59,7 @@ parser.add_argument("--access",     required=True)
 parser.add_argument("--secret",     required=True)
 parser.add_argument("--region",     required=True)
 parser.add_argument("--project",    default="")
+parser.add_argument("--jupyter_port", type=int)
 args = parser.parse_args()
 
 delay = 3600        # if not specified by burst
@@ -64,9 +89,10 @@ while True:
         lines = proc.stdout.read().strip().split(b"\n")
         max_val = -1
         ids = []
+        juport = None
         for out in lines:
             out = out.decode().strip()[1:-1] #seems a docker bug; returning single-quoted json blob
-            # print("OUT:", out)
+            # print ("OUT:", out)
             if not out:
                 continue
             j = json.loads(out)
@@ -83,6 +109,8 @@ while True:
                         if val == 0:
                             val = 10000000000
                         max_val = max(val, max_val)
+                    elif key == 'ai.burstable.jupyter':
+                        juport = val
                     elif key == 'ai.burstable.monitor':
                         pass
                     else:
@@ -100,30 +128,45 @@ while True:
                     cmd = out.split()[4:]
                     cmd = b" ".join(cmd)
                     cmd = cmd.decode()
-                    # print (cmd)
-                    if cmd not in ["COMMAND", "ps ax", "bash"]:
+                    # pprint (cmd)
+                    if cmd.split()[0].lower() not in ["command", "ps", "bash", "fish", "/usr/bin/sh"] and 'jupyter-lab' not in cmd and 'ipykernel_launcher' not in cmd and "<defunct>" not in cmd:
                         really_busy = True
-                        print ("active process")
+                        print ("active process: %s" % cmd)
                         break
                 if really_busy:
                     break
 
                 # check for tty activity
-                proc = subprocess.Popen([f"docker", "exec", "-ti", ID, "stat", "/dev/pts/0"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                lines = proc.stdout.read().strip().split(b"\n")
-                for out in lines:
-                    out = out.decode()
-                    columns = out.split()
-                    # print ("COLS:", columns)
-                    if len(columns) == 4 and columns[0] in ["Access:", "Modify:", "Change:"]:
-                        t = duparse(f"{columns[1]} {columns[2]} {columns[3]}")
-                        # print ("STAT:", t, recent)
-                        if t > recent:
-                            print("tty activity")
-                            really_busy = True
-                            break
+                proc = subprocess.Popen([f"docker", "exec", "-ti", ID, "ls", "/dev/pts"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                pts = proc.stdout.read().decode('utf8').strip().split()
+                pts = [x for x in pts if x[0].isdigit()]
+                # print ("PTS:", pts)
+                for pty in pts[:-1]:    #last tty is ours
+                    # print ("PTY:", pty)
+                    proc = subprocess.Popen(["docker", "exec", "-ti", ID, "stat", f"/dev/pts/{pty}"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                    lines = proc.stdout.read().strip().split(b"\n")
+                    for out in lines:
+                        out = out.decode()
+                        columns = out.split()
+                        # print ("COLS:", columns)
+                        if len(columns) == 4 and columns[0] in ["Access:", "Modify:", "Change:"]:
+                            t = duparse(f"{columns[1]} {columns[2]} {columns[3]}")
+                            # print ("STAT:", t, recent)
+                            if t > recent:
+                                print(f"tty activity {(now-t).total_seconds()} seconds ago")
+                                really_busy = True
+                                break
+                    if really_busy:
+                        break
                 if really_busy:
                     break
+
+                # check for jupyter activity
+                if juport:
+                    sec = check_jupyter(juport)
+                    if sec != False and sec < 15:
+                        print (f"jupyter activity {sec} seconds ago")
+                        really_busy = True
 
     if really_busy == None:
         busy = rsync_busy

@@ -43,6 +43,7 @@ actions = {
     'kill':             "burst kill                         |stop docker process on remote",
     'actions':          "burst actions                      |list available actions",
     'configure':        "burst configure                    |Interactive configuration",
+    'jupyter':          "burst jupyter                      |Run jupyter lab (respects idle timeout)",
 }
 
 actions_keys_sorted = list(actions)
@@ -162,6 +163,12 @@ if __name__ == "__main__":
 
         if args.storage_config:
             burst_conf['storage_config'] = args.storage_config
+
+        if args.project:
+            burst_conf['project'] = args.project
+
+        if args.region:
+            burst_conf['region'] = args.region
 
         if args.configfile:
             burst_conf['configfile'] = args.configfile
@@ -378,7 +385,7 @@ if __name__ == "__main__":
             yam = os.environ['HOME'] + "/.burst/config.yml"
         os.system("burst-config --config_path %s" % yam)
 
-    elif switch(action, 'build', 'run', 'sync'):
+    elif switch(action, 'build', 'run', 'sync', 'jupyter'):
         #no stand-alone options; do burst for reals
         if args.local:
             pubkey = None
@@ -413,7 +420,7 @@ if __name__ == "__main__":
             if args.vm_type == None:
                 vmtype = 'DEFAULT_GPU_VMTYPE'
             else:
-                vmtype = args.vmtype
+                vmtype = args.vm_type
             if args.image == None:
                 image = 'DEFAULT_GPU_IMAGE'
             else:
@@ -422,7 +429,7 @@ if __name__ == "__main__":
             if args.vm_type == None:
                 vmtype = 'DEFAULT_VMTYPE'
             else:
-                vmtype = args.vmtype
+                vmtype = args.vm_type
             if args.image == None:
                 image = 'DEFAULT_IMAGE'
             else:
@@ -430,6 +437,11 @@ if __name__ == "__main__":
 
         if action == 'build':
             task_args = ['echo', 'Build phase 1 success']
+
+        elif action == 'jupyter':
+            if args.portmap == None:
+                args.portmap = ["8888"]
+            task_args = ['jupyter', 'lab', "--no-browser", "--allow-root", "--NotebookApp.token=''", "--ip=0.0.0.0"]
 
         #let's do this thing
         error = burst(task_args, sshuser=args.sshuser,
