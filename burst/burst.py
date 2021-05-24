@@ -15,7 +15,7 @@ sys.path.insert(0, abspath)
 
 from burst.lcloud import *
 from burst.runrun import run
-from burst.version import version
+# from burst.version import version
 from burst.verbos import set_verbosity, get_verbosity, vprint, vvprint, v0print, get_piper, get_rsync_v, get_dockrunflags
 
 os.chdir(opath)
@@ -31,8 +31,9 @@ install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock*" \
                    "python3 -m pip install easydict apache-libcloud python-dateutil; " \
                    "rm -fr burst; " \
                    "git clone -b monitor_1.2 https://github.com/burstable-ai/burst'"      #for reals
-
                    # "git clone -b jup_idle_164 https://github.com/danx0r/burst'"  # for testing
+
+update_burst_sh = "cd burst; sudo bash -c 'git pull https://github.com/burstable-ai/burst monitor_1.2'"      #for reals
 
 def do_ssh(url, cmd):
     ssh_cmd = f'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {url} ' \
@@ -258,6 +259,10 @@ __pycache__
                 if err:
                     raise Exception("Failed to install burst on remote server")
             if restart:
+                vprint ("updating burst installation for monitor")
+                err = do_ssh(f"{sshuser}@{url}", '"%s"' % update_burst_sh)
+                if err:
+                    raise Exception("Failed to update burst on remote server")
                 vprint ("Starting monitor process for shutdown++")
                 #run monitor (in detached screen) to check if user's burst OR rsync is still running
                 conf = get_config()
