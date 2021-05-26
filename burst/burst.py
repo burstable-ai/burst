@@ -15,7 +15,7 @@ sys.path.insert(0, abspath)
 
 from burst.lcloud import *
 from burst.runrun import run
-# from burst.version import version
+from burst.version import version
 from burst.verbos import set_verbosity, get_verbosity, vprint, vvprint, v0print, get_piper, get_rsync_v, get_dockrunflags
 
 os.chdir(opath)
