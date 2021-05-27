@@ -235,7 +235,8 @@ __pycache__
                 if not os.path.exists(rsync_ignore_path):
                     vprint("creating empty .burstignore")
                     os.system("touch .burstignore")
-                cmd = 'rsync -rltzu{4} --include=.rclone.conf --exclude-from {5} -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/. {3}@{1}:{2}/'.format(locpath,
+                cmd = 'rsync -rltzu{4} --del --include=.rclone.conf --exclude-from {5} -e "ssh -o StrictHostKeyChecking=no ' \
+                      '-o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/. {3}@{1}:{2}/'.format(locpath,
                                             url, path, sshuser, get_rsync_v(), rsync_ignore_path)
                 vprint ("Synchronizing project folders")
                 vvprint (cmd)
@@ -350,7 +351,7 @@ __pycache__
             v0print ("----------------------END-------------------------")
             sys.stdout.flush()
 
-        #sync data on host back to local
+        #sync data on host back to local (note: we do not delete in this direction lest a fresh machine wipes our local workspace)
         if url and not bgd:
             vprint ("Synchronizing folders")
             cmd = "rsync -rltzu{4} --exclude-from {5} -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error' '{3}@{1}:{2}/.' {0}/".format(locpath,
