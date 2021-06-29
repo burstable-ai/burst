@@ -29,7 +29,7 @@ Guide
    examples
    license
    help
-
+   about
 
 
 .. Indices and tables
