@@ -28,18 +28,18 @@ install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock*" \
                    "apt-get -y update; " \
                    "apt-get -y install python3-pip; " \
                    "python3 -m pip install --upgrade pip; " \
-                   "python3 -m pip install easydict apache-libcloud; " \
+                   "python3 -m pip install easydict apache-libcloud python-dateutil; " \
                    "rm -fr burst; " \
-                   "git clone -b monitor https://github.com/burstable-ai/burst'"      #for reals
+                   "git clone -b monitor_1.2 https://github.com/burstable-ai/burst'"      #for reals
+                   # "git clone -b jup_idle_164 https://github.com/danx0r/burst'"  # for testing
 
-                # "git clone -b shutdown_39 https://github.com/danx0r/burst'"  # for testing
-
+update_burst_sh = "cd burst; sudo bash -c 'git pull https://github.com/burstable-ai/burst monitor_1.2'"      #for reals
 
 def do_ssh(url, cmd):
     ssh_cmd = f'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {url} ' \
           f'{cmd}'
     vvprint (ssh_cmd)
-    os.system(ssh_cmd)
+    return os.system(ssh_cmd)
 
 
 def ssh_tunnel(url, sshuser, ports, dockerdport):
@@ -235,7 +235,8 @@ __pycache__
                 if not os.path.exists(rsync_ignore_path):
                     vprint("creating empty .burstignore")
                     os.system("touch .burstignore")
-                cmd = 'rsync -rltzu{4} --include=.rclone.conf --exclude-from {5} -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/. {3}@{1}:{2}/'.format(locpath,
+                cmd = 'rsync -rltzu{4} --del --include=.rclone.conf --exclude-from {5} -e "ssh -o StrictHostKeyChecking=no ' \
+                      '-o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/. {3}@{1}:{2}/'.format(locpath,
                                             url, path, sshuser, get_rsync_v(), rsync_ignore_path)
                 vprint ("Synchronizing project folders")
                 vvprint (cmd)
@@ -255,9 +256,14 @@ __pycache__
                 vvprint("Delay for apt-get to settle")
                 time.sleep(30)      #trust me this helps
                 vvprint("Delay done")
-                do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh)       #notable quoteables
-
+                err = do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh)       #notable quoteables
+                if err:
+                    raise Exception("Failed to install burst on remote server")
             if restart:
+                vprint ("updating burst installation for monitor")
+                err = do_ssh(f"{sshuser}@{url}", '"%s"' % update_burst_sh)
+                if err:
+                    raise Exception("Failed to update burst on remote server")
                 vprint ("Starting monitor process for shutdown++")
                 #run monitor (in detached screen) to check if user's burst OR rsync is still running
                 conf = get_config()
@@ -265,12 +271,15 @@ __pycache__
                     secret = ".burst/" + conf.raw_secret
                 else:
                     secret = conf.secret
+
                 proj = ('--project ' + conf.project) if conf.project else ''
                 cmd = f"screen -md bash -c 'cd {path}; /usr/bin/python3 ~/burst/burst/monitor/monitor.py" \
                       f" --ip {url} --access {conf.access} --provider {conf.provider}" \
                       f" --secret={secret} --region {conf.region} {proj}'"
                 vvprint (cmd)
-                do_ssh(f"{sshuser}@{url}", '"%s"' % cmd)
+                err = do_ssh(f"{sshuser}@{url}", '"%s"' % cmd)
+                if err:
+                    raise Exception("Failed to initialize timeout monitor")
 
         else:
             vprint ("burst: running locally")
@@ -284,8 +293,9 @@ __pycache__
             vvprint (cmd)
             os.system(cmd)
 
+            jupyter = args[0] == 'jupyter'
+
             #build argument list -- re-quote if whitespace
-            # args = " ".join(args)
             s = ""
             for a in args:
                 a = a.strip()
@@ -314,8 +324,17 @@ __pycache__
 
             vprint ("Running docker container")
             background_args = "-td" if bgd else "-ti"
-            cmd = f"docker {remote} run {gpu_args} {docker_port_args} --rm {background_args} --label ai.burstable.shutdown={stop} " \
-                  f"-v {path}:/home/burst/work {cloud_args} {DEFAULT_IMAGE} {args}"
+
+            if jupyter:
+                if len(ports) == 0:
+                    raise Exception("jupyter requires -p (usually 8888)")
+                jupargs = f"--label ai.burstable.jupyter={ports[0]}" #FIXME: document that 1st port is jupyter
+            else:
+                jupargs = ""
+
+            cmd = f"docker {remote} run {gpu_args} {docker_port_args} --rm {background_args}" \
+                  f" --label ai.burstable.shutdown={stop} {jupargs}" \
+                  f" -v {path}:/home/burst/work {cloud_args} {DEFAULT_IMAGE} {args}"
 
             #run main task
             vvprint (cmd)
@@ -332,13 +351,17 @@ __pycache__
             v0print ("----------------------END-------------------------")
             sys.stdout.flush()
 
-        #sync data on host back to local
+        #sync data on host back to local (note: we do not delete in this direction lest a fresh machine wipes our local workspace)
         if url and not bgd:
             vprint ("Synchronizing folders")
             cmd = "rsync -rltzu{4} --exclude-from {5} -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error' '{3}@{1}:{2}/.' {0}/".format(locpath,
                                         url, path, sshuser, get_rsync_v(), rsync_ignore_path)
             vvprint (cmd)
-            os.system(cmd)
+            err = os.system(cmd + " " + get_piper())
+            # print ("RSYNC err:", err)
+            if err:
+                vvprint("rsync returns:", err)
+                vprint("Your session has timed out. Run 'burst sync' to synchronize data")
 
     except Exception as ex:
         if get_verbosity() & 64:
