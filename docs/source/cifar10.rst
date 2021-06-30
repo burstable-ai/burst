@@ -1,7 +1,7 @@
 .. _cifar10:
 
-Train a CNN for Image Recognition
-=================================
+CIFAR-10: Train a CNN for Image Recognition
+===========================================
 
 CIFAR-10
 --------
@@ -19,6 +19,11 @@ The example is implemented two ways:
   * in interactive Jupyter notebooks, with in-notebook visualizations
 
 Burst can support both types of model training.
+
+This example is in the ``burst_examples/cifar10/`` directory from the unpacked tarball.
+
+If you typically use ``conda`` to manage your virtual environment and package versioning, try ``burst_examples/cifar10_conda/`` instead.
+
 
 Run the example on a local machine
 ----------------------------------
