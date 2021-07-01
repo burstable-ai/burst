@@ -10,11 +10,11 @@ Burst Examples:
 ^^^^^^^^^^^^^^^
 
 .. toctree::
-   :maxdepth: 1
-	      
-   hello_burst
-   cifar10
-   your_python_project
+      :maxdepth: 1
+
+      hello_burst
+      cifar10
+      your_python_project
 
 
 :ref:`hello_burst`

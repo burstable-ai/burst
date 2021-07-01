@@ -58,3 +58,41 @@ The response should look like this:
     Tesla T4
     ----------------------END-------------------------
     burst: DONE
+
+
+Stopping or terminating the remote server:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+After 15 minutes of inactivity, the remote server will automatically be stopped so that you are not paying for compute power you are not using.  You can check that this has indeed occured by listing the servers associated with your account.
+
+::
+
+   burst list-servers
+
+The response will show your current server and its status.  A running server looks like this:
+
+::
+   
+   ~$ burst list-servers
+   -------------------------------------------------------------                                              
+   Sessions with config graves_aws & user burst-graves:
+   IMAGE: ami-0c3d256527de69215 STATE: running IPs: ['34.217.124.164'] ID: EC2/i-0ee0a62fe4e437bc5
+   Time: 2021/06/30 21:17:30 utc Stop: 2021/06/30 22:14:10 utc in 3400 sec
+
+   -------------------------------------------------------------
+
+Once the server has stopped, listing the server will reflect that stopped status:
+
+::
+   
+   ~$ burst list-servers
+   -------------------------------------------------------------                                              
+   Sessions with config graves_aws & user burst-graves:
+   IMAGE: ami-0c3d256527de69215 STATE: stopped IPs: [] ID: EC2/i-0ee0a62fe4e437bc5
+   -------------------------------------------------------------
+
+Rather than waiting 15 minutes for the server to stop itself, you can also manually stop the server with the command
+
+::
+   
+   burst stop

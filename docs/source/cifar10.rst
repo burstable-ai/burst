@@ -15,8 +15,8 @@ This example is a Pytorch implementation neural nets trained to classify the CIF
 
 The example is implemented two ways:
 
-  * as a command-line python script that can be run remotely through burst (data visualizations are written into an output folder)
-  * in interactive Jupyter notebooks, with in-notebook visualizations
+  * as a command-line python script that can be run remotely through burst (`Run from the command line using burst`_).  Data visualizations are written into an output folder.
+  * in interactive Jupyter notebooks (`Running examples in Jupyter using burst`_), with in-notebook visualizations
 
 Burst can support both types of model training.
 
@@ -28,7 +28,7 @@ If you typically use ``conda`` to manage your virtual environment and package ve
 Run the example on a local machine
 ----------------------------------
 
-*NOTE: this can take a while to run, first because you have to download the ~200Mb CIFAR-10 image dataset, and then because most local machines will not be set up to use the GPU. Feel free to skip this step and go straight to* :ref:`Run from the command line using Burst` *below.*
+*NOTE: this can take a while to run, first because you have to download the ~200Mb CIFAR-10 image dataset, and then because most local machines will not be set up to use the GPU. Feel free to skip this step and go straight to* `Run from the command line using burst`_.
 
 First, we need to set up a virtual environment, activate it, and install the necessary package versions.
 
@@ -97,7 +97,7 @@ The command line code will create an ``output/`` directory and store the followi
 
 If you run the Jupyter notebook, these same visualizations appear in the notebook, rather than being saved as output files.
 
-Run from the command line using Burst
+Run from the command line using burst
 -------------------------------------
 
 First, make sure your burst build is working and ready to use, by running
@@ -179,7 +179,7 @@ The first time you run burst, it will spin up a new server. This will take sever
 
 When burst has finished running training and running your model, it will automatically transfer the output and any modified files back to your local directory and close the connection. Once a burst connection has been closed for > 15 minutes, it will stop the remote server so that you will not be paying for it.
 
-You can inspect the output files that have been transferred back to your local machine.
+You can inspect the output files that have been transferred back to your local machine, which can be found in the ``output/`` directory.
 
 Running examples in Jupyter using burst
 ---------------------------------------
@@ -197,9 +197,9 @@ http://0.0.0.0:8888/lab?token=f60aaf215e2bd8a92015f732388e16b6407181aaca4a1a9a
 
 Paste this URL into a new browser window. This will load a JupyterLab window that is running on the remote burst server.
 
-Edit and run the Jupyter notebook, just as you would on a local Jupyter server. You should notice that it can access the GPU, and that the training epochs run much faster on the remote GPU than on a local CPU.
+Edit and run the Jupyter notebook ``CIFAR10_CNN.ipynb``, just as you would on a local Jupyter server. You should notice that it can access the GPU, and that the training epochs run much faster on the remote GPU than on a local CPU.
 
-NOTE: When you are done, you must manually close the Jupyter server by returning to the window where you launched it and hitting ``Ctl-C``, then responding 'y' to shutdown the server. If you leave the Jupyter server running, you will continue to pay for the remote server, even if no code is being executed. burst will not automatically stop a remote Jupyter server.
+**NOTE: When you are done, you must manually close the Jupyter server** by returning to the window where you launched it and hitting ``Ctl-C``, then responding 'y' to shutdown the server. **If you leave the Jupyter server running, you will continue to pay for the remote server**, even if no code is being executed.  Burst will not automatically stop a remote Jupyter server.
 
 Timing benchmarks
 -----------------
