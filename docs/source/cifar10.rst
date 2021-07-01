@@ -13,14 +13,7 @@ This example
 
 This example is a Pytorch implementation neural nets trained to classify the CIFAR-10 dataset using a convolutional neural net (CNN). This test model achieves ~90% accuracy on this dataset, as implemented here.
 
-The example is implemented two ways:
-
-  * as a command-line python script that can be run remotely through burst (`Run from the command line using burst`_).  Data visualizations are written into an output folder.
-  * in interactive Jupyter notebooks (`Running examples in Jupyter using burst`_), with in-notebook visualizations
-
-Burst can support both types of model training.
-
-This example is in the ``burst_examples/cifar10/`` directory from the unpacked tarball.
+The example is implemented as a command-line python script that can be run remotely through burst.  Data visualizations are written into an output folder.  This example is in the ``burst_examples/cifar10/`` directory from the unpacked tarball.
 
 If you typically use ``conda`` to manage your virtual environment and package versioning, try ``burst_examples/cifar10_conda/`` instead.
 
@@ -180,26 +173,6 @@ The first time you run burst, it will spin up a new server. This will take sever
 When burst has finished running training and running your model, it will automatically transfer the output and any modified files back to your local directory and close the connection. Once a burst connection has been closed for > 15 minutes, it will stop the remote server so that you will not be paying for it.
 
 You can inspect the output files that have been transferred back to your local machine, which can be found in the ``output/`` directory.
-
-Running examples in Jupyter using burst
----------------------------------------
-
-Sometimes it is useful to be able to have an entire Jupyter notebook running on a GPU, while you are experimenting with a new model, so that the run time is fast while you are developing. burst can support remote Jupyter notebooks for real-time model experimentation on a GPU.
-
-To run a remote Jupyter server through burst, use
-::
-
-    burst run -p 8888 jupyter lab --ip 0.0.0.0 --allow-root
-
-The screen will then display a URL, which will look something like
-
-http://0.0.0.0:8888/lab?token=f60aaf215e2bd8a92015f732388e16b6407181aaca4a1a9a
-
-Paste this URL into a new browser window. This will load a JupyterLab window that is running on the remote burst server.
-
-Edit and run the Jupyter notebook ``CIFAR10_CNN.ipynb``, just as you would on a local Jupyter server. You should notice that it can access the GPU, and that the training epochs run much faster on the remote GPU than on a local CPU.
-
-**NOTE: When you are done, you must manually close the Jupyter server** by returning to the window where you launched it and hitting ``Ctl-C``, then responding 'y' to shutdown the server. **If you leave the Jupyter server running, you will continue to pay for the remote server**, even if no code is being executed.  Burst will not automatically stop a remote Jupyter server.
 
 Timing benchmarks
 -----------------
