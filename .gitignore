@@ -2,3 +2,5 @@
 venv
 *~
 docs/build/*
+burstable.egg-info/
+
