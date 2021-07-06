@@ -390,13 +390,16 @@ if __name__ == "__main__":
         if args.local:
             pubkey = None
         else:
-            if args.pubkey==None:
-                try:
-                    f=open(os.path.expanduser("~") + "/.ssh/id_rsa.pub")             #FIXME: a bit cheeky
-                    pubkey=f.read()
-                    f.close()
-                except:
-                    print ("Public key not found in usual place; please specify --pubkey")
+            if args.pubkey:
+                file_name = args.pubkey
+            else:
+                file_name = os.path.expanduser("~") + "/.ssh/id_rsa.pub"
+            try:
+                f=open(file_name)             #FIXME: a bit cheeky
+                pubkey=f.read()
+                f.close()
+            except:
+                pubkey = None
 
         if not os.path.exists(args.dockerfile):
             raise Exception("No Dockerfile found")
