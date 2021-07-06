@@ -387,19 +387,20 @@ if __name__ == "__main__":
 
     elif switch(action, 'build', 'run', 'sync', 'jupyter'):
         #no stand-alone options; do burst for reals
-        if args.local:
-            pubkey = None
-        else:
+        pubkey = None
+        if not args.local:
             if args.pubkey:
                 file_name = args.pubkey
             else:
                 file_name = os.path.expanduser("~") + "/.ssh/id_rsa.pub"
             try:
+                if ".ssh" not in file_name:
+                    raise Exception ("Public keys (and their private parts) need to be in the ~/.ssh folder")
                 f=open(file_name)             #FIXME: a bit cheeky
                 pubkey=f.read()
                 f.close()
-            except:
-                pubkey = None
+            except FileNotFoundError:
+                raise Exception (f"Public key file {file_name} not found")
 
         if not os.path.exists(args.dockerfile):
             raise Exception("No Dockerfile found")
