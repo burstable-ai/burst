@@ -1,12 +1,9 @@
-.. _user_guide:
+.. _user_guide_page:
 
 ============
 User Guide
 ============
 
-
-
-Burst is built and run from inside a project directory.  In order to be "burstable", a project requires a working Dockerfile.  You can find examples and templates for such Dockerfiles, in the :ref:`examples`.
 
 Configuration
 ^^^^^^^^^^^^^

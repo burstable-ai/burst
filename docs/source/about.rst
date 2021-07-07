@@ -1,4 +1,4 @@
-.. _about:
+.. _about_page:
 
 About Us
 ============

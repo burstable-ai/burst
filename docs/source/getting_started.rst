@@ -1,14 +1,14 @@
-.. _getting_started:
+.. _getting_started_page:
 
 ===============
 Getting Started
 ===============
 
-* :ref:`installation`
-* :ref:`configuration_short`
-* :ref:`usage_short`
+* :ref:`installation_sec`
+* :ref:`configuration_sec`
+* :ref:`usage_sec`
 
-.. _installation:
+.. _installation_sec:
 
 Installation
 ============
@@ -53,7 +53,7 @@ Check to make sure that burst has installed correctly with
 
    burst --version
        
-.. _configuration_short:
+.. _configuration_sec:
 
 Configuration (basic)
 =====================
@@ -72,17 +72,19 @@ Enter the configuration wizard and follow the instructions to set up a new compu
 
 This configuration will, by default, set up your account to use a powerful GPU when you run burst with ``--gpu``, a medium-power CPU for testing when you run burst with ``--no-gpu``, and a default harddisk with 175 Gb.
 
-To set up other hardware configurations, see :ref:`configuration_full`.
+To set up other hardware configurations, see :ref:`the detailed configuration instructions.<configuration_page>`.
 
 
-.. _usage_short:
+.. _usage_sec:
 
 
 Using burst
 ===========
 
-To test your burst installation, you will need a project that has the correct supporting files.  The easiest way to get that is using the test examples that are available in the burst gitHub repo `here <https://github.com/burstable-ai/burst>`_.
+Burst is built and run from inside a project directory.  In order to be "burstable", a project requires a working Dockerfile.  You can find examples and templates for such Dockerfiles, in the :ref:`Examples<examples_page>`.
+
+The easiest way to test your burst installation is using the test examples that are available in the burst gitHub repo `here <https://github.com/burstable-ai/burst>`_.
 
 Download the repo.  The examples can be found in the ``burst_examples`` folder.
 
-Try running `Hello Burst! <hello_burst.html>`_.
+Try running :ref:`Hello Burst!<hello_burst_page>`.
