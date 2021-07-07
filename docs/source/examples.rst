@@ -186,8 +186,6 @@ First, we need to set up a virtual environment, activate it, and install the nec
     pip install --upgrade pip
     pip install -r requirements.txt
 
-to ensure that you have the correct versions of all necessary Python packages.
-
 ``conda`` users
 ^^^^^^^^^^^^^^^
 
@@ -199,8 +197,6 @@ to ensure that you have the correct versions of all necessary Python packages.
     [LINUX, macOS:] source anaconda3/bin/activate cifar
     conda install -c conda-forge numpy matplotlib scikit-learn torchvision jupyterlab
     pip install torchsummary
-
-to ensure that you have the correct versions of all necessary Python packages.
 
 
 Run the example locally without burst
@@ -232,9 +228,7 @@ The output should look something like this (shortened):
     # Correct predictions: 7269
     # Wrong predictions: 2731
     ---------------------------------------
-    .
-    .
-    .
+    ...
     stdout flushed
     stderr flushed
     graves@pescadero ~/g/v/s/b/e/cifar10>
@@ -311,11 +305,7 @@ The output should look something like this:
     Iteration   3, avg train_loss = 0.732, avg test_loss = 0.677,1 epoch duration: 0:00:13.297348
     Iteration   4, avg train_loss = 0.671, avg test_loss = 0.646,1 epoch duration: 0:00:13.757426
     Iteration   5, avg train_loss = 0.630, avg test_loss = 0.624,1 epoch duration: 0:00:13.326413
-    .
-    .
-    .
-    .
-    .
+    ...
     Iteration  35, avg train_loss = 0.270, avg test_loss = 0.485,1 epoch duration: 0:00:13.413512
     Iteration  36, avg train_loss = 0.263, avg test_loss = 0.501,1 epoch duration: 0:00:13.411721
     Iteration  37, avg train_loss = 0.266, avg test_loss = 0.485,1 epoch duration: 0:00:13.283547
@@ -329,9 +319,7 @@ The output should look something like this:
     # Correct predictions: 8635
     # Wrong predictions: 1365
     ---------------------------------------
-    .
-    .
-    .
+    ...
     stdout flushed
     stderr flushed
     ----------------------END-------------------------
@@ -375,7 +363,7 @@ You should see output similar to this (abbreviated):
    [I 2021-07-07 17:56:44.308 ServerApp]  or http://127.0.0.1:8888/lab
    [I 2021-07-07 17:56:44.308 ServerApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
 
-Cut and paste the URL provided (e.g., ``http://127.0.0.1:8888/lab``) into a web browser, and it should load the JupyterLab environment.
+Cut and paste the local URL provided (``http://127.0.0.1:8888/lab``) into a web browser, and it should load the JupyterLab environment.
 
 Open the ``CIFAR10_CNN.ipynb``.  You can step through the notebook one cell at a time to train and test a convolutional neural net.  Notice in Cell [5] that the notebook is indeed running on a GPU, with CUDA enabled.  
 
@@ -567,14 +555,15 @@ You should see output similar to this (abbreviated):
 
 ::
 
-   graves@pescadero ~/b/e/t/b/b/your_python_project> burst jupyter
+   graves@pescadero ~/g/v/s/b/b/your_python_project> burst jupyter
    ---------------------OUTPUT-----------------------                                                         
    ...
-   [I 18:25:03.878 LabApp] Jupyter Notebook 6.4.0 is running at:
-   [I 18:25:03.879 LabApp] http://127.0.0.1:8888/lab
-   [I 18:25:03.879 LabApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+   [I 2021-07-07 20:24:01.785 ServerApp] Jupyter Server 1.9.0 is running at:
+   [I 2021-07-07 20:24:01.785 ServerApp] http://d3dfdfe3f8a5:8888/lab
+   [I 2021-07-07 20:24:01.785 ServerApp]  or http://127.0.0.1:8888/lab
+   [I 2021-07-07 20:24:01.785 ServerApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
 
-Cut and paste the URL provided (e.g., ``http://127.0.0.1:8888/lab``) into a web browser, and it should load the JupyterLab environment.
+Cut and paste the local URL provided (``http://127.0.0.1:8888/lab``) into a web browser, and it should load the JupyterLab environment.
 
 Open the ``Template.ipynb`` notebook.  You can step through the notebook one cell at a time, or modify the notebook to do other operations.
 
