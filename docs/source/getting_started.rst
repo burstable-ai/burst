@@ -4,6 +4,10 @@
 Getting Started
 ===============
 
+* :ref:`installation`
+* :ref:`configuration_short`
+* :ref:`usage_short`
+
 .. _installation:
 
 Installation
@@ -43,23 +47,42 @@ Install the command-line tool:
     pip install burstable
 
 
+Check to make sure that burst has installed correctly with
+
+::
+
+   burst --version
+       
 .. _configuration_short:
 
-Configuration
-=============
+Configuration (basic)
+=====================
 
-Run the interactive configuration setup:
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The first time you use burst, we recommend running the interactive configuration setup.  To do this, you will need credentials for the cloud account you want to use.  For AWS, this means you will need:
+
+* an access key 
+* a secret key 
+* a region (e.g., ``us-west-2``)
+
+Enter the configuration wizard and follow the instructions to set up a new compute service, entering your access key, secret key, and region as prompted.
+  
 ::
    
     burst configure
 
-Enter your configuration information as prompted to set up a remote compute service.
+This configuration will, by default, set up your account to use a powerful GPU when you run burst with ``--gpu``, a medium-power CPU for testing when you run burst with ``--no-gpu``, and a default harddisk with 175 Gb.
+
+To set up other hardware configurations, see :ref:`configuration_full`.
 
 
 .. _usage_short:
 
+
 Using burst
 ===========
 
-Test your installation of Burst by running the "hello burst" example provided in the :ref:`examples`.
+To test your burst installation, you will need a project that has the correct supporting files.  The easiest way to get that is using the test examples that are available in the burst gitHub repo `here <https://github.com/burstable-ai/burst>`_.
+
+Download the repo.  The examples can be found in the ``burst_examples`` folder.
+
+Try running `Hello Burst! <hello_burst.html>`_.

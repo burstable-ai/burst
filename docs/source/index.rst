@@ -1,3 +1,5 @@
+.. _index:
+
 Burst 
 ======
 
@@ -23,9 +25,10 @@ Guide
 -----
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 	      
-   installation
+   getting_started
+   user_guide
    examples
    license
    help
