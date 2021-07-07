@@ -1,4 +1,4 @@
-.. _hello_burst:
+.. _hello_burst_page:
 
 Hello Burst!
 ============

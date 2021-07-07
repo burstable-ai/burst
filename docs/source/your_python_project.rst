@@ -1,4 +1,4 @@
-.. _your_python_project:
+.. _your_python_project_page:
 
 Your Python Project
 ===================

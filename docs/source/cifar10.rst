@@ -1,10 +1,10 @@
-.. _cifar10:
+.. _cifar10_page:
 
 CIFAR-10: Train a CNN for Image Recognition
 ===========================================
 
-CIFAR-10
---------
+The CIFAR-10 Dataset
+----------------------
 
 CIFAR-10 is a benchmark dataset for computer vision. The dataset has low-resolution (32 x 32) color images of 10 different categories of items (mostly animals and vehicles). The CIFAR-10 dataset is described in detail here: `www.cs.toronto.edu/~kriz/cifar.html <https://www.cs.toronto.edu/~kriz/cifar.html>`_
 
