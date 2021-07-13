@@ -72,7 +72,7 @@ Enter the configuration wizard and follow the instructions to set up a new compu
 
 This configuration will, by default, set up your account to use a powerful GPU when you run burst with ``--gpu``, a medium-power CPU for testing when you run burst with ``--no-gpu``, and a default harddisk with 175 Gb.
 
-To set up other hardware configurations, see :ref:`the detailed configuration instructions.<configuration_page>`.
+To set up other hardware configurations, see :ref:`the detailed configuration instructions.<ug_configuration>`.
 
 
 .. _usage_sec:
@@ -87,4 +87,4 @@ The easiest way to test your burst installation is using the test examples that 
 
 Download the repo.  The examples can be found in the ``burst_examples`` folder.
 
-Try running :ref:`Hello Burst!<hello_burst_page>`.
+Try running :ref:`Hello Burst!<ex_hello_burst>`.
