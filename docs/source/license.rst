@@ -1,3 +1,5 @@
+.. _license_page:
+
 ..    Copyright 2021 Burstable.AI
    
       Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +16,9 @@
 
 
 ==============
+License
+==============
+
 Apache License
 ==============
 
