@@ -94,8 +94,8 @@ if __name__ == "__main__":
                                                                                             help="map (mount) burst storage service to local folder")
     add("--storage-service",    dest="storage_config", metavar="STORAGE_SERVICE",           help="override default storage configuration")
     add("--tunnel-port", "-p",  dest='portmap', action="append", metavar="LOCAL[:REMOTE]",  help="port mapping; example: -p 8080 or -p 8081:8080")
-    add("--verbose", "-v",      dest='verbosity', type=int, default=0,                      help="-1: just task output 0: status 1-127: more verbose"
-                                                                                                 "(default: -1)")
+    add("--verbose", "-v",      dest='verbosity', type=int, default=0,                      help="-1: just task output 0: status 1-255: more verbose "
+                                                                                                 "(default: 0)")
     add("--version",            action="store_true",                                        help="Print version # & exit")
     add("--vm-image",           dest='image',                                               help="libcloud image (aws: ami image_id)")
     add("--vm-type",            metavar="TYPE",                                             help="aws: instance_type; gce: size)")
