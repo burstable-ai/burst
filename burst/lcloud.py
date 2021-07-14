@@ -61,7 +61,7 @@ def init(conf = None):
         if 'provider' in yconf:
             config.provider = yconf['provider']
         else:
-            raise Exception("Configuration file %s not available. Try running:\nburst --configure" % yam)
+            raise Exception("Configuration file %s not available. Try running:\nburst configure" % yam)
 
     for param in ['access', 'secret', 'region', 'project', 'default_image', 'default_vmtype', 'default_gpu_image',
                   'default_gpu_vmtype', 'default_gpu', 'storage', 'compute_config', 'disksize']:
