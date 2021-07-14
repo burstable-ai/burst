@@ -293,7 +293,9 @@ __pycache__
             vvprint (cmd)
             os.system(cmd)
 
-            jupyter = args[0] == 'jupyter'
+            jupyter = False
+            if len(args):
+                jupyter = args[0] == 'jupyter'
 
             #build argument list -- re-quote if whitespace
             s = ""
