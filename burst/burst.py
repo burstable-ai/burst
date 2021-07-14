@@ -275,7 +275,7 @@ __pycache__
                 proj = ('--project ' + conf.project) if conf.project else ''
                 cmd = f"screen -md bash -c 'cd {path}; /usr/bin/python3 ~/burst/burst/monitor/monitor.py" \
                       f" --ip {url} --access {conf.access} --provider {conf.provider}" \
-                      f" --secret={secret} --region {conf.region} {proj}'"
+                      f" --secret={secret} --region {conf.region} {proj} > /tmp/monitor.log'"
                 vvprint (cmd)
                 err = do_ssh(f"{sshuser}@{url}", '"%s"' % cmd)
                 if err:
