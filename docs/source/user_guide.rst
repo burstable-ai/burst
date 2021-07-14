@@ -63,7 +63,7 @@ This command spins up your cloud hardware, launches a Docker container on the re
 
 A build **requires** you to specify whether you want a GPU machine (``--gpu``) or not (``--no-gpu``)---if you do not specify, you will get an error.
 
-The build process may take several minutes; be patient.  If you are the kind of person who likes to watch the paint dry because it gives you comfort that something is happening, you can ramp up the verbosity with ``--verbose 127`` (127 is maximum verbosity---don't ask why, it just is).
+The build process may take several minutes; be patient.  If you are the kind of person who likes to watch the paint dry because it gives you comfort that something is happening, you can ramp up the verbosity with ``--verbose 255`` (255 is maximum verbosity---don't ask why, it just is).
 
 NOTE: Once a project is successfully built, you will not have to wait through the build process again, even if your cloud server is stopped and you come back to it hours or days later.  You only have to wait through a build when launching a completely new server or project, or when you have made substantial changes to the ``Dockerfile`` and/or ``requirements.txt`` file.  
 
@@ -106,7 +106,7 @@ Build options
 
      burst build --gpu --verbose NUMBER
 
-  where 1 gives only status, and numbers 2-127 are increasingly more verbose (127 is maximum verbosity).  ``burst build`` defaults to ``--verbose 9``, to give the user feedback when build issues are encountered.  Use ``--verbose 127`` if your build is failing, to help diagnose problems.
+  Where -1 suppresses all output except for the task; 0 prints status on a single line (the default); 1 prints status, and numbers 2-255 are increasingly more verbose.  ``burst build`` defaults to ``--verbose 9``, to give the user feedback when build issues are encountered.  Use ``--verbose 127`` if your build is failing, to help diagnose problems.
 
 ``--session-name NAME``
   Specify a name for this burst project.  Default is "``burst-$USER``".  If you want to run more than one burst project *at the same time*, you will need to give them different session names and refer to the session by name when building or running commands.
@@ -176,7 +176,7 @@ Run options
   A useful option for long processes is to run them in "background" mode.  This allows you to set a process running, then close the connection to the remote server (e.g., shut your laptop and pack it away into your bag), leaving the process running in the cloud.  When the process has finished, the server will automatically go to sleep and stop charging your account.  You can then wake up the server to "sync" and retrieve the output of the process at a later time.  Detailed use of "background mode" is described below in :ref:`ug_background`.  
 
 ``--verbose NUMBER``, or ``-v NUMBER``
-  As with the ``burst build`` action, you can set the desired verbosity.  0 limits the output only to task output, 1 gives task output and status, and numbers 2-127 are increasingly more verbose (127 is maximum verbosity).  ``burst run`` defaults to ``--verbose 0``.
+  As with the ``burst build`` action, you can set the desired verbosity.  0 limits the output only to task output, 1 gives task output and status, and numbers 2-255 are increasingly more verbose (255 is maximum verbosity).  ``burst run`` defaults to ``--verbose 0``.
 
 ``--session-name NAME``
   If you built a project with a session name other than the default, you need to provide that same session name to the ``burst run`` command, so that it knows which built server to use.
@@ -250,7 +250,7 @@ Jupyter Options
 ^^^^^^^^^^^^^^^^^^
 
 ``--verbose NUMBER``, or ``-v NUMBER``
-  As with the ``burst run`` action, you can set the desired verbosity.  0 limits the output only to task output, 1 gives task output and status, and numbers 2-127 are increasingly more verbose (127 is maximum verbosity).  ``burst jupyter`` defaults to ``--verbose 0``.
+  As with the ``burst run`` action, you can set the desired verbosity.  0 limits the output only to task output, 1 gives task output and status, and numbers 2-255 are increasingly more verbose (255 is maximum verbosity).  ``burst jupyter`` defaults to ``--verbose 0``.
 
 ``--session-name NAME``
   If you built a project with a session name other than the default, you need to provide that same session name to the ``burst jupyter`` command, so that it knows which built server to use.
@@ -684,7 +684,7 @@ Burst Options: a complete list
 ``--tunnel-port LOCAL[:REMOTE], -p LOCAL[:REMOTE]``
   port mapping; example: -p 8080 or -p 8081:8080 (see :ref:`ug_run_options`)
 ``--verbose VERBOSITY, -v VERBOSITY``
-  0: just task output, 1: output & status,  2-127: more verbose (default: 0, max: 127)
+  0: just task output, 1: output & status,  2-255: more verbose (default: 0, max: 255)
 ``--version``
   Print version # & exit
 ``--vm-image IMAGE``

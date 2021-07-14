@@ -268,7 +268,7 @@ inside your project directory. If you encounter problems, try ramping up the ver
 
     burst build --gpu --verbose 127
 
-(Note: 127 is maximum verbosity).
+(Note: 255 is maximum verbosity).
 
 Once the burst build is working, run the command line examples using burst:
 ::
