@@ -684,7 +684,7 @@ Burst Options: a complete list
 ``--tunnel-port LOCAL[:REMOTE], -p LOCAL[:REMOTE]``
   port mapping; example: -p 8080 or -p 8081:8080 (see :ref:`ug_run_options`)
 ``--verbose VERBOSITY, -v VERBOSITY``
-  0: just task output, 1: output & status,  2-255: more verbose (default: 0, max: 255)
+  -1: just task output, 0: status on single line, 1: status, 2-255: more verbose (default: 0)
 ``--version``
   Print version # & exit
 ``--vm-image IMAGE``
