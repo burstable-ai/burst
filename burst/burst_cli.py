@@ -218,7 +218,7 @@ if __name__ == "__main__":
             # print ("DBG:", n.public_ips[0])
             print (s)
             if n.state.lower()=='running':
-                cmd = f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error ubuntu@{n.public_ips[0]} 'screen -r -md -X hardcopy .burst_monitor.log; tail -n 2 .burst_monitor.log'"
+                cmd = f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error ubuntu@{n.public_ips[0]} 'tail -n {max(get_verbosity(), 1)} /tmp/monitor.log'"
                 os.system(cmd)
         v0print ("-------------------------------------------------------------")
 
