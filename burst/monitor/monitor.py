@@ -63,7 +63,7 @@ parser.add_argument("--jupyter_port", type=int)
 args = parser.parse_args()
 
 delay = 3600        # if not specified by burst
-print ("\n" * 40)   #if you have to ask
+print ("~~~~~~~~~~~~~~~~~~~~~~~~~~~SESSION~~~~~~~~~~~~~~~~~~~~~~~~~~")   #if you have to ask
 shuttime = datetime.datetime.utcnow() + datetime.timedelta(seconds = delay) #default if no process running
 while True:
     now = datetime.datetime.now(dutz.tzutc())
