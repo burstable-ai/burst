@@ -128,8 +128,9 @@ while True:
                     cmd = out.split()[4:]
                     cmd = b" ".join(cmd)
                     cmd = cmd.decode()
-                    # pprint (cmd)
-                    if cmd.split()[0].lower() not in ["command", "ps", "bash", "fish", "/usr/bin/sh"] and 'jupyter-lab' not in cmd and 'ipykernel_launcher' not in cmd and "<defunct>" not in cmd:
+                    # print("CMD:", cmd, "CHK:", cmd.split()[0].lower().split('/')[-1])
+                    if cmd.split()[0].lower().split('/')[-1] not in ["command", "ps", "bash", "fish", "sh", "tsh",
+                          "zsh"] and 'jupyter-lab' not in cmd and 'ipykernel_launcher' not in cmd and "<defunct>" not in cmd:
                         really_busy = True
                         print ("active process: %s" % cmd)
                         break
