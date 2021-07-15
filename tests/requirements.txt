@@ -1,1 +1,2 @@
-jupyterlab
+# add pypi dependencies here. Be sure to pin the version number, like:
+# six==1.15.0

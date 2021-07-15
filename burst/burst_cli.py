@@ -176,14 +176,10 @@ if __name__ == "__main__":
         if args.disksize:
             burst_conf['disksize'] = args.disksize
 
-    if args.local:
-        vprint (args)
-        parser.error("when specifying --local, do not set --vm-username or --session-name")
-        exit()
-    # t0 = time.time()
-    # while time.time()-t0 < args.delay:
-    #     vprint ("%d seconds till action" % (args.delay+.5+t0-time.time()))
-    #     time.sleep(5)
+    # if args.local:
+    #     vprint (args)
+    #     parser.error("when specifying --local, do not set --vm-username or --session-name")
+    #     exit()
 
     #set default burst_user if necessary:
     if not (args.burst_user or args.local or args.version):
