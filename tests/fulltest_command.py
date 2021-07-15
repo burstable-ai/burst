@@ -18,4 +18,4 @@ do("cp {0}/foo fulltest.foo".format(args.testpath))
 do("rm {0}/foo".format(args.testpath))
 
 sys.stdout.flush()
-time.sleep(15)
+time.sleep(30)
