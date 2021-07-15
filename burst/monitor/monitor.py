@@ -63,7 +63,7 @@ parser.add_argument("--jupyter_port", type=int)
 args = parser.parse_args()
 
 delay = 3600        # if not specified by burst
-print ("\n" * 40)   #if you have to ask
+print ("~~~~~~~~~~~~~~~~~~~~~~~~~~~SESSION~~~~~~~~~~~~~~~~~~~~~~~~~~")   #if you have to ask
 shuttime = datetime.datetime.utcnow() + datetime.timedelta(seconds = delay) #default if no process running
 while True:
     now = datetime.datetime.now(dutz.tzutc())
@@ -128,8 +128,9 @@ while True:
                     cmd = out.split()[4:]
                     cmd = b" ".join(cmd)
                     cmd = cmd.decode()
-                    # pprint (cmd)
-                    if cmd.split()[0].lower() not in ["command", "ps", "bash", "fish", "/usr/bin/sh"] and 'jupyter-lab' not in cmd and 'ipykernel_launcher' not in cmd and "<defunct>" not in cmd:
+                    # print("CMD:", cmd, "CHK:", cmd.split()[0].lower().split('/')[-1])
+                    if cmd.split()[0].lower().split('/')[-1] not in ["command", "ps", "bash", "fish", "sh", "tsh",
+                          "zsh"] and 'jupyter-lab' not in cmd and 'ipykernel_launcher' not in cmd and "<defunct>" not in cmd:
                         really_busy = True
                         print ("active process: %s" % cmd)
                         break
