@@ -7,7 +7,7 @@
 
 We support remote computing on Amazon Web Services and will be adding more (Google Cloud Platform support is currently in beta).
 
-Detailed installation instructions and usage examples can be found here: https://www.burstable.ai/
+Documentation is available here: [docs](https://burstable.readthedocs.io)
 
 ## Dependencies
 

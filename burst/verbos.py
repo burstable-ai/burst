@@ -30,11 +30,11 @@ def v0print(*args, **kw):
 def vprint(*args, **kw):
     if VERBOSITY == 0:
         _vprint_nolf(*args, **kw)
-    elif VERBOSITY & 1:
+    elif VERBOSITY > 0 and VERBOSITY  & 1:
         print (*args, **kw)
 
 def vvprint(*args, **kw):
-    if VERBOSITY & 2:
+    if VERBOSITY > 0 and VERBOSITY  & 2:
         print (*args, **kw)
 
 #docker verbosity
@@ -48,17 +48,17 @@ def get_piper():
     return ""
 
 def get_dockrunflags():
-    if VERBOSITY & 128:
+    if VERBOSITY > 0 and VERBOSITY  & 128:
         return "-ti"            #run in foreground
     return "-d"
 
 #rsync verbosity
 def get_rsync_v():
-    if VERBOSITY & 16:
+    if VERBOSITY > 0 and VERBOSITY  & 16:
         return "v --progress"
-    if VERBOSITY & 32:
+    if VERBOSITY > 0 and VERBOSITY  & 32:
         return "vv --progress"
-    if VERBOSITY & 64:
+    if VERBOSITY > 0 and VERBOSITY  & 64:
         return "vvv --progress"
     if VERBOSITY >= 1:
         return " --progress"

@@ -43,6 +43,7 @@ actions = {
     'kill':             "burst kill                         |stop docker process on remote",
     'actions':          "burst actions                      |list available actions",
     'configure':        "burst configure                    |Interactive configuration",
+    'jupyter':          "burst jupyter                      |Run jupyter lab (respects idle timeout)",
 }
 
 actions_keys_sorted = list(actions)
@@ -93,8 +94,8 @@ if __name__ == "__main__":
                                                                                             help="map (mount) burst storage service to local folder")
     add("--storage-service",    dest="storage_config", metavar="STORAGE_SERVICE",           help="override default storage configuration")
     add("--tunnel-port", "-p",  dest='portmap', action="append", metavar="LOCAL[:REMOTE]",  help="port mapping; example: -p 8080 or -p 8081:8080")
-    add("--verbose", "-v",      dest='verbosity', type=int, default=0,                      help="-1: just task output 0: status 1-127: more verbose"
-                                                                                                 "(default: -1)")
+    add("--verbose", "-v",      dest='verbosity', type=int, default=0,                      help="-1: just task output 0: status 1-255: more verbose "
+                                                                                                 "(default: 0)")
     add("--version",            action="store_true",                                        help="Print version # & exit")
     add("--vm-image",           dest='image',                                               help="libcloud image (aws: ami image_id)")
     add("--vm-type",            metavar="TYPE",                                             help="aws: instance_type; gce: size)")
@@ -163,20 +164,22 @@ if __name__ == "__main__":
         if args.storage_config:
             burst_conf['storage_config'] = args.storage_config
 
+        if args.project:
+            burst_conf['project'] = args.project
+
+        if args.region:
+            burst_conf['region'] = args.region
+
         if args.configfile:
             burst_conf['configfile'] = args.configfile
 
         if args.disksize:
             burst_conf['disksize'] = args.disksize
 
-    if args.local:
-        vprint (args)
-        parser.error("when specifying --local, do not set --vm-username or --session-name")
-        exit()
-    # t0 = time.time()
-    # while time.time()-t0 < args.delay:
-    #     vprint ("%d seconds till action" % (args.delay+.5+t0-time.time()))
-    #     time.sleep(5)
+    # if args.local:
+    #     vprint (args)
+    #     parser.error("when specifying --local, do not set --vm-username or --session-name")
+    #     exit()
 
     #set default burst_user if necessary:
     if not (args.burst_user or args.local or args.version):
@@ -211,7 +214,7 @@ if __name__ == "__main__":
             # print ("DBG:", n.public_ips[0])
             print (s)
             if n.state.lower()=='running':
-                cmd = f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error ubuntu@{n.public_ips[0]} 'screen -r -md -X hardcopy .burst_monitor.log; tail -n 2 .burst_monitor.log'"
+                cmd = f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error ubuntu@{n.public_ips[0]} 'tail -n {max(get_verbosity(), 1)} ~/burst_monitor.log'"
                 os.system(cmd)
         v0print ("-------------------------------------------------------------")
 
@@ -378,18 +381,22 @@ if __name__ == "__main__":
             yam = os.environ['HOME'] + "/.burst/config.yml"
         os.system("burst-config --config_path %s" % yam)
 
-    elif switch(action, 'build', 'run', 'sync'):
+    elif switch(action, 'build', 'run', 'sync', 'jupyter'):
         #no stand-alone options; do burst for reals
-        if args.local:
-            pubkey = None
-        else:
-            if args.pubkey==None:
-                try:
-                    f=open(os.path.expanduser("~") + "/.ssh/id_rsa.pub")             #FIXME: a bit cheeky
-                    pubkey=f.read()
-                    f.close()
-                except:
-                    print ("Public key not found in usual place; please specify --pubkey")
+        pubkey = None
+        if not args.local:
+            if args.pubkey:
+                file_name = args.pubkey
+            else:
+                file_name = os.path.expanduser("~") + "/.ssh/id_rsa.pub"
+            try:
+                if ".ssh" not in file_name:
+                    raise Exception ("Public keys (and their private parts) need to be in the ~/.ssh folder")
+                f=open(file_name)             #FIXME: a bit cheeky
+                pubkey=f.read()
+                f.close()
+            except FileNotFoundError:
+                raise Exception (f"Public key file {file_name} not found")
 
         if not os.path.exists(args.dockerfile):
             raise Exception("No Dockerfile found")
@@ -413,7 +420,7 @@ if __name__ == "__main__":
             if args.vm_type == None:
                 vmtype = 'DEFAULT_GPU_VMTYPE'
             else:
-                vmtype = args.vmtype
+                vmtype = args.vm_type
             if args.image == None:
                 image = 'DEFAULT_GPU_IMAGE'
             else:
@@ -422,7 +429,7 @@ if __name__ == "__main__":
             if args.vm_type == None:
                 vmtype = 'DEFAULT_VMTYPE'
             else:
-                vmtype = args.vmtype
+                vmtype = args.vm_type
             if args.image == None:
                 image = 'DEFAULT_IMAGE'
             else:
@@ -430,6 +437,11 @@ if __name__ == "__main__":
 
         if action == 'build':
             task_args = ['echo', 'Build phase 1 success']
+
+        elif action == 'jupyter':
+            if args.portmap == None:
+                args.portmap = ["8888"]
+            task_args = ['jupyter', 'lab', "--no-browser", "--allow-root", "--NotebookApp.token=''", "--ip=0.0.0.0"]
 
         #let's do this thing
         error = burst(task_args, sshuser=args.sshuser,

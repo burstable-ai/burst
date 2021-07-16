@@ -1,2 +1,10 @@
 .idea
 venv
+*~
+docs/build/*
+burstable.egg-info/
+burst_examples/cifar10/.burst-gpu
+burst_examples/cifar10_conda/.burst-gpu
+burst_examples/your_python_project/.burst-gpu
+burst_examples/your_conda_project/.burst-gpu
+
