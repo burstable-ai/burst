@@ -1,3 +1,15 @@
+Release notes for burst 1.2.0
+
+Added action 'jupyter'
+
+stop-server will now stop an instance that has an idle bash shell (in all cases)
+or jupyter notebook (if jupyter is the action)
+
+User guide and docs now available at burstable.readthedocs.io
+
+Numerous tweaks & bug fixes
+========================================================================================================
+
 Release notes for burst 1.1.1
 
 Changes in CLI:
