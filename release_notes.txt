@@ -1,3 +1,7 @@
+Release notes for burst 1.2.1
+
+Updated README.md to comport with readthedocs
+========================================================================================================
 Release notes for burst 1.2.0
 
 Added action 'jupyter'
@@ -9,7 +13,6 @@ User guide and docs now available at burstable.readthedocs.io
 
 Numerous tweaks & bug fixes
 ========================================================================================================
-
 Release notes for burst 1.1.1
 
 Changes in CLI:
