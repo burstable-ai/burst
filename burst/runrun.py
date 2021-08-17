@@ -1,5 +1,5 @@
 import  subprocess, time, os, sys, re, socket
-from blessings import Terminal
+from blessed import Terminal
 bless_term = Terminal()
 
 MAXLINES=100

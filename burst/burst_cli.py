@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, argparse, time, json, getpass
+import os, sys, argparse, time, json, getpass, platform
 #
 # the BDFL does not admire scripts which are also importable modules
 # well, frack him -- this is how we roll
@@ -9,6 +9,9 @@ opath = os.path.abspath(".")
 abspath = os.path.abspath(__file__)
 # print ("CLI PATHS:", opath, abspath)
 abspath = abspath[:abspath.rfind('/') + 1]
+if abspath == '':  # Check for \\ in other OS's [Windows fix]
+    abspath = os.path.abspath(__file__)
+    abspath = abspath[:abspath.rfind('\\') + 1]
 os.chdir(abspath)
 abspath = os.path.abspath("..")
 sys.path.insert(0, abspath)
@@ -378,8 +381,12 @@ if __name__ == "__main__":
         if args.configfile:
             yam = args.configfile
         else:
-            yam = os.environ['HOME'] + "/.burst/config.yml"
-        os.system("burst-config --config_path %s" % yam)
+            try:
+                yam = os.environ['HOME'] + "/.burst/config.yml"
+                os.system("burst-config --config_path %s" % yam)
+            except KeyError:  # Windows handler
+                yam = os.environ['LOCALAPPDATA'] + "\\.burst\\config.yml"
+                os.system("burst-config --config_path %s" % yam)
 
     elif switch(action, 'build', 'run', 'sync', 'jupyter'):
         #no stand-alone options; do burst for reals

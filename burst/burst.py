@@ -9,6 +9,10 @@ opath = os.path.abspath(".")
 abspath = os.path.abspath(__file__)
 # print ("BURST PATHS:", opath, abspath)
 abspath = abspath[:abspath.rfind('/') + 1]
+if abspath == '':  # Check for \\ in other OS's [Windows fix]
+    abspath = os.path.abspath(__file__)
+    abspath = abspath[:abspath.rfind('\\') + 1]
+
 os.chdir(abspath)
 abspath = os.path.abspath("..")
 sys.path.insert(0, abspath)
