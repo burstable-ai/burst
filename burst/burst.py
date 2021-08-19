@@ -35,14 +35,14 @@ install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock*" \
 
 update_burst_sh = "cd burst; sudo bash -c 'git pull https://github.com/burstable-ai/burst monitor_1.2'"      #for reals
 
-def do_ssh(url, cmd, pubkeyfile):
-    ssh_cmd = f'ssh {get_ssh_v()} -i {pubkeyfile} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {url} ' \
+def do_ssh(url, cmd, privkeyfile):
+    ssh_cmd = f'ssh {get_ssh_v()} -i {privkeyfile} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {url} ' \
           f'{cmd}'
     vvprint (ssh_cmd)
     return os.system(ssh_cmd)
 
 
-def ssh_tunnel(url, sshuser, ports, dockerdport, pubkeyfile):
+def ssh_tunnel(url, sshuser, ports, dockerdport, privkeyfile):
     # set up ssh tunnel mapping docker socket, ports
     host_port_args = []
     docker_port_args = ""
@@ -57,7 +57,7 @@ def ssh_tunnel(url, sshuser, ports, dockerdport, pubkeyfile):
     ssh_args = ["ssh",
                 get_ssh_v(),
                 "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
-                f"-i {pubkeyfile}",
+                f"-i {privkeyfile}",
                 "-o ExitOnForwardFailure=yes",
                 "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(dockerdport),
                 "{0}@{1}".format(sshuser, url)]
@@ -73,6 +73,7 @@ def ssh_tunnel(url, sshuser, ports, dockerdport, pubkeyfile):
 def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpu=False, ports=None, stop=False,
           image=None, vmtype=None, pubkey=None, pubkeyfile=None, dockerfile="Dockerfile",
           cloudmap="", dockerdport=2376, bgd=False, sync_only=False, conf=None):
+    privkeyfile = pubkeyfile[:-4]                       #strip '.pub'
     error = None
     tunnel = None
     try:
@@ -137,7 +138,7 @@ __pycache__
 
                 #wait for ssh daemon to be ready
                 vprint ("Waiting for sshd")
-                cmd = ["ssh", get_ssh_v(), f"-i {pubkeyfile}", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
+                cmd = ["ssh", get_ssh_v(), f"-i {privkeyfile}", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
                        "-o LogLevel=error", "{0}@{1}".format(sshuser, url), "echo", "'sshd responding'"]
                 vvprint(cmd)
                 good = False
@@ -166,12 +167,12 @@ __pycache__
                 # 'sudo apt-get -y update; sudo apt-get -y install docker.io; ' \ #images have docker installed
                 cmd = 'ssh {3} -i {2} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {0}@{1} ' \
                       '"sudo usermod -a -G docker ubuntu; ' \
-                      'sudo systemctl unmask docker; sudo service docker start"'.format(sshuser, url, pubkeyfile, get_ssh_v())
+                      'sudo systemctl unmask docker; sudo service docker start"'.format(sshuser, url, privkeyfile, get_ssh_v())
                 vvprint(cmd)
                 os.system(cmd)
 
             vprint ("Connecting through ssh")
-            tunnel, docker_port_args = ssh_tunnel(url, sshuser, ports, dockerdport, pubkeyfile)
+            tunnel, docker_port_args = ssh_tunnel(url, sshuser, ports, dockerdport, privkeyfile)
 
             #path = absolute working directory on host
             relpath = os.path.abspath('.')[len(os.path.expanduser('~')):]
@@ -241,7 +242,7 @@ __pycache__
                     os.system("touch .burstignore")
                 cmd = 'rsync -rltzu{4} --del --include=.rclone.conf --exclude-from {5} -e "ssh -i {6} -o StrictHostKeyChecking=no ' \
                       '-o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/. {3}@{1}:{2}/'.format(locpath,
-                                            url, path, sshuser, get_rsync_v(), rsync_ignore_path, pubkeyfile)
+                                            url, path, sshuser, get_rsync_v(), rsync_ignore_path, privkeyfile)
                 vprint ("Synchronizing project folders")
                 vvprint (cmd)
                 os.system(cmd)
@@ -250,7 +251,7 @@ __pycache__
                 # sync service acct creds (for shutdown)
                 cmd = 'rsync -rltzu{4} --relative -e "ssh -i {6} o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' \
                       ' -o LogLevel=error" {0}/./.burst/{5} {3}@{1}:{2}/'.format(os.path.expanduser('~'),
-                                        url, path, sshuser, get_rsync_v(), get_config().raw_secret, pubkeyfile)
+                                        url, path, sshuser, get_rsync_v(), get_config().raw_secret, privkeyfile)
                 vprint("Synchronizing credentials for shutdown")
                 vvprint (cmd)
                 os.system(cmd)
@@ -261,12 +262,12 @@ __pycache__
                 vvprint("Delay for apt-get to settle")
                 time.sleep(30)      #trust me this helps
                 vvprint("Delay done")
-                err = do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh, pubkeyfile)       #notable quoteables
+                err = do_ssh(f"{sshuser}@{url}", '"%s"' % install_burst_sh, privkeyfile)       #notable quoteables
                 if err:
                     raise Exception("Failed to install burst on remote server")
             if restart:
                 vprint ("updating burst installation for monitor")
-                err = do_ssh(f"{sshuser}@{url}", '"%s"' % update_burst_sh, pubkeyfile)
+                err = do_ssh(f"{sshuser}@{url}", '"%s"' % update_burst_sh, privkeyfile)
                 if err:
                     raise Exception("Failed to update burst on remote server")
                 vprint ("Starting monitor process for shutdown++")
@@ -282,7 +283,7 @@ __pycache__
                       f" --ip {url} --access {conf.access} --provider {conf.provider}" \
                       f" --secret={secret} --region {conf.region} {proj} >> ~/burst_monitor.log'"
                 vvprint (cmd)
-                err = do_ssh(f"{sshuser}@{url}", '"%s"' % cmd, pubkeyfile)
+                err = do_ssh(f"{sshuser}@{url}", '"%s"' % cmd, privkeyfile)
                 if err:
                     raise Exception("Failed to initialize timeout monitor")
 
@@ -363,7 +364,7 @@ __pycache__
             vprint ("Synchronizing folders")
             cmd = "rsync -rltzu{4} --exclude-from {5} -e 'ssh -i {6} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
                   " -o LogLevel=error' '{3}@{1}:{2}/.' {0}/".format(locpath,
-                                        url, path, sshuser, get_rsync_v(), rsync_ignore_path, pubkeyfile)
+                                        url, path, sshuser, get_rsync_v(), rsync_ignore_path, privkeyfile)
             vvprint (cmd)
             err = os.system(cmd + " " + get_piper())
             # print ("RSYNC err:", err)
