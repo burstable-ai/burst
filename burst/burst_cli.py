@@ -85,7 +85,7 @@ if __name__ == "__main__":
     add("--help",               action="store_true",                                        help="Print usage info")
     add("--local",              action="store_true",                                        help="run on local device")
     add("--no-gpu",             action="store_true",                                        help="Build without gpu")
-    add("--pubkey-file",        dest='pubkey',                                              help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
+    add("--pubkey-file",        dest='pubkey', default="~/.ssh/id_rsa.pub",                 help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
     add("--session-name",       metavar="NAME", dest='burst_user',                          help="Burst session name (defaults to burst-username; "
                                                                                                  "different sessions launch new machine instances)")
     add("--stop",               type=int, default=900, metavar="SECONDS",                   help="seconds before server is stopped (default 900) "
@@ -214,7 +214,8 @@ if __name__ == "__main__":
             # print ("DBG:", n.public_ips[0])
             print (s)
             if n.state.lower()=='running':
-                cmd = f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error ubuntu@{n.public_ips[0]} 'tail -n {max(get_verbosity(), 1)} ~/burst_monitor.log'"
+                cmd = f"ssh -i {args.pubkey} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" \
+                      f" ubuntu@{n.public_ips[0]} 'tail -n {max(get_verbosity(), 1)} ~/burst_monitor.log'"
                 os.system(cmd)
         v0print ("-------------------------------------------------------------")
 
@@ -385,10 +386,11 @@ if __name__ == "__main__":
         #no stand-alone options; do burst for reals
         pubkey = None
         if not args.local:
-            if args.pubkey:
-                file_name = args.pubkey
-            else:
-                file_name = os.path.expanduser("~") + "/.ssh/id_rsa.pub"
+            # if args.pubkey:
+            #     file_name = args.pubkey
+            # else:
+            #     file_name = os.path.expanduser("~") + "/.ssh/id_rsa.pub"
+            file_name = os.path.abspath(args.pubkey)
             try:
                 if ".ssh" not in file_name:
                     raise Exception ("Public keys (and their private parts) need to be in the ~/.ssh folder")
@@ -446,7 +448,7 @@ if __name__ == "__main__":
         #let's do this thing
         error = burst(task_args, sshuser=args.sshuser,
               burst_user=args.burst_user, gpu=gpu, ports=args.portmap, stop=args.stop,
-              image=image, vmtype=vmtype, pubkey=pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
+              image=image, vmtype=vmtype, pubkey=pubkey, pubkeyfile=args.pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               dockerdport=args.dockerdport, bgd = args.background, sync_only = action=='sync', conf = burst_conf)
 
         if error:
