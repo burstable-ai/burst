@@ -67,7 +67,7 @@ def switch(action, *args):
     return False
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
     add = parser.add_argument
     add("action", nargs='?',                                                                help="type 'burst actions' to list available actions")
@@ -468,3 +468,7 @@ if __name__ == "__main__":
     else:
         vprint()
         print ("Unknown action:", action)
+
+
+if __name__ == "__main__":
+    main()

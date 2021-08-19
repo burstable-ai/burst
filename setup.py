@@ -2,9 +2,20 @@ from setuptools import setup, find_packages
 from burst.version import version
 import os
 
-scripts = ['bin/burst.py', 'bin/burst-config.py', 'bin/burst-monitor.py']
+# Linux/MacOS setup
+scripts = ['bin/burst', 'bin/burst-config', 'bin/burst-monitor']
+entry_pts = None
+
+# Windows setup
 if os.name == 'nt':
-    scripts.append('bin/burst.bat')
+    scripts = None
+    entry_pts = {
+                       "console_scripts": [
+                           "burst = burst.burst_cli:main",
+                           "burst-config = burst.config.config:main",
+                           "burst-monitor = burst.monitor.monitor"
+                       ]
+                   }
 
 setup(
     name="burstable",
@@ -13,6 +24,7 @@ setup(
     packages=find_packages(),
     python_requires='>=3.6',
     scripts=scripts,
+    entry_points=entry_pts,
     install_requires=[
         "blessed            >=1.18,     <2",
         "blessings          >=1.7,      <2",
