@@ -118,6 +118,8 @@ if __name__ == "__main__":
         exit()
     set_verbosity(args.verbosity)
 
+    pubkeyfile = os.path.expanduser(args.pubkey[:-4])
+
     if args.action == None:
         action = None
     else:
@@ -214,7 +216,7 @@ if __name__ == "__main__":
             # print ("DBG:", n.public_ips[0])
             print (s)
             if n.state.lower()=='running':
-                cmd = f"ssh -i {args.pubkey} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" \
+                cmd = f"ssh -i {pubkeyfile} {get_ssh_v()} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" \
                       f" ubuntu@{n.public_ips[0]} 'tail -n {max(get_verbosity(), 1)} ~/burst_monitor.log'"
                 os.system(cmd)
         v0print ("-------------------------------------------------------------")
@@ -390,15 +392,15 @@ if __name__ == "__main__":
             #     file_name = args.pubkey
             # else:
             #     file_name = os.path.expanduser("~") + "/.ssh/id_rsa.pub"
-            file_name = os.path.abspath(args.pubkey)
+            # file_name = os.path.expanduser(args.pubkey)
             try:
-                if ".ssh" not in file_name:
+                if ".ssh" not in pubkeyfile:
                     raise Exception ("Public keys (and their private parts) need to be in the ~/.ssh folder")
-                f=open(file_name)             #FIXME: a bit cheeky
+                f=open(pubkeyfile)             #FIXME: a bit cheeky
                 pubkey=f.read()
                 f.close()
             except FileNotFoundError:
-                raise Exception (f"Public key file {file_name} not found")
+                raise Exception (f"Public key file {pubkeyfile} not found")
 
         if not os.path.exists(args.dockerfile):
             raise Exception("No Dockerfile found")
@@ -448,7 +450,7 @@ if __name__ == "__main__":
         #let's do this thing
         error = burst(task_args, sshuser=args.sshuser,
               burst_user=args.burst_user, gpu=gpu, ports=args.portmap, stop=args.stop,
-              image=image, vmtype=vmtype, pubkey=pubkey, pubkeyfile=args.pubkey, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
+              image=image, vmtype=vmtype, pubkey=pubkey, pubkeyfile=pubkeyfile, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               dockerdport=args.dockerdport, bgd = args.background, sync_only = action=='sync', conf = burst_conf)
 
         if error:

@@ -63,3 +63,15 @@ def get_rsync_v():
     if VERBOSITY >= 1:
         return " --progress"
     return ""
+
+#ssh verbosity
+def get_ssh_v():
+    if VERBOSITY > 0 and VERBOSITY  & 16:
+        return "-v"
+    if VERBOSITY > 0 and VERBOSITY  & 32:
+        return "-vv"
+    if VERBOSITY > 0 and VERBOSITY  & 64:
+        return "-vvv"
+    if VERBOSITY >= 1:
+        return " --progress"
+    return ""

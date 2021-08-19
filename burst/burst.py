@@ -16,7 +16,7 @@ sys.path.insert(0, abspath)
 from burst.lcloud import *
 from burst.runrun import run
 from burst.version import version
-from burst.verbos import set_verbosity, get_verbosity, vprint, vvprint, v0print, get_piper, get_rsync_v, get_dockrunflags
+from burst.verbos import set_verbosity, get_verbosity, vprint, vvprint, v0print, get_piper, get_rsync_v, get_dockrunflags, get_ssh_v
 
 os.chdir(opath)
 
@@ -36,7 +36,7 @@ install_burst_sh = "sudo bash -c 'rm -fr /var/lib/dpkg/lock*" \
 update_burst_sh = "cd burst; sudo bash -c 'git pull https://github.com/burstable-ai/burst monitor_1.2'"      #for reals
 
 def do_ssh(url, cmd, pubkeyfile):
-    ssh_cmd = f'ssh -i {pubkeyfile} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {url} ' \
+    ssh_cmd = f'ssh {get_ssh_v()} -i {pubkeyfile} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {url} ' \
           f'{cmd}'
     vvprint (ssh_cmd)
     return os.system(ssh_cmd)
@@ -54,7 +54,9 @@ def ssh_tunnel(url, sshuser, ports, dockerdport, pubkeyfile):
                 remote_port = local_port = pa
             docker_port_args += " -p {0}:{0}".format(remote_port)
             host_port_args.append("-L {0}:localhost:{1}".format(local_port, remote_port))
-    ssh_args = ["ssh", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
+    ssh_args = ["ssh",
+                get_ssh_v(),
+                "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
                 f"-i {pubkeyfile}",
                 "-o ExitOnForwardFailure=yes",
                 "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(dockerdport),
@@ -135,7 +137,8 @@ __pycache__
 
                 #wait for ssh daemon to be ready
                 vprint ("Waiting for sshd")
-                cmd = ["ssh", f"-i {pubkeyfile}", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null", "-o LogLevel=error", "{0}@{1}".format(sshuser, url), "echo", "'sshd responding'"]
+                cmd = ["ssh", get_ssh_v(), f"-i {pubkeyfile}", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
+                       "-o LogLevel=error", "{0}@{1}".format(sshuser, url), "echo", "'sshd responding'"]
                 vvprint(cmd)
                 good = False
                 for z in range(10, -1, -1):
@@ -161,9 +164,9 @@ __pycache__
             if fresh:
                 vprint("Configuring Docker")
                 # 'sudo apt-get -y update; sudo apt-get -y install docker.io; ' \ #images have docker installed
-                cmd = 'ssh -i {2} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {0}@{1} ' \
+                cmd = 'ssh {3} -i {2} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error {0}@{1} ' \
                       '"sudo usermod -a -G docker ubuntu; ' \
-                      'sudo systemctl unmask docker; sudo service docker start"'.format(sshuser, url, pubkeyfile)
+                      'sudo systemctl unmask docker; sudo service docker start"'.format(sshuser, url, pubkeyfile, get_ssh_v())
                 vvprint(cmd)
                 os.system(cmd)
 
