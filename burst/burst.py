@@ -56,14 +56,19 @@ def ssh_tunnel(url, sshuser, ports, dockerdport, privkeyfile):
             host_port_args.append("-L {0}:localhost:{1}".format(local_port, remote_port))
     ssh_args = ["ssh",
                 get_ssh_v(),
-                "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
-                f"-i {privkeyfile}",
+                "-o StrictHostKeyChecking=no",
+                "-o UserKnownHostsFile=/dev/null",
+                "-i",
+                f"{privkeyfile}",
                 "-o ExitOnForwardFailure=yes",
                 "-o LogLevel=error", "-NL", "{0}:/var/run/docker.sock".format(dockerdport),
                 "{0}@{1}".format(sshuser, url)]
     for arg in host_port_args:
-        ssh_args.insert(3, arg)
+        ssh_args.insert(4, arg)
+    if not ssh_args[1]:
+        ssh_args.pop(1)
     vvprint(ssh_args)
+    print ("DEBUG3:", ssh_args)
     tunnel = subprocess.Popen(ssh_args)
     vvprint("TUNNEL:", tunnel)
     time.sleep(2)
@@ -138,14 +143,25 @@ __pycache__
 
                 #wait for ssh daemon to be ready
                 vprint ("Waiting for sshd")
-                cmd = ["ssh", get_ssh_v(), f"-i {privkeyfile}", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
+                cmd = ["ssh", get_ssh_v(), "-i", f"{privkeyfile}", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null",
                        "-o LogLevel=error", "{0}@{1}".format(sshuser, url), "echo", "'sshd responding'"]
+                if not cmd[1]:
+                    cmd.pop(1)
+                print("DEBUG0:", cmd)
+                # exit()
                 vvprint(cmd)
                 good = False
                 for z in range(10, -1, -1):
                     ret = run(cmd, timeout=15)
-                    if ret[0].strip()[-15:]=='sshd responding':
-                        good = True
+                    # if ret[0].strip()[-15:]=='sshd responding':
+                    #     good = True
+                    #     break
+                    for row in ret[0].split('\n'):
+                        print ("DEBUG:", row)
+                        if row.strip()[-15:]=='sshd responding':
+                            good = True
+                            break
+                    if good == True:
                         break
                     vprint ("still waiting on sshd (this can take a while) -- will try %d more times" % z)
                     if z:
@@ -155,7 +171,7 @@ __pycache__
                 vvprint ("SSH returns -->%s|%s<--" % ret)
             else:
                 raise Exception("Error: node not found")
-
+        # exit()
         docker_port_args = ""
 
         #we have a url unless running --local:

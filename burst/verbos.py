@@ -72,6 +72,4 @@ def get_ssh_v():
         return "-vv"
     if VERBOSITY > 0 and VERBOSITY  & 64:
         return "-vvv"
-    if VERBOSITY >= 1:
-        return " --progress"
     return ""
