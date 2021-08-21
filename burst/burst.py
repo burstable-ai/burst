@@ -147,8 +147,6 @@ __pycache__
                        "-o LogLevel=error", "{0}@{1}".format(sshuser, url), "echo", "'sshd responding'"]
                 if not cmd[1]:
                     cmd.pop(1)
-                print("DEBUG0:", cmd)
-                # exit()
                 vvprint(cmd)
                 good = False
                 for z in range(10, -1, -1):

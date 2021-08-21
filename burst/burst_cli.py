@@ -273,7 +273,7 @@ if __name__ == "__main__":
             print ("No process running")
         else:
             vvprint (f"Attaching to docker process on {url}")
-            tunnel, _ = ssh_tunnel(url, args.sshuser, args.portmap, args.dockerdport)
+            tunnel, _ = ssh_tunnel(url, args.sshuser, args.portmap, args.dockerdport, privkeyfile)
             vvprint ("Tunnel:", tunnel)
             cmd = ["docker", "-H localhost:%s" % args.dockerdport, "ps", "--format", '{{json .}}']
             vvprint (cmd)
@@ -313,7 +313,7 @@ if __name__ == "__main__":
             print ("No process running")
         else:
             vvprint (f"Killing Docker process on {url}")
-            tunnel, _ = ssh_tunnel(url, args.sshuser, args.portmap, args.dockerdport)
+            tunnel, _ = ssh_tunnel(url, args.sshuser, args.portmap, args.dockerdport, privkeyfile)
             vvprint ("Tunnel:", tunnel)
             cmd = ["docker", "-H localhost:%s" % args.dockerdport, "ps", "--format", '{{json .}}']
             vvprint (cmd)
@@ -356,7 +356,7 @@ if __name__ == "__main__":
             v0print("-------------------------------------------------------------")
         else:
             vvprint (f"Looking for docker process on {url}")
-            tunnel, _ = ssh_tunnel(url, args.sshuser, args.portmap, args.dockerdport)
+            tunnel, _ = ssh_tunnel(url, args.sshuser, args.portmap, args.dockerdport, privkeyfile)
             vvprint ("Tunnel:", tunnel)
             cmd = ["docker", "-H localhost:%s" % args.dockerdport, "ps", "--no-trunc", "--format", '{{json .}}']
             vvprint (cmd)
