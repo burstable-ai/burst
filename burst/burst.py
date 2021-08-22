@@ -68,7 +68,7 @@ def ssh_tunnel(url, sshuser, ports, dockerdport, privkeyfile):
     if not ssh_args[1]:
         ssh_args.pop(1)
     vvprint(ssh_args)
-    print ("DEBUG3:", ssh_args)
+    # print ("DEBUG3:", ssh_args)
     tunnel = subprocess.Popen(ssh_args)
     vvprint("TUNNEL:", tunnel)
     time.sleep(2)
@@ -155,7 +155,7 @@ __pycache__
                     #     good = True
                     #     break
                     for row in ret[0].split('\n'):
-                        print ("DEBUG:", row)
+                        # print ("DEBUG:", row)
                         if row.strip()[-15:]=='sshd responding':
                             good = True
                             break

@@ -85,7 +85,7 @@ if __name__ == "__main__":
     add("--help",               action="store_true",                                        help="Print usage info")
     add("--local",              action="store_true",                                        help="run on local device")
     add("--no-gpu",             action="store_true",                                        help="Build without gpu")
-    add("--pubkey-file",        dest='pubkey', default="~/.ssh/id_rsa.pub",                 help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
+    add("--pubkey-file",        dest='pubkey',                                              help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
     add("--session-name",       metavar="NAME", dest='burst_user',                          help="Burst session name (defaults to burst-username; "
                                                                                                  "different sessions launch new machine instances)")
     add("--stop",               type=int, default=900, metavar="SECONDS",                   help="seconds before server is stopped (default 900) "
@@ -118,9 +118,21 @@ if __name__ == "__main__":
         exit()
     set_verbosity(args.verbosity)
 
-    pubkeyfile = os.path.expanduser(args.pubkey)
+    pubkeylink = os.path.expanduser("~/.burst/pubkeyfile")
+    if args.pubkey==None:
+        if os.path.exists(pubkeylink):
+            f = open(pubkeylink)
+            pubkeyfile = f.read().strip()
+            f.close()
+        else:
+            pubkeyfile = os.path.expanduser("~/.ssh/id_rsa.pub")
+    else:
+        pubkeyfile = os.path.expanduser(args.pubkey)
+    f = open(pubkeylink, 'w')
+    f.write(pubkeyfile)
+    f.close()
     privkeyfile = pubkeyfile[:-4]                       #strip '.pub
-    print ("DEBUG2:", pubkeyfile, privkeyfile)
+    # print ("DEBUG2:", pubkeyfile, privkeyfile)
     # exit()
 
     if args.action == None:
@@ -393,11 +405,6 @@ if __name__ == "__main__":
         #no stand-alone options; do burst for reals
         pubkey = None
         if not args.local:
-            # if args.pubkey:
-            #     file_name = args.pubkey
-            # else:
-            #     file_name = os.path.expanduser("~") + "/.ssh/id_rsa.pub"
-            # file_name = os.path.expanduser(args.pubkey)
             try:
                 if ".ssh" not in pubkeyfile:
                     raise Exception ("Public keys (and their private parts) need to be in the ~/.ssh folder")
