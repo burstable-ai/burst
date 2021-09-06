@@ -56,6 +56,7 @@ def ssh_tunnel(url, sshuser, ports, dockerdport, privkeyfile):
             host_port_args.append("-L {0}:localhost:{1}".format(local_port, remote_port))
     ssh_args = ["ssh",
                 get_ssh_v(),
+                "-4",
                 "-o StrictHostKeyChecking=no",
                 "-o UserKnownHostsFile=/dev/null",
                 "-i",
