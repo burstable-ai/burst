@@ -63,14 +63,14 @@ def init(conf = None):
         else:
             raise Exception("Configuration file %s not available. Try running:\nburst configure" % yam)
 
-    for param in ['access', 'secret', 'region', 'project', 'default_image', 'default_vmtype', 'default_gpu_image',
-                  'default_gpu_vmtype', 'default_gpu', 'storage', 'compute_config', 'disksize']:
+    for param in ['access', 'secret', 'region', 'project', 'default_image', 'default_vmtype',
+                                      'default_gpu', 'storage', 'compute_config', 'disksize', 'gpu_count']:
         if param in conf:
             config[param] = conf[param]
         else:
             config[param] = yconf.get(param, None)
 
-    if config.default_vmtype == None or config.default_gpu_vmtype == None:
+    if config.default_vmtype == None:
         vprint ("""config.yml syntax has changed:
 rename default_size --> default_vmtype
 default_gpu_size-->default_gpu_vmtype""")
@@ -163,15 +163,15 @@ def fix_vmtype_and_image(vmtype, image):
 
     if vmtype=="DEFAULT_VMTYPE":
         vmtype = config.default_vmtype
-
-    if image=="DEFAULT_GPU_IMAGE":
-        image = config.default_gpu_image
-
-    if vmtype=="DEFAULT_GPU_VMTYPE":
-        vmtype = config.default_gpu_vmtype
+    #
+    # if image=="DEFAULT_GPU_IMAGE":
+    #     image = config.default_gpu_image
+    #
+    # if vmtype=="DEFAULT_GPU_VMTYPE":
+    #     vmtype = config.default_gpu_vmtype
     return vmtype, image
 
-def launch_server(name, vmtype=None, image=None, pubkey=None, conf = None, user=None, gpu=False):
+def launch_server(name, vmtype=None, image=None, pubkey=None, conf = None, user=None):
     init(conf)
     vmtype, image = fix_vmtype_and_image(vmtype, image)
     image_full_path = image
@@ -218,10 +218,10 @@ def launch_server(name, vmtype=None, image=None, pubkey=None, conf = None, user=
                     }
                 ]
             }
-            if gpu:
+            if config.gpu_count:
                 vprint ("Launching with GPU")
                 node = config.driver.create_node(name, vmtype, image, ex_metadata=meta, ex_accelerator_type=config.default_gpu,
-                                             ex_accelerator_count=1, ex_on_host_maintenance="TERMINATE")
+                                             ex_accelerator_count=config.gpu_count, ex_on_host_maintenance="TERMINATE")
             else:
                 vprint ("Launching without GPU")
                 node = config.driver.create_node(name, vmtype, image, ex_metadata=meta)
@@ -275,10 +275,10 @@ def list_servers(name, conf = None, terminated=True):
         if x.name==name:
             ret.append([x])
             img = x.extra['image_id'] if config.provider == 'EC2' else x.image
-            if img == config.default_image:
-                img += " (default_image)"
-            elif img == config.default_gpu_image:
-                img += " (default_gpu_image)"
+            # if img == config.default_image:
+            #     img += " (default_image)"
+            # elif img == config.default_gpu_image:
+            #     img += " (default_gpu_image)"
             s = "IMAGE: %s STATE: %s IPs: %s ID: %s/%s" %(img, x.state, x.public_ips, config.provider, x.id)
             ret[-1].append(s)
     return ret

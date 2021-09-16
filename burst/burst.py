@@ -76,7 +76,7 @@ def ssh_tunnel(url, sshuser, ports, dockerdport, privkeyfile):
     return tunnel, docker_port_args
 
 
-def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, gpu=False, ports=None, stop=False,
+def burst(args, sshuser=None, url=None, uuid=None, burst_user=None, ports=None, stop=False,
           image=None, vmtype=None, pubkey=None, pubkeyfile=None, dockerfile="Dockerfile",
           cloudmap="", dockerdport=2376, bgd=False, sync_only=False, conf=None):
     privkeyfile = pubkeyfile[:-4]                       #strip '.pub'
@@ -128,7 +128,7 @@ __pycache__
             node = get_server(url=url, uuid=uuid, name=burst_user, conf=conf)
             if burst_user and not node:
                 # print ("PUBKEY:", pubkey)
-                node = launch_server(burst_user, pubkey=pubkey, vmtype=vmtype, image=image, conf=conf, user=sshuser, gpu=gpu)
+                node = launch_server(burst_user, pubkey=pubkey, vmtype=vmtype, image=image, conf=conf, user=sshuser)
                 fresh = True
                 restart = True
             if node:
@@ -333,7 +333,7 @@ __pycache__
             # print ("FINAL args:", args)
             # exit()
 
-            if gpu:
+            if config.gpu_count:
                 gpu_args = "--gpus all"
             else:
                 gpu_args = ""

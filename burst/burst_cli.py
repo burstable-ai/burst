@@ -81,10 +81,10 @@ if __name__ == "__main__":
     add("--docker-port",        dest='dockerdport', type=int, default=2377, metavar="PORT", help="local port to map to remote host docker daemon"
                                                                                                  "(default: 2377)")
     add("--gcs-project",        dest='project',                                             help="Google Cloud project ID")
-    add("--gpu",                action="store_true",                                        help="Build with gpu")
+    add("--gpu",                action="store_true",                                        help="DEPRECATED - add 'gpu_count' to config.yml")
     add("--help",               action="store_true",                                        help="Print usage info")
     add("--local",              action="store_true",                                        help="run on local device")
-    add("--no-gpu",             action="store_true",                                        help="Build without gpu")
+    add("--no-gpu",             action="store_true",                                        help="DEPRECATED - add 'gpu_count' to config.yml")
     add("--pubkey-file",        dest='pubkey',                                              help="public key to access server (defaults to ~/.ssh/id_rsa.pub)")
     add("--session-name",       metavar="NAME", dest='burst_user',                          help="Burst session name (defaults to burst-username; "
                                                                                                  "different sessions launch new machine instances)")
@@ -112,6 +112,9 @@ if __name__ == "__main__":
     argv = sys.argv[1:]
     try:
         args, task_args = parser.parse_known_args(argv)
+        if args.gpu or args.no_gpu:
+            raise  Exception("""--gpu and --no-gpu are deprecated. Add "gpu_count" to config.yml to enable gpu """)
+
     except SystemExit:
         traceback.print_exc()
         print ("There was an error parsing arguments. If there is an argument conflict, try 'run -- yourcommands'")
@@ -261,7 +264,7 @@ if __name__ == "__main__":
             count += 1
             yes = input("Terminating %s, are you sure? (y/n)" % s)
             if yes=='y':
-                os.system("rm .burst-gpu")
+                # os.system("rm .burst-gpu")
                 terminate_server(node)
             else:
                 print ("Aborted")
@@ -416,40 +419,49 @@ if __name__ == "__main__":
 
         if not os.path.exists(args.dockerfile):
             raise Exception("No Dockerfile found")
-        #if we are launching, need to know gpu
-        if not os.path.exists(".burst-gpu"):
-            if not (args.gpu or args.no_gpu):
-                raise Exception("Must specify --gpu or --no-gpu for initial build")
-            f = open(".burst-gpu", 'w')
-            f.write(f"{args.gpu}")
-            f.close()
-        f = open(".burst-gpu")
-        gpu = f.read().strip().lower()=='true'
-        f.close()
+
+        # #if we are launching, need to know gpu
+        # if not os.path.exists(".burst-gpu"):
+        #     if not (args.gpu or args.no_gpu):
+        #         raise Exception("Must specify --gpu or --no-gpu for initial build")
+        #     f = open(".burst-gpu", 'w')
+        #     f.write(f"{args.gpu}")
+        #     f.close()
+        # f = open(".burst-gpu")
+        # gpu = f.read().strip().lower()=='true'
+        # f.close()
 
         #sanity clause
-        if (gpu and args.no_gpu) or ((not gpu) and args.gpu):
-            raise Exception("Gpu status can only be changed with fresh launch (terminate & rebuild)")
-
-        #blech
-        if gpu:
-            if args.vm_type == None:
-                vmtype = 'DEFAULT_GPU_VMTYPE'
-            else:
-                vmtype = args.vm_type
-            if args.image == None:
-                image = 'DEFAULT_GPU_IMAGE'
-            else:
-                image = args.image
+        # if (gpu and args.no_gpu) or ((not gpu) and args.gpu):
+        #     raise Exception("Gpu status can only be changed with fresh launch (terminate & rebuild)")
+        #
+        # #blech
+        # if gpu:
+        #     if args.vm_type == None:
+        #         vmtype = 'DEFAULT_GPU_VMTYPE'
+        #     else:
+        #         vmtype = args.vm_type
+        #     if args.image == None:
+        #         image = 'DEFAULT_GPU_IMAGE'
+        #     else:
+        #         image = args.image
+        # else:
+        #     if args.vm_type == None:
+        #         vmtype = 'DEFAULT_VMTYPE'
+        #     else:
+        #         vmtype = args.vm_type
+        #     if args.image == None:
+        #         image = 'DEFAULT_IMAGE'
+        #     else:
+        #         image = args.image
+        if args.vm_type == None:
+            vmtype = 'DEFAULT_VMTYPE'
         else:
-            if args.vm_type == None:
-                vmtype = 'DEFAULT_VMTYPE'
-            else:
-                vmtype = args.vm_type
-            if args.image == None:
-                image = 'DEFAULT_IMAGE'
-            else:
-                image = args.image
+            vmtype = args.vm_type
+        if args.image == None:
+            image = 'DEFAULT_IMAGE'
+        else:
+            image = args.image
 
         if action == 'build':
             task_args = ['echo', 'Build phase 1 success']
@@ -461,7 +473,7 @@ if __name__ == "__main__":
 
         #let's do this thing
         error = burst(task_args, sshuser=args.sshuser,
-              burst_user=args.burst_user, gpu=gpu, ports=args.portmap, stop=args.stop,
+              burst_user=args.burst_user, ports=args.portmap, stop=args.stop,
               image=image, vmtype=vmtype, pubkey=pubkey, pubkeyfile=pubkeyfile, dockerfile=args.dockerfile, cloudmap=args.cloudmap,
               dockerdport=args.dockerdport, bgd = args.background, sync_only = action=='sync', conf = burst_conf)
 
