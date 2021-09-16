@@ -236,8 +236,6 @@ if __name__ == "__main__":
             if n.state.lower()=='running':
                 cmd = f"ssh -i {privkeyfile} {get_ssh_v()} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" \
                       f" ubuntu@{n.public_ips[0]} 'tail -n {max(get_verbosity(), 1)} ~/burst_monitor.log'"
-                print ("CMD1:", cmd)
-                # exit()
                 os.system(cmd)
         v0print ("-------------------------------------------------------------")
 
