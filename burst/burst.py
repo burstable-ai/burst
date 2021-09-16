@@ -264,7 +264,7 @@ __pycache__
 
             if get_config().provider == 'GCE':
                 # sync service acct creds (for shutdown)
-                cmd = 'rsync -rltzu{4} --relative -e "ssh -i {6} o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' \
+                cmd = 'rsync -rltzu{4} --relative -e "ssh -i {6} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' \
                       ' -o LogLevel=error" {0}/./.burst/{5} {3}@{1}:{2}/'.format(os.path.expanduser('~'),
                                         url, path, sshuser, get_rsync_v(), get_config().raw_secret, privkeyfile)
                 vprint("Synchronizing credentials for shutdown")
