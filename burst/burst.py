@@ -388,7 +388,7 @@ __pycache__
                 vprint("Your session has timed out. Run 'burst sync' to synchronize data")
 
     except Exception as ex:
-        if get_verbosity() & 64:
+        if get_verbosity() > 1:
             v0print ("--------------------------------")
             traceback.print_exc()
             v0print ("--------------------------------")
