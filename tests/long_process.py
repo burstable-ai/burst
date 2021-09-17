@@ -1,6 +1,6 @@
 import sys, time, os
 t0 = time.time()
-print ("HOME2\nPublic ip:", end=' ')
+print ("Public ip:", end=' ')
 sys.stdout.flush()
 os.system("curl https://ipv4.wtfismyip.com/text")
 print ("This is a long-running process (of sorts)")
