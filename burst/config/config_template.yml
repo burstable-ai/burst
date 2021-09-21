@@ -1,32 +1,88 @@
----
 compute:
-  settings:
-    default_compute: burst_ec2
-
   configurations:
-    burst_ec2:
-      provider: EC2
-      access: A...R
-      region: us-west-2
+    ec2_cpu:
+      access: AWSACCESSKEY
       default_image: ami-ubuntu-18.04-1.16.0-00-1569343567
       default_vmtype: t2.medium
-      default_gpu_image: Deep Learning AMI (Ubuntu 18.04) Version 36.0
-      default_gpu_vmtype: g4dn.xlarge
-      disksize: 175
-      settings: # Everything AWS-specific goes here
-        secret: U...F
+      disksize: 150
+      provider: EC2
+      region: us-west-2
+      settings:
+        secret: AWSSECRETKEY
+
+    ec2_gpu:
+      access: AWSACCESSKEY
+      default_image: Deep Learning AMI (Ubuntu 18.04) Version 36.0
+      default_vmtype: g4dn.xlarge
+      disksize: 250
+      provider: EC2
+      region: us-west-2
+      gpu_count: 1
+      settings:
+        secret: AWSSECRETKEY
+
+    gce_cpu:
+      access: projectname@appspot.gserviceaccount.com
+      default_image: https://www.googleapis.com/compute/beta/projects/cohesive-point-200601/global/images/rexec-nogpu
+      default_vmtype: e2-micro
+      disksize: 100
+      provider: GCE
+      region: us-west1-b
+      settings:
+        project: 'PROJECTID'
+        secret:
+          {
+          type: service_account
+          project_id: 'PROJECTID'
+          private_key_id: GCPPRIVATEKEYID
+          private_key: |
+            -----BEGIN PRIVATE KEY-----
+              SSH-compatible private key
+            -----END PRIVATE KEY-----
+          client_email: user@projectname.iam.gserviceaccount.com
+          client_id: 'GCPCLIENTID'
+          auth_uri: https://accounts.google.com/o/oauth2/auth
+          token_uri: https://oauth2.googleapis.com/token
+          auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
+
+    gce_gpu:
+      access: projectname@appspot.gserviceaccount.com
+      default_image: https://www.googleapis.com/compute/beta/projects/cohesive-point-200601/global/images/rexec-gpu
+      default_vmtype: n1-standard-4
+      disksize: 250
+      provider: GCE
+      region: us-west1-b
+      gpu_count: 1
+      settings:
+        default_gpu: nvidia-tesla-t4
+        project: 'PROJECTID'
+        secret:
+          type: service_account
+          project_id: 'PROJECTID'
+          private_key_id: GCPPRIVATEKEYID
+          private_key: |
+            -----BEGIN PRIVATE KEY-----
+              SSH-compatible private key
+            -----END PRIVATE KEY-----
+          client_email: user@projectname.iam.gserviceaccount.com
+          client_id: 'GCPCLIENTID'
+          auth_uri: https://accounts.google.com/o/oauth2/auth
+          token_uri: https://oauth2.googleapis.com/token
+          auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
+
+  settings:
+    default_compute: gce_gpu
 
 storage:
-  settings:
-    default_storage: burst_s3
-
   configurations:
-    burst_s3:
+    s3:
       provider: AWS
-      type: s3
-      settings:  #AWS-specific
-        access_key_id: A...R
-        region: us-west-2
-        env_auth: false
+      settings:
+        access_key_id: AWSACCESSKEY
         acl: private
-        secret_access_key: U...F
+        env_auth: false
+        region: us-west-2
+        secret_access_key: AWSSECRETKEY
+      type: s3
+  settings:
+    default_storage: s3

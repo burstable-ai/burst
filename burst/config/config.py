@@ -17,7 +17,8 @@ os.chdir(opath)
 # CONFIG_FILE = '~/.burst/config.yml'
 
 def main():
-
+    print ("configure is not up-to-date")
+    exit()
     args = parse_arguments()
 
     config = get_config(args.config_path)
