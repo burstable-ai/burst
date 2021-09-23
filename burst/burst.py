@@ -357,7 +357,9 @@ __pycache__
 
             cmd = f"docker {remote} run {gpu_args} {docker_port_args} --rm {background_args}" \
                   f" --label ai.burstable.shutdown={stop} {jupargs}" \
-                  f" -v {path}:/home/burst/work {cloud_args} {DEFAULT_IMAGE} {args}"
+                  f" -v {path}:/home/burst/work " \
+                  f" -v /var/run/docker.sock:/var/run/docker.sock" \
+                  f"{cloud_args} {DEFAULT_IMAGE} {args}"
 
             #run main task
             vvprint (cmd)
