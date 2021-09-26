@@ -170,12 +170,6 @@ def fix_vmtype_and_image(vmtype, image):
 
     if vmtype=="DEFAULT_VMTYPE":
         vmtype = config.default_vmtype
-    #
-    # if image=="DEFAULT_GPU_IMAGE":
-    #     image = config.default_gpu_image
-    #
-    # if vmtype=="DEFAULT_GPU_VMTYPE":
-    #     vmtype = config.default_gpu_vmtype
     return vmtype, image
 
 def launch_server(name, vmtype=None, image=None, pubkey=None, conf = None, user=None):

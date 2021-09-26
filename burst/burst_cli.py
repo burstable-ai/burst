@@ -418,40 +418,6 @@ if __name__ == "__main__":
         if not os.path.exists(args.dockerfile):
             raise Exception("No Dockerfile found")
 
-        # #if we are launching, need to know gpu
-        # if not os.path.exists(".burst-gpu"):
-        #     if not (args.gpu or args.no_gpu):
-        #         raise Exception("Must specify --gpu or --no-gpu for initial build")
-        #     f = open(".burst-gpu", 'w')
-        #     f.write(f"{args.gpu}")
-        #     f.close()
-        # f = open(".burst-gpu")
-        # gpu = f.read().strip().lower()=='true'
-        # f.close()
-
-        #sanity clause
-        # if (gpu and args.no_gpu) or ((not gpu) and args.gpu):
-        #     raise Exception("Gpu status can only be changed with fresh launch (terminate & rebuild)")
-        #
-        # #blech
-        # if gpu:
-        #     if args.vm_type == None:
-        #         vmtype = 'DEFAULT_GPU_VMTYPE'
-        #     else:
-        #         vmtype = args.vm_type
-        #     if args.image == None:
-        #         image = 'DEFAULT_GPU_IMAGE'
-        #     else:
-        #         image = args.image
-        # else:
-        #     if args.vm_type == None:
-        #         vmtype = 'DEFAULT_VMTYPE'
-        #     else:
-        #         vmtype = args.vm_type
-        #     if args.image == None:
-        #         image = 'DEFAULT_IMAGE'
-        #     else:
-        #         image = args.image
         if args.vm_type == None:
             vmtype = 'DEFAULT_VMTYPE'
         else:
