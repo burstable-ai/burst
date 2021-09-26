@@ -164,17 +164,23 @@ def start_server(srv):
 #
 # fill in default values for vmtype & image
 #
-def fix_vmtype_and_image(vmtype, image):
+# def fix_vmtype_and_image(vmtype, image):
+#     if image=="DEFAULT_IMAGE":
+#         image = config.default_image
+#
+#     if vmtype=="DEFAULT_VMTYPE":
+#         vmtype = config.default_vmtype
+#     return vmtype, image
+
+def launch_server(name, vmtype=None, image=None, pubkey=None, conf = None, user=None):
+    init(conf)
+    # vmtype, image = fix_vmtype_and_image(vmtype, image)
     if image=="DEFAULT_IMAGE":
         image = config.default_image
 
     if vmtype=="DEFAULT_VMTYPE":
         vmtype = config.default_vmtype
-    return vmtype, image
 
-def launch_server(name, vmtype=None, image=None, pubkey=None, conf = None, user=None):
-    init(conf)
-    vmtype, image = fix_vmtype_and_image(vmtype, image)
     image_full_path = image
     if config.provider=='EC2':
         images = config.driver.list_images(ex_filters={'name': image})

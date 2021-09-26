@@ -215,7 +215,13 @@ __pycache__
                     out = "Creating new burst_image"
                 vvprint (out)
 
-            vmtype, image = fix_vmtype_and_image(vmtype, image)
+            # vmtype, image = fix_vmtype_and_image(vmtype, image)
+            if image=="DEFAULT_IMAGE":
+                image = config.default_image
+
+            if vmtype=="DEFAULT_VMTYPE":
+                vmtype = config.default_vmtype
+
             if vmtype and vmtype != get_server_vmtype(node):                      #FIXME
                 raise Exception("Cannot change vmtype (instance type) or gpu status -- need to re-launch")
 
