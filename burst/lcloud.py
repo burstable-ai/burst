@@ -127,6 +127,13 @@ def get_server_vmtype(srv):
         i = typ.rfind('/')
         return typ[i+1:]
 
+def set_server_vmtype(srv, vmtype):
+    vmtypes = [x for x in config.driver.list_sizes() if x.name == vmtype]
+    if not vmtypes:
+        raise Exception("Instance vmtype %s not found" % vmtype)
+    vmtype = vmtypes[0]
+    config.driver.ex_change_node_size(srv, vmtype)
+
 # not working now that EC2 image == AMI full name
 # def get_server_image(srv):
 #     if config.provider=='EC2':
