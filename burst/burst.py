@@ -136,6 +136,8 @@ __pycache__
                 #if stopped, restart
                 if node.state.lower() != "running":
                     restart = True
+                    if vmtype and vmtype != get_server_vmtype(node):                      #FIXME
+                        set_server_vmtype(node, vmtype)
                     vprint ("Starting server")
                     node = start_server(node)
 
@@ -222,8 +224,8 @@ __pycache__
             if vmtype=="DEFAULT_VMTYPE":
                 vmtype = config.default_vmtype
 
-            if vmtype and vmtype != get_server_vmtype(node):                      #FIXME
-                raise Exception("Cannot change vmtype (instance type) or gpu status -- need to re-launch")
+            # if vmtype and vmtype != get_server_vmtype(node):                      #FIXME
+            #     raise Exception("Cannot change vmtype (instance type) or gpu status -- need to re-launch")
 
             # get_server_image is broken, need to prompt better here
             # if image and image != get_server_image(node):
