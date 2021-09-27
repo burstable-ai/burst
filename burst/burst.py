@@ -136,7 +136,10 @@ __pycache__
                 #if stopped, restart
                 if node.state.lower() != "running":
                     restart = True
+                    if vmtype == "DEFAULT_VMTYPE":
+                        vmtype = config.default_vmtype
                     if vmtype and vmtype != get_server_vmtype(node):                      #FIXME
+                        vprint(f"Changing server vmtype to {vmtype}")
                         set_server_vmtype(node, vmtype)
                     vprint ("Starting server")
                     node = start_server(node)
