@@ -131,6 +131,7 @@ if __name__ == "__main__":
             pubkeyfile = os.path.expanduser("~/.ssh/id_rsa.pub")
     else:
         pubkeyfile = os.path.expanduser(args.pubkey)
+    os.makedirs(os.path.dirname(pubkeylink), exist_ok=True)
     f = open(pubkeylink, 'w')
     f.write(pubkeyfile)
     f.close()
