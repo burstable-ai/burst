@@ -1,0 +1,7 @@
+#Template .dockerignore
+#Default to ignoring everything:
+**
+#exceptions (These will be sent to the docker daemon for building):
+!/Dockerfile*
+!requirements.txt
+
