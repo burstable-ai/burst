@@ -1,67 +1,69 @@
 compute:
-  default: ec2_gpu
-
-  services:
-    ec2_gpu:
+  configurations:
+    ec2_cpu:
+      access: AWS_ACCESS_KEY_ID
+      default_image: ami-ubuntu-18.04-1.16.0-00-1569343567
+      default_vmtype: t2.medium
+      disksize: 150
       provider: EC2
-      default_image: "Deep Learning AMI (Ubuntu 18.04) Version 36.0"
+      region: us-west-2
+      settings:
+        secret: AWS_SECRET_ACCESS_KEY
+
+    ec2_gpu:
+      access: AWS_ACCESS_KEY_ID
+      default_image: Deep Learning AMI (Ubuntu 18.04) Version 36.0
       default_vmtype: g4dn.xlarge
       disksize: 250
-      region: us-west-2
-      gpu_enabled: true
-      auth:
-        access_key_id: AWSIDKEY
-        secret_access_key: AWSSECRETKEY
-
-    ec2_cpu:
       provider: EC2
-      default_image: "ami-ubuntu-18.04-1.16.0-00-1569343567"
-      default_vmtype: c5a.4xlarge
-      disksize: 150
       region: us-west-2
-      gpu_enabled: false
-      auth:
-        access_key_id: AWS_ID_KEY
-        secret_access_key: AWS_SECRET_KEY
+      gpu_count: 1
+      settings:
+        secret: AWS_SECRET_ACCESS_KEY
 
     gce_gpu:
       provider: GCE
-      access: something.iam.gserviceaccount.com
-      default_image: https://www.googleapis.com/compute/beta/projects/project_name/global/images/image
-      default_size: n1-standard-4
-      disksize: 250
+      access: project@email.gserviceaccount.com
       region: us-west1-b
-      gpu_enabled: true
-      #if enabled:
-      ex_accelerator_type: nvidia-tesla-t4
-      ex_accelerator_count: 1
-      auth:
-        project: projname
-        type: service_account
-        auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
-        auth_uri: https://accounts.google.com/o/oauth2/auth
-        client_email: user@project_name.iam.gserviceaccount.com
-        client_id: '1234567890'
-        client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/xxyyzz.iam.gserviceaccount.com
-        token_uri: https://oauth2.googleapis.com/token
-        private_key_id: GCP_ACCESS_KEY
-        private_key: 
-          '
-          -----BEGIN PRIVATE KEY-----
-            REDACTED
-          -----END PRIVATE KEY-----
-          '
+
+      default_image: https://www.googleapis.com/compute/beta/projects/project-id/global/images/project-name
+      default_vmtype: e2-micro
+      default_gpu_image: ubuntu-2004-focal
+      default_gpu_vmtype: n1-standard-4
+
+      disksize: 250
+
+      settings: # Everything GCE-specific goes here
+        project: project-id
+        default_gpu: nvidia-tesla-t4
+        secret:
+          type: service_account
+          project_id: project-name
+          private_key_id: abcddeaf
+          private_key: |
+            -----BEGIN PRIVATE KEY-----
+            ID_RSA_PRIVATE_KEY
+            -----END PRIVATE KEY-----
+          client_email: project@email.iam.gserviceaccount.com
+          client_id: '12345678'
+          auth_uri: https://accounts.google.com/o/oauth2/auth
+          token_uri: https://oauth2.googleapis.com/token
+          auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
+          client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/project-nick%project-name.iam.gserviceaccount.com
+
+  settings:
+    default_compute: ec2_cpu
 
 storage:
-  default: s3
-
-  services:
+  configurations:
     s3:
       provider: AWS
-      region: us-west-2
-      type: s3
-      auth:
-        access_key_id: AWS_ACCESS_KEY
-        secret_access_key: AWS_SECRET_KEY
+      settings:
+        access_key_id: AWS_ACCESS_KEY_ID
         acl: private
         env_auth: false
+        region: us-west-2
+        secret_access_key: AWS_SECRET_ACCESS_KEY
+      type: s3
+  settings:
+    default_storage: s3
