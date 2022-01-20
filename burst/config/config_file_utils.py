@@ -37,9 +37,12 @@ def write_config(config, file_name):
         del config['compute']
 
     path = os.path.expanduser(file_name)
-    # print ("PATH", path)
+    print ("PATH", path)
     if not os.path.exists(path):
         if path.count('/') >= 2:
-            os.mkdir(path[:path.rfind('/')])
+            try:
+                os.mkdir(path[:path.rfind('/')])
+            except:
+                pass
     with open(path, 'w') as fp:
         yaml.dump(config, fp)
