@@ -1,5 +1,9 @@
 import  subprocess, time, os, sys, re, socket
-from blessings import Terminal
+
+if os.name == 'nt':
+    from blessed import Terminal
+else:
+    from blessings import Terminal
 bless_term = Terminal()
 
 MAXLINES=100

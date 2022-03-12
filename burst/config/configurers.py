@@ -6,6 +6,9 @@ from burst.config.config_file_utils import get_config
 
 abspath = os.path.abspath(__file__)
 abspath = abspath[:abspath.rfind('/') + 1]
+if abspath == '':  # Check for \\ in other OS's [Windows fix]
+    abspath = os.path.abspath(__file__)
+    abspath = abspath[:abspath.rfind('\\') + 1]
 
 # The alias used in the template file to set default images/sizes
 TEMPLATE_AWS_ALIAS = 'burst_ec2'
@@ -13,7 +16,7 @@ TEMPLATE_AWS_ALIAS = 'burst_ec2'
 def new_compute(aws_path='~/.aws'):
 
     print('\nSetting up EC2 on AWS')
-
+    print(f"{get_config(file_name='%sconfig_template.yml' % abspath)['compute']['configurations']}")
     config = get_config(file_name='%sconfig_template.yml' % abspath)['compute']['configurations'][TEMPLATE_AWS_ALIAS]
     config['access'], config['settings']['secret'], config['region'] = get_aws_creds(aws_path)
     alias = input('\nPlease enter an alias (name) to reference these credentials: ')
